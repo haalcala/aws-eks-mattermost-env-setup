@@ -799,11 +799,14 @@ func doCleanup(awsm *aws.AWS) {
 		}
 
 		for {
-			time.Sleep(10 * time.Second)
 
 			err, describeClusterResponse = awsm.EKSDescribeCluster(CLUSTER_KEY)
 
+			fmt.Println("describeClusterResponse.Cluster.Status:", describeClusterResponse.Cluster.Status)
+
 			if describeClusterResponse.Cluster.Status == "DELETING" {
+				time.Sleep(10 * time.Second)
+
 				continue
 			}
 
