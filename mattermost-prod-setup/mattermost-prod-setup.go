@@ -397,6 +397,10 @@ func analyseRoutes(awsm *aws.AWS, vpc aws.AWSVPCType, subnets []aws.AWSSubnetTyp
 								for _, ngw := range ngws {
 									fmt.Println("---- ngw:", ngw)
 
+									if strings.HasPrefix(ngw.State, "delet") {
+										continue
+									}
+
 									// find this nat gateway's subnet
 									for _, _subnet := range subnets {
 										fmt.Println("---- _subnet:", _subnet)
