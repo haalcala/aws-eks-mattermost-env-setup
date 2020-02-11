@@ -1095,10 +1095,10 @@ func main() {
 	fmt.Println("AWS_ACCESS_KEY_ID:", AWS_ACCESS_KEY_ID)
 	fmt.Println("AWS_ACCESS_SECRET:", AWS_ACCESS_SECRET)
 
-	awsm := aws.AWS{REGION}
+	awsm := &aws.AWS{REGION}
 
 	if *mode == "cleanup" {
-		doCleanup(&awsm)
+		doCleanup(awsm)
 		os.Exit(0)
 	}
 
@@ -1117,7 +1117,7 @@ func main() {
 
 	// check db
 	if stack != nil && stack.StackStatus == "CREATE_COMPLETE" {
-		err, rds := GetRds(&awsm)
+		err, rds := GetRds(awsm)
 
 		if err != nil {
 			fmt.Println("err:", err)
@@ -1154,7 +1154,7 @@ func main() {
 	} else {
 		fmt.Printf("Unable to find vpc with name %s-vpc. Creating ...", CLUSTER_KEY)
 
-		err, vpc = createVPC(&awsm)
+		err, vpc = createVPC(awsm)
 
 		if err != nil {
 			fmt.Println("err:", err)
@@ -1172,7 +1172,7 @@ func main() {
 	fmt.Println("subnets:", subnets)
 
 	if len(subnets) == 0 {
-		err, subnets = createSubnet(&awsm, *vpc, zones)
+		err, subnets = createSubnet(awsm, *vpc, zones)
 
 		if err != nil {
 			fmt.Println("err:", err)
@@ -1181,7 +1181,7 @@ func main() {
 		fmt.Println("subnets:", subnets)
 	}
 
-	err, internetGateway := getInternetGateway(&awsm)
+	err, internetGateway := getInternetGateway(awsm)
 
 	if err != nil {
 		fmt.Println("err:", err)
@@ -1190,7 +1190,7 @@ func main() {
 	fmt.Println("internetGateway:", internetGateway)
 
 	if internetGateway == nil {
-		err, igw := createInternetGateway(&awsm, *vpc)
+		err, igw := createInternetGateway(awsm, *vpc)
 
 		if err != nil {
 			fmt.Println("err:", err)
@@ -1199,7 +1199,7 @@ func main() {
 		fmt.Println("igw:", igw)
 	}
 
-	err, addresses := getAddresses(&awsm)
+	err, addresses := getAddresses(awsm)
 
 	if err != nil {
 		fmt.Println("err:", err)
@@ -1219,7 +1219,7 @@ func main() {
 		}
 	}
 
-	err, natGateways := getNatGateways(&awsm)
+	err, natGateways := getNatGateways(awsm)
 
 	if err != nil {
 		fmt.Println("err:", err)
@@ -1228,7 +1228,7 @@ func main() {
 	fmt.Println("natGateways:", natGateways)
 
 	if len(natGateways) < len(availabilityZones) {
-		err, ngw := createNatGateway(&awsm, subnets, addresses)
+		err, ngw := createNatGateway(awsm, subnets, addresses)
 
 		if err != nil {
 			fmt.Println("err:", err)
@@ -1237,9 +1237,9 @@ func main() {
 		fmt.Println("ngw:", ngw)
 	}
 
-	analyseRoutes(&awsm, *vpc, subnets)
+	analyseRoutes(awsm, *vpc, subnets)
 
-	// deployDatabase(&awsm, subnets)
+	// deployDatabase(awsm, subnets)
 
-	// createStack(&awsm, subnets)
+	// createStack(awsm, subnets)
 }
