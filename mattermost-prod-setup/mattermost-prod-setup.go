@@ -404,7 +404,7 @@ func analyseRoutes(awsm *aws.AWS, vpc aws.AWSVPCType, subnets []aws.AWSSubnetTyp
 										if ngw.SubnetId == _subnet.SubnetId {
 
 											for _, __subnet := range subnets {
-												if __subnet.AvailabilityZone == subnet.AvailabilityZone {
+												if __subnet.AvailabilityZone == _subnet.AvailabilityZone {
 													found = true
 
 													fmt.Println("Found nat gateway for the same availability zone!!!")
@@ -1241,5 +1241,5 @@ func main() {
 
 	// deployDatabase(&awsm, subnets)
 
-	createStack(&awsm, subnets)
+	// createStack(&awsm, subnets)
 }

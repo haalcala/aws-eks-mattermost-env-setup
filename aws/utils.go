@@ -50,7 +50,7 @@ func Execute(command string) (error, string, string) {
 
 		output = output + string(line) + "\n"
 
-		fmt.Println(string(line))
+		// fmt.Println(string(line))
 	}
 
 	buf = bufio.NewReader(stderr) // Notice that this is not in a loop
@@ -69,7 +69,7 @@ func Execute(command string) (error, string, string) {
 
 		output = errput + string(line) + "\n"
 
-		fmt.Println(string(line))
+		// fmt.Println(string(line))
 	}
 
 	return err, strings.Trim(output, "\n"), strings.Trim(errput, "\n")
