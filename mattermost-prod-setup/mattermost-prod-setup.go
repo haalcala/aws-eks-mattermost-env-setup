@@ -957,32 +957,33 @@ func doCleanup(awsm *aws.AWS) {
 
 	deleteInternetGateway(awsm)
 
-	err, subnets := awsm.GetSubnetsByVPCId(vpc.VpcId)
+	if vpc != nil {
+		err, subnets := awsm.GetSubnetsByVPCId(vpc.VpcId)
 
-	if err != nil {
-		fmt.Println("error:", err)
-		os.Exit(1)
-	}
+		if err != nil {
+			fmt.Println("error:", err)
+			os.Exit(1)
+		}
 
-	fmt.Println("subnets:", subnets)
+		fmt.Println("subnets:", subnets)
 
-	for _, subnet := range subnets {
-		for _, tag := range subnet.Tags {
-			if tag.Key == "Name" && strings.HasPrefix(tag.Value, fmt.Sprintf("%s-", CLUSTER_KEY)) {
-				err = awsm.DeleteSubnet(subnet.SubnetId)
+		for _, subnet := range subnets {
+			for _, tag := range subnet.Tags {
+				if tag.Key == "Name" && strings.HasPrefix(tag.Value, fmt.Sprintf("%s-", CLUSTER_KEY)) {
+					err = awsm.DeleteSubnet(subnet.SubnetId)
 
-				if err != nil {
-					fmt.Println("error:", err)
-					os.Exit(1)
+					if err != nil {
+						fmt.Println("error:", err)
+						os.Exit(1)
+					}
 				}
 			}
 		}
+
+		deleteVPC(awsm)
 	}
 
 	deleteStack(awsm)
-
-	deleteVPC(awsm)
-
 }
 
 func deleteInternetGateway(awsm *aws.AWS) {
