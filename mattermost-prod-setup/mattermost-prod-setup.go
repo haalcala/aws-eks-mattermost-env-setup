@@ -1080,16 +1080,16 @@ func main() {
 
 	flag.Parse()
 
-	err, AWS_ACCESS_KEY_ID, stderr := aws.Execute("aws configure get aws_access_key_id")
+	err, AWS_ACCESS_KEY_ID, stderr := aws.Execute("aws configure get aws_access_key_id", true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
 		os.Exit(1)
 	}
 
-	err, AWS_ACCESS_SECRET, stderr := aws.Execute("aws configure get aws_secret_access_key")
+	err, AWS_ACCESS_SECRET, stderr := aws.Execute("aws configure get aws_secret_access_key", true, false)
 
-	// err, stdout, stderr = aws.Execute("aws rds help")
+	// err, stdout, stderr = aws.Execute("aws rds help", true, false)
 	// log.Printf("%v %s %s", err, out, _err)
 
 	fmt.Println("AWS_ACCESS_KEY_ID:", AWS_ACCESS_KEY_ID)
