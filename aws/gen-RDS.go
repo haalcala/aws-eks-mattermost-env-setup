@@ -8,7 +8,7 @@ import (
 )
 
 func (aws *AWS) RDSDescribeDBInstances() (error, RDSDescribeDBInstancesResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws rds describe-db-instances --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws rds describe-db-instances --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -23,7 +23,7 @@ func (aws *AWS) RDSDescribeDBInstances() (error, RDSDescribeDBInstancesResponse)
 }
 
 func (aws *AWS) RDSDeleteDBInstance(dbInstanceIdentifier string) (error, RDSCreateDBInstanceResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws rds delete-db-instance --region %s --db-instance-identifier %s --skip-final-snapshot", aws.Region, dbInstanceIdentifier))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws rds delete-db-instance --region %s --db-instance-identifier %s --skip-final-snapshot", aws.Region, dbInstanceIdentifier), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -38,7 +38,7 @@ func (aws *AWS) RDSDeleteDBInstance(dbInstanceIdentifier string) (error, RDSCrea
 }
 
 func (aws *AWS) RDSCreateDBInstance(instanceName, dbIdentifier, masterUsername, masterPassword, availabilityZone, subnetGroupName, port, engineVersion, dbInstanceClass, storageSize string) (error, RDSCreateDBInstanceResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws rds create-db-instance --region %s --db-name %s --db-instance-identifier %s --master-username %s --master-user-password %s --availability-zone %s --db-subnet-group-name %s --port %s --engine-version %s --no-publicly-accessible --engine mysql --db-instance-class %s --allocated-storage %s", aws.Region, instanceName, dbIdentifier, masterUsername, masterPassword, availabilityZone, subnetGroupName, port, engineVersion, dbInstanceClass, storageSize))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws rds create-db-instance --region %s --db-name %s --db-instance-identifier %s --master-username %s --master-user-password %s --availability-zone %s --db-subnet-group-name %s --port %s --engine-version %s --no-publicly-accessible --engine mysql --db-instance-class %s --allocated-storage %s", aws.Region, instanceName, dbIdentifier, masterUsername, masterPassword, availabilityZone, subnetGroupName, port, engineVersion, dbInstanceClass, storageSize), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -53,7 +53,7 @@ func (aws *AWS) RDSCreateDBInstance(instanceName, dbIdentifier, masterUsername, 
 }
 
 func (aws *AWS) RDSDescribeSubnetGroups() (error, RDSDescribeSubnetGroupsResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws rds describe-db-subnet-groups --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws rds describe-db-subnet-groups --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -68,7 +68,7 @@ func (aws *AWS) RDSDescribeSubnetGroups() (error, RDSDescribeSubnetGroupsRespons
 }
 
 func (aws *AWS) RDSCreateSubnetGroup(subnetGroupName, subnetGroupDescription, subnetIds string) (error, RDSCreateDBSubnetGroupResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws rds create-db-subnet-group --region %s --db-subnet-group-name %s --db-subnet-group-description %s --subnet-ids %s", aws.Region, subnetGroupName, subnetGroupDescription, subnetIds))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws rds create-db-subnet-group --region %s --db-subnet-group-name %s --db-subnet-group-description %s --subnet-ids %s", aws.Region, subnetGroupName, subnetGroupDescription, subnetIds), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -83,7 +83,7 @@ func (aws *AWS) RDSCreateSubnetGroup(subnetGroupName, subnetGroupDescription, su
 }
 
 func (aws *AWS) RDSDeleteSubnetGroup(subnetGroupName string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws rds delete-db-subnet-group --region %s --db-subnet-group-name %s", aws.Region, subnetGroupName))
+	err, _, stderr := Execute(fmt.Sprintf("aws rds delete-db-subnet-group --region %s --db-subnet-group-name %s", aws.Region, subnetGroupName), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)

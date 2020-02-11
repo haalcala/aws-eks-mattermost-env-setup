@@ -8,7 +8,7 @@ import (
 )
 
 func (aws *AWS) CFDescribeStacks() (error, CFDescribeStacksResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws cloudformation describe-stacks --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws cloudformation describe-stacks --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -23,7 +23,7 @@ func (aws *AWS) CFDescribeStacks() (error, CFDescribeStacksResponse) {
 }
 
 func (aws *AWS) CFDeleteStack(stackName string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws cloudformation delete-stack --region %s --stack-name %s", aws.Region, stackName))
+	err, _, stderr := Execute(fmt.Sprintf("aws cloudformation delete-stack --region %s --stack-name %s", aws.Region, stackName), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)

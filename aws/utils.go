@@ -9,10 +9,12 @@ import (
 	"strings"
 )
 
-func Execute(command string) (error, string, string) {
+func Execute(command string, showCommand, showOutput bool) (error, string, string) {
 	_command := strings.Split(command, " ")
 
-	log.Println("--->>>:", command)
+	if showCommand {
+		log.Println("--->>>:", command)
+	}
 	// fmt.Println("_command[0]:", _command[0])
 	// fmt.Println("_command[1:]:", _command[1:])
 
@@ -69,7 +71,9 @@ func Execute(command string) (error, string, string) {
 
 		output = errput + string(line) + "\n"
 
-		// fmt.Println(string(line))
+		if showOutput {
+			fmt.Println(string(line))
+		}
 	}
 
 	return err, strings.Trim(output, "\n"), strings.Trim(errput, "\n")

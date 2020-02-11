@@ -8,7 +8,7 @@ import (
 )
 
 func (aws *AWS) EKSListFargateProfiles(clusterName string) (error, EKSListFargateProfilesResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws eks list-fargate-profiles --region %s --cluster-name %s --max-items 99", aws.Region, clusterName))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws eks list-fargate-profiles --region %s --cluster-name %s --max-items 99", aws.Region, clusterName), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -23,7 +23,7 @@ func (aws *AWS) EKSListFargateProfiles(clusterName string) (error, EKSListFargat
 }
 
 func (aws *AWS) EKSCreateFargateProfile(clusterName, fargateProfile, executionRole, selectors, subnets, tags string) (error, EKSCreateFargateProfileResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws eks create-fargate-profile --region %s --cluster-name %s --fargate-profile-name %s --pod-execution-role-arn %s --selectors %s --subnets %s --tags %s", aws.Region, clusterName, fargateProfile, executionRole, selectors, subnets, tags))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws eks create-fargate-profile --region %s --cluster-name %s --fargate-profile-name %s --pod-execution-role-arn %s --selectors %s --subnets %s --tags %s", aws.Region, clusterName, fargateProfile, executionRole, selectors, subnets, tags), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -38,7 +38,7 @@ func (aws *AWS) EKSCreateFargateProfile(clusterName, fargateProfile, executionRo
 }
 
 func (aws *AWS) EKSDeleteFargateProfile(clusterName, fargateProfile string) (error, EKSListFargateProfilesResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws eks delete-fargate-profile --region %s --cluster-name %s --fargate-profile-name %s", aws.Region, clusterName, fargateProfile))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws eks delete-fargate-profile --region %s --cluster-name %s --fargate-profile-name %s", aws.Region, clusterName, fargateProfile), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -53,7 +53,7 @@ func (aws *AWS) EKSDeleteFargateProfile(clusterName, fargateProfile string) (err
 }
 
 func (aws *AWS) EKSDescribeFargateProfile(clusterName, fargateProfile string) (error, EKSDescribeFargateProfileResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws eks describe-fargate-profile --region %s --cluster-name %s --fargate-profile-name %s", aws.Region, clusterName, fargateProfile))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws eks describe-fargate-profile --region %s --cluster-name %s --fargate-profile-name %s", aws.Region, clusterName, fargateProfile), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -68,7 +68,7 @@ func (aws *AWS) EKSDescribeFargateProfile(clusterName, fargateProfile string) (e
 }
 
 func (aws *AWS) EKSCreateFargateCluster(clusterName, privateSubnets, publicSubnets string) error {
-	err, _, stderr := Execute(fmt.Sprintf("eksctl create cluster --region %s --name %s --fargate --vpc-private-subnets %s --vpc-public-subnets %s", aws.Region, clusterName, privateSubnets, publicSubnets))
+	err, _, stderr := Execute(fmt.Sprintf("eksctl create cluster --region %s --name %s --fargate --vpc-private-subnets %s --vpc-public-subnets %s", aws.Region, clusterName, privateSubnets, publicSubnets), true, true)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -79,7 +79,7 @@ func (aws *AWS) EKSCreateFargateCluster(clusterName, privateSubnets, publicSubne
 }
 
 func (aws *AWS) EKSListClusters() (error, EKSListClustersResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws eks list-clusters --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws eks list-clusters --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -94,7 +94,7 @@ func (aws *AWS) EKSListClusters() (error, EKSListClustersResponse) {
 }
 
 func (aws *AWS) EKSDescribeCluster(clusterName string) (error, EKSDescribeClusterResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws eks describe-cluster --region %s --name %s", aws.Region, clusterName))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws eks describe-cluster --region %s --name %s", aws.Region, clusterName), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -109,7 +109,7 @@ func (aws *AWS) EKSDescribeCluster(clusterName string) (error, EKSDescribeCluste
 }
 
 func (aws *AWS) EKSDeleteCluster(clusterName string) (error, AWSEKSClusterType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws eks delete-cluster --region %s --name %s", aws.Region, clusterName))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws eks delete-cluster --region %s --name %s", aws.Region, clusterName), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)

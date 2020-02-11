@@ -8,7 +8,7 @@ import (
 )
 
 func (aws *AWS) EC2DescribeInternetGateways() (error, AWSEC2DescribeInternetGatewaysResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-internet-gateways --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-internet-gateways --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -23,7 +23,7 @@ func (aws *AWS) EC2DescribeInternetGateways() (error, AWSEC2DescribeInternetGate
 }
 
 func (aws *AWS) EC2DetachInternetGateway(internetGatewayId, vpcId string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws ec2 detach-internet-gateway --region %s --internet-gateway-id %s --vpc-id %s", aws.Region, internetGatewayId, vpcId))
+	err, _, stderr := Execute(fmt.Sprintf("aws ec2 detach-internet-gateway --region %s --internet-gateway-id %s --vpc-id %s", aws.Region, internetGatewayId, vpcId), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -34,7 +34,7 @@ func (aws *AWS) EC2DetachInternetGateway(internetGatewayId, vpcId string) error 
 }
 
 func (aws *AWS) EC2DeleteInternetGateway(internetGatewayId string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws ec2 delete-internet-gateway --region %s --internet-gateway-id %s", aws.Region, internetGatewayId))
+	err, _, stderr := Execute(fmt.Sprintf("aws ec2 delete-internet-gateway --region %s --internet-gateway-id %s", aws.Region, internetGatewayId), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -45,7 +45,7 @@ func (aws *AWS) EC2DeleteInternetGateway(internetGatewayId string) error {
 }
 
 func (aws *AWS) EC2DeleteVPC(vpcId string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws ec2 delete-vpc --region %s --vpc-id %s", aws.Region, vpcId))
+	err, _, stderr := Execute(fmt.Sprintf("aws ec2 delete-vpc --region %s --vpc-id %s", aws.Region, vpcId), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)

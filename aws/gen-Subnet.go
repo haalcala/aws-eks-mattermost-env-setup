@@ -8,7 +8,7 @@ import (
 )
 
 func (aws *AWS) CreateDefaultSubnet(availabilityZone string) (error, EC2CreateSubnetResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-default-subnet --region %s --availability-zone %s", aws.Region, availabilityZone))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-default-subnet --region %s --availability-zone %s", aws.Region, availabilityZone), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -23,7 +23,7 @@ func (aws *AWS) CreateDefaultSubnet(availabilityZone string) (error, EC2CreateSu
 }
 
 func (aws *AWS) DeleteSubnet(subnetId string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws ec2 delete-subnet --region %s --subnet-id %s", aws.Region, subnetId))
+	err, _, stderr := Execute(fmt.Sprintf("aws ec2 delete-subnet --region %s --subnet-id %s", aws.Region, subnetId), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)

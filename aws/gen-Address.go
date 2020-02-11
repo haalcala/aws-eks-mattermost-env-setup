@@ -8,7 +8,7 @@ import (
 )
 
 func (aws *AWS) AllocateAddress() (error, AWSAddressType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 allocate-address --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 allocate-address --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -23,7 +23,7 @@ func (aws *AWS) AllocateAddress() (error, AWSAddressType) {
 }
 
 func (aws *AWS) GetAddresses() (error, AWSEC2DescribeAddressesResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-addresses --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-addresses --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -38,7 +38,7 @@ func (aws *AWS) GetAddresses() (error, AWSEC2DescribeAddressesResponse) {
 }
 
 func (aws *AWS) DisassociateAddress(associationId string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws ec2 disassociate-address --region %s --association-id %s", aws.Region, associationId))
+	err, _, stderr := Execute(fmt.Sprintf("aws ec2 disassociate-address --region %s --association-id %s", aws.Region, associationId), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)

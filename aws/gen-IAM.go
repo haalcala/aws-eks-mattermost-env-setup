@@ -8,7 +8,7 @@ import (
 )
 
 func (aws *AWS) IAMListRoles() (error, IAMListRolesResponse) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws iam list-roles --region %s ", aws.Region))
+	err, _resp, stderr := Execute(fmt.Sprintf("aws iam list-roles --region %s ", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
