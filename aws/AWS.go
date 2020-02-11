@@ -166,21 +166,6 @@ func (aws *AWS) CreateSubnet(vpcId, cidr, zone string) (error, AWSSubnetType) {
 	return err, resp.Subnet
 }
 
-func (aws *AWS) GetInternetGateways() (error, []AWSInternetGatewayType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-internet-gateways --region %s", aws.Region))
-
-	if err != nil {
-		fmt.Println("stderr:", stderr)
-		os.Exit(1)
-	}
-
-	var resp *AWSEC2DescribeInternetGatewaysResponse = nil
-
-	json.NewDecoder(strings.NewReader(_resp)).Decode(&resp)
-
-	return err, resp.InternetGateways
-}
-
 func (aws *AWS) CreateInternetGateway() (error, *AWSInternetGatewayType) {
 	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-internet-gateway --region %s", aws.Region))
 

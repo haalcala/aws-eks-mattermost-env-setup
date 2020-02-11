@@ -134,18 +134,18 @@ func createSubnet(awsm *aws.AWS, vpc aws.AWSVPCType, zones []string) (error, []a
 }
 
 func getInternetGateway(awsm *aws.AWS) (error, *aws.AWSInternetGatewayType) {
-	err, igws := awsm.GetInternetGateways()
+	err, describeInternetGatewaysResponse := awsm.EC2DescribeInternetGateways()
 
 	if err != nil {
 		fmt.Println("error:", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("igws:", igws)
+	fmt.Println("describeInternetGatewaysResponse:", describeInternetGatewaysResponse)
 
 	var igw *aws.AWSInternetGatewayType = nil
 
-	for _, _igw := range igws {
+	for _, _igw := range describeInternetGatewaysResponse.InternetGateways {
 		for _, _tag := range _igw.Tags {
 			if _tag.Key == "Name" && _tag.Value == IGW_NAME {
 				igw = &_igw
@@ -954,6 +954,8 @@ func doCleanup(awsm *aws.AWS) {
 		}
 	}
 
+	deleteInternetGateway(awsm)
+
 	err, subnets := awsm.GetSubnetsByVPCId(vpc.VpcId)
 
 	if err != nil {
@@ -980,6 +982,30 @@ func doCleanup(awsm *aws.AWS) {
 
 	deleteVPC(awsm)
 
+}
+
+func deleteInternetGateway(awsm *aws.AWS) {
+	err, igw := getInternetGateway(awsm)
+
+	if err != nil {
+		fmt.Println("error:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("igw:", igw)
+
+	if igw != nil {
+		for _, attachment := range igw.Attachments {
+			_ = awsm.EC2DetachInternetGateway(igw.InternetGatewayId, attachment.VpcId)
+		}
+
+		err = awsm.EC2DeleteInternetGateway(igw.InternetGatewayId)
+
+		if err != nil {
+			fmt.Println("error:", err)
+			os.Exit(1)
+		}
+	}
 }
 
 func deleteStack(awsm *aws.AWS) {

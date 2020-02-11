@@ -11,6 +11,9 @@ import (
 )
 
 var commands = []Command{
+	{"EC2", "EC2DescribeInternetGateways", "aws ec2 describe-internet-gateways", "", "", "", "AWSEC2DescribeInternetGatewaysResponse"},
+	{"EC2", "EC2DetachInternetGateway", "aws ec2 detach-internet-gateway", "internetGatewayId, vpcId string", "--internet-gateway-id %s --vpc-id %s", "internetGatewayId, vpcId", ""},
+	{"EC2", "EC2DeleteInternetGateway", "aws ec2 delete-internet-gateway", "internetGatewayId string", "--internet-gateway-id %s", "internetGatewayId", ""},
 	{"EC2", "EC2DeleteVPC", "aws ec2 delete-vpc", "vpcId string", "--vpc-id %s", "vpcId", ""},
 	{"IAM", "IAMListRoles", "aws iam list-roles", "", "", "", "IAMListRolesResponse"},
 	{"EKS", "EKSListFargateProfiles", "aws eks list-fargate-profiles", "clusterName string", "--cluster-name %s --max-items 99", "clusterName", "EKSListFargateProfilesResponse"},
