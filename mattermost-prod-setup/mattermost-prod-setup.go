@@ -403,22 +403,20 @@ func analyseRoutes(awsm *aws.AWS, vpc aws.AWSVPCType, subnets []aws.AWSSubnetTyp
 
 										if ngw.SubnetId == _subnet.SubnetId {
 
-											for _, __subnet := range subnets {
-												if __subnet.AvailabilityZone == _subnet.AvailabilityZone {
-													found = true
+											if subnet.AvailabilityZone == _subnet.AvailabilityZone {
+												found = true
 
-													fmt.Println("Found nat gateway for the same availability zone!!!")
-													err, createRouteResult := awsm.CreateRouteWithNatGateway(route.RouteTable.RouteTableId, "0.0.0.0/0", ngw.NatGatewayId)
+												fmt.Println("Found nat gateway for the same availability zone!!!")
+												err, createRouteResult := awsm.CreateRouteWithNatGateway(route.RouteTable.RouteTableId, "0.0.0.0/0", ngw.NatGatewayId)
 
-													if err != nil {
-														fmt.Println("error:", err)
-														os.Exit(1)
-													}
-
-													fmt.Println("createRouteResult:", createRouteResult)
-
-													break
+												if err != nil {
+													fmt.Println("error:", err)
+													os.Exit(1)
 												}
+
+												fmt.Println("createRouteResult:", createRouteResult)
+
+												break
 											}
 										}
 
