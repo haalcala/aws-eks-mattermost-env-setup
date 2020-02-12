@@ -1,1 +1,1 @@
-[{ "key": "my-mattermost", "domain": "my-mattermost.localdomain", "replica": 1 }]
+[{ "key": "my-mattermost", "domain": "my-mattermost.localdomain", "replicas": 1 }]

@@ -15,9 +15,6 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: os.Getenv("__AWS_ACCE
 	{Key: "__AWS_REGION__", Value: os.Getenv("__AWS_REGION__")},
 	{Key: "__AWS_ACM_CERTIFICATE_ARN__", Value: os.Getenv("__AWS_ACM_CERTIFICATE_ARN__")},
 	{Key: "__MATTERMOST_PORT__", Default: "8065", Value: os.Getenv("__MATTERMOST_PORT__")},
-	{Key: "__DB_NAME__", Value: os.Getenv("__DB_NAME__")},
-	{Key: "__DB_USER__", Value: os.Getenv("__DB_USER__")},
-	{Key: "__DB_PASS__", Value: os.Getenv("__DB_PASS__")},
 	{Key: "__DB_HOST__", Value: os.Getenv("__DB_HOST__")},
 	{Key: "__DB_PORT__", Value: os.Getenv("__DB_PORT__")}}
 
@@ -28,9 +25,9 @@ type Token struct {
 }
 
 type MattermostDeployment struct {
-	Key     string `json:"key"`
-	Domain  string `json:"domain"`
-	Replica int    `json:"replica"`
+	Key      string `json:"key"`
+	Domain   string `json:"domain"`
+	Replicas string `json:"replicas"`
 }
 
 func processTemplate(templateFile, destinationFile string, tokens []Token) string {
@@ -75,7 +72,11 @@ func loadDomains() string {
 
 	var domains []MattermostDeployment
 
-	json.NewDecoder(strings.NewReader(string(dat))).Decode(&domains)
+	d := json.NewDecoder(strings.NewReader(string(dat)))
+
+	d.UseNumber()
+
+	d.Decode(&domains)
 
 	fmt.Println("domains:", domains)
 
@@ -89,7 +90,10 @@ func loadDomains() string {
 		domain_tokens := []Token{
 			{Key: "__MM_INSTANCE_KEY__", Value: domain.Key},
 			{Key: "__MM_INSTANCE_DOMAIN__", Value: domain.Domain},
-			{Key: "__MM_INSTANCE_REPLICA__", Value: string(domain.Replica)}}
+			{Key: "__MM_INSTANCE_REPLICAS__", Value: domain.Replicas},
+			{Key: "__DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
+			{Key: "__DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
+			{Key: "__DB_PASS__", Value: "mm_" + domain.Key + "-mostest"}}
 
 		fmt.Println("domain_tokens:", domain_tokens)
 

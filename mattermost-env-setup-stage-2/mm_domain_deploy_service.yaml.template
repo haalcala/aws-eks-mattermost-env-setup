@@ -7,7 +7,7 @@ spec:
   type: NodePort
   ports:
     - port: 80
-      targetPort: 5000
+      targetPort: 8065
   selector:
     app: __MM_INSTANCE_KEY__
 
@@ -17,7 +17,7 @@ kind: Deployment
 metadata:
   name: __MM_INSTANCE_KEY__
 spec:
-  replicas: 2
+  replicas: __MM_INSTANCE_REPLICAS__ 
   selector:
     matchLabels:
       app: __MM_INSTANCE_KEY__
@@ -30,4 +30,13 @@ spec:
         - name: __MM_INSTANCE_KEY__
           image: haalcala/python-hello-web-foo-v1
           ports:
-            - containerPort: 5000
+            - containerPort: 8065
+          env:
+            - name: DB_HOST
+              value: __DB_HOST__
+            - name: DB_NAME
+              value: __DB_NAME__
+            - name: DB_USER
+              value: __DB_USER__
+            - name: DB_PASS
+              value: __DB_PASS__
