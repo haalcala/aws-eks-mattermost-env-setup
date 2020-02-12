@@ -81,65 +81,7 @@ data:
   #       include /etc/nginx/virtualhost/virtualhost.conf;
   #     }
 
-  python-hello-web-foo.conf: |
-    upstream python-hello-web-foo {
-      server python-hello-web-foo-svc:80;
-      keepalive 1024;
-    }
-    server {
-      listen 80;
-      server_name python-hello-web-foo.vcube.sg;
-      root /usr/local/python-hello-web-foo;
-      access_log /var/log/nginx/python-hello-web-foo.access_log main;
-      error_log /var/log/nginx/python-hello-web-foo.error_log;
-      location / {
-        proxy_pass http://python-hello-web-foo-svc/;
-        proxy_http_version 1.1;
-      }
-    }
-
-  python-hello-web-bar.conf: |
-    upstream python-hello-web-bar {
-      server python-hello-web-bar-svc:80;
-      keepalive 1024;
-    }
-    server {
-      listen 80;
-      server_name python-hello-web-bar.vcube.sg;
-      root /usr/local/python-hello-web-bar;
-      access_log /var/log/nginx/python-hello-web-bar.access_log main;
-      error_log /var/log/nginx/python-hello-web-bar.error_log;
-      location / {
-        proxy_pass http://python-hello-web-bar-svc/;
-        proxy_http_version 1.1;
-      }
-    }
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: python-hello-web-foo-svc
-spec:
-  type: NodePort
-  ports:
-    - port: 80
-      targetPort: __MATTERMOST_PORT__
-  selector:
-    app: python-hello-web-foo-v1
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: python-hello-web-bar-svc
-spec:
-  type: NodePort
-  ports:
-    - port: 80
-      targetPort: __MATTERMOST_PORT__
-  selector:
-    app: python-hello-web-bar-v1
+__NGINX_MM_DOMAINS__
 
 ---
 apiVersion: apps/v1
