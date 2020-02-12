@@ -13,7 +13,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: __MM_INSTANCE_KEY__
 spec:
@@ -21,6 +21,7 @@ spec:
   selector:
     matchLabels:
       app: __MM_INSTANCE_KEY__
+  serviceName: "__MM_INSTANCE_KEY__-svc"
   template:
     metadata:
       labels:
