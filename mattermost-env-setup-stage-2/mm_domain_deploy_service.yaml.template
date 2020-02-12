@@ -32,11 +32,11 @@ spec:
           ports:
             - containerPort: 8065
           env:
-            - name: DB_HOST
-              value: __DB_HOST__
-            - name: DB_NAME
-              value: __DB_NAME__
-            - name: DB_USER
-              value: __DB_USER__
-            - name: DB_PASS
-              value: __DB_PASS__
+            - name: __DB_HOST__
+              value: __MM_DB_HOST__
+            - name: __DB_NAME__
+              value: __MM_DB_NAME__
+            - name: __DB_USER__
+              value: __MM_DB_USER__
+            - name: __DB_PASS__
+              value: __MM_DB_PASS__

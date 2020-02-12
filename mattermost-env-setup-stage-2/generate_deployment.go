@@ -15,8 +15,8 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: os.Getenv("__AWS_ACCE
 	{Key: "__AWS_REGION__", Value: os.Getenv("__AWS_REGION__")},
 	{Key: "__AWS_ACM_CERTIFICATE_ARN__", Value: os.Getenv("__AWS_ACM_CERTIFICATE_ARN__")},
 	{Key: "__MATTERMOST_PORT__", Default: "8065", Value: os.Getenv("__MATTERMOST_PORT__")},
-	{Key: "__DB_HOST__", Value: os.Getenv("__DB_HOST__")},
-	{Key: "__DB_PORT__", Value: os.Getenv("__DB_PORT__")}}
+	{Key: "__MM_DB_HOST__", Value: os.Getenv("__MM_DB_HOST__")},
+	{Key: "__MM_DB_PORT__", Value: os.Getenv("__MM_DB_PORT__")}}
 
 type Token struct {
 	Key,
@@ -91,9 +91,9 @@ func loadDomains() string {
 			{Key: "__MM_INSTANCE_KEY__", Value: domain.Key},
 			{Key: "__MM_INSTANCE_DOMAIN__", Value: domain.Domain},
 			{Key: "__MM_INSTANCE_REPLICAS__", Value: domain.Replicas},
-			{Key: "__DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
-			{Key: "__DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
-			{Key: "__DB_PASS__", Value: "mm_" + domain.Key + "-mostest"}}
+			{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
+			{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
+			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"}}
 
 		fmt.Println("domain_tokens:", domain_tokens)
 
