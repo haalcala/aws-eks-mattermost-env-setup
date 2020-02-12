@@ -13,15 +13,20 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__"},
 	{Key: "__AWS_VPC_ID__"},
 	{Key: "__AWS_REGION__"},
 	{Key: "__AWS_ACM_CERTIFICATE_ARN__"},
-	{Key: "__MATTERMOST_PORT__", Default: "8065"}}
+	{Key: "__MATTERMOST_PORT__", Default: "8065"},
+	{Key: "__DB_NAME__"},
+	{Key: "__DB_USER__"},
+	{Key: "__DB_PASS__"},
+	{Key: "__DB_HOST__"},
+	{Key: "__DB_PORT__"}}
 
 type Token struct {
 	Key     string
 	Default string
 }
 
-func main() {
-	dat, err := ioutil.ReadFile("./deploy-nginx-router.yaml.template")
+func processTemplate(templateFile, destinationFile string) {
+	dat, err := ioutil.ReadFile(templateFile)
 
 	if err != nil {
 		fmt.Println("err:", err)
@@ -35,13 +40,6 @@ func main() {
 	for _, token := range tokens {
 		val := os.Getenv(token.Key)
 
-		fmt.Println("val:", val)
-
-		if val == "" && token.Default == "" {
-			fmt.Println("Missing required environment variable:", token)
-			os.Exit(1)
-		}
-
 		if val == "" && token.Default != "" {
 			val = token.Default
 		}
@@ -51,5 +49,20 @@ func main() {
 
 	fmt.Println("dat:", template)
 
-	ioutil.WriteFile("./deploy-nginx-router.yaml", []byte(template), 0666)
+	ioutil.WriteFile(destinationFile, []byte(template), 0666)
+}
+
+func main() {
+	for _, token := range tokens {
+		val := os.Getenv(token.Key)
+
+		fmt.Println("Key:", token.Key, "val:", val)
+
+		if val == "" && token.Default == "" {
+			fmt.Println("Missing required environment variable:", token)
+			os.Exit(1)
+		}
+	}
+
+	processTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml")
 }
