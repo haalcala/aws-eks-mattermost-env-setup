@@ -28,6 +28,43 @@ spec:
         app: __MM_INSTANCE_KEY__
     spec:
       containers:
+        - name: init-mysql
+          image: mysql:5.7
+          command:
+          - bash
+          - "-c"
+          - |
+            set -ex
+            # Generate mysql server-id from pod ordinal index.
+            [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
+            ordinal=${BASH_REMATCH[1]}
+            echo \$ordinal $ordinal
+            # Add an offset to avoid reserved server-id=0 value.
+            #echo server-id=$((100 + $ordinal)) >> /mnt/conf.d/server-id.cnf
+            # Copy appropriate conf.d files from config-map to emptyDir.
+            if [[ $ordinal -eq 0 ]]; then
+              echo mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE DATABASE IF NOT EXISTS $__DB_NAME__"
+              mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE DATABASE IF NOT EXISTS $__DB_NAME__"
+
+              echo mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE USER '"$__DB_USER__"'@'%' IDENTIFIED BY '"$__DB_PASS__"';"
+              mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE USER '"$__DB_USER__"'@'%' IDENTIFIED BY '"$__DB_PASS__"';"
+
+              echo mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
+              mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
+              
+            #  cp /mnt/config-map/master.cnf /mnt/conf.d/
+            #else
+            #  cp /mnt/config-map/slave.cnf /mnt/conf.d/
+            fi
+          env:
+            - name: __DB_HOST__
+              value: __MM_DB_HOST__
+            - name: __DB_NAME__
+              value: __MM_DB_NAME__
+            - name: __DB_USER__
+              value: __MM_DB_USER__
+            - name: __DB_PASS__
+              value: __MM_DB_PASS__
         - name: __MM_INSTANCE_KEY__
           image: haalcala/python-hello-web-foo-v1
           ports:
