@@ -1,0 +1,288 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  default.conf: |
+    server {
+        listen       80;
+        server_name  localhost;
+
+        #charset koi8-r;
+        #access_log  /var/log/nginx/host.access.log  main;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+
+        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+        #
+        #location ~ \.php$ {
+        #    proxy_pass   http://127.0.0.1;
+        #}
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        #location ~ \.php$ {
+        #    root           html;
+        #    fastcgi_pass   127.0.0.1:9000;
+        #    fastcgi_index  index.php;
+        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+        #    include        fastcgi_params;
+        #}
+
+        # deny access to .htaccess files, if Apache's document root
+        # concurs with nginx's one
+        #
+        #location ~ /\.ht {
+        #    deny  all;
+        #}
+    }
+
+  #   nginx.conf: |
+  #     user nginx;
+  #     worker_processes  3;
+  #     error_log  /var/log/nginx/error.log;
+  #     events {
+  #       worker_connections  10240;
+  #     }
+  #     http {
+  #       log_format  main
+  #               'remote_addr:$remote_addr\t'
+  #               'time_local:$time_local\t'
+  #               'method:$request_method\t'
+  #               'uri:$request_uri\t'
+  #               'host:$host\t'
+  #               'status:$status\t'
+  #               'bytes_sent:$body_bytes_sent\t'
+  #               'referer:$http_referer\t'
+  #               'useragent:$http_user_agent\t'
+  #               'forwardedfor:$http_x_forwarded_for\t'
+  #               'request_time:$request_time';
+  #       access_log	/var/log/nginx/access.log main;
+  #       server {
+  #           listen       80;
+  #           server_name  _;
+  #           location / {
+  #               root   html;
+  #               index  index.html index.htm;
+  #           }
+  #       }
+  #       include /etc/nginx/virtualhost/virtualhost.conf;
+  #     }
+
+  python-hello-web-foo.conf: |
+    upstream python-hello-web-foo {
+      server python-hello-web-foo-svc:80;
+      keepalive 1024;
+    }
+    server {
+      listen 80;
+      server_name python-hello-web-foo.vcube.sg;
+      root /usr/local/python-hello-web-foo;
+      access_log /var/log/nginx/python-hello-web-foo.access_log main;
+      error_log /var/log/nginx/python-hello-web-foo.error_log;
+      location / {
+        proxy_pass http://python-hello-web-foo-svc/;
+        proxy_http_version 1.1;
+      }
+    }
+
+  python-hello-web-bar.conf: |
+    upstream python-hello-web-bar {
+      server python-hello-web-bar-svc:80;
+      keepalive 1024;
+    }
+    server {
+      listen 80;
+      server_name python-hello-web-bar.vcube.sg;
+      root /usr/local/python-hello-web-bar;
+      access_log /var/log/nginx/python-hello-web-bar.access_log main;
+      error_log /var/log/nginx/python-hello-web-bar.error_log;
+      location / {
+        proxy_pass http://python-hello-web-bar-svc/;
+        proxy_http_version 1.1;
+      }
+    }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-hello-web-foo-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: __MATTERMOST_PORT__
+  selector:
+    app: python-hello-web-foo-v1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-hello-web-bar-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: __MATTERMOST_PORT__
+  selector:
+    app: python-hello-web-bar-v1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d # mount nginx-conf volumn to /etc/nginx
+            - mountPath: /var/log/nginx
+              name: log
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+        - name: log
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 443
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: nginx
+
+---
+# See the following link the steps
+# SSL Terminated ALB :  https://medium.com/faun/aws-eks-and-tls-terminated-load-balancer-18c152536f33
+# Enable ALB on EKS : https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html#w243aac23b7c19b2b3b3
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "python-hello-web-alb-ingress"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "HTTPS"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/group: nginx-svc
+    alb.ingress.kubernetes.io/certificate-arn: __AWS_ACM_CERTIFICATE_ARN__
+  labels:
+    app: nginx-svc
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: "nginx-svc"
+              servicePort: 443
+
+---
+# Application Load Balancer (ALB) Ingress Controller Deployment Manifest.
+# This manifest details sensible defaults for deploying an ALB Ingress Controller.
+# GitHub: https://github.com/kubernetes-sigs/aws-alb-ingress-controller
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: alb-ingress-controller
+  name: alb-ingress-controller
+  # Namespace the ALB Ingress Controller should run in. Does not impact which
+  # namespaces it's able to resolve ingress resource for. For limiting ingress
+  # namespace scope, see --watch-namespace.
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alb-ingress-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alb-ingress-controller
+    spec:
+      containers:
+        - name: alb-ingress-controller
+          args:
+            # Limit the namespace where this ALB Ingress Controller deployment will
+            # resolve ingress resources. If left commented, all namespaces are used.
+            # - --watch-namespace=your-k8s-namespace
+
+            # Setting the ingress-class flag below ensures that only ingress resources with the
+            # annotation kubernetes.io/ingress.class: "alb" are respected by the controller. You may
+            # choose any class you'd like for this controller to respect.
+            - --ingress-class=alb
+            - --cluster-name=__AWS_EKS_CLUSTER_NAME__
+            - --aws-vpc-id=__AWS_VPC_ID__
+            - --aws-region=__AWS_REGION__
+
+            # REQUIRED
+            # Name of your cluster. Used when naming resources created
+            # by the ALB Ingress Controller, providing distinction between
+            # clusters.
+            # - --cluster-name=devCluster
+            # AWS VPC ID this ingress controller will use to create AWS resources.
+            # If unspecified, it will be discovered from ec2metadata.
+            # - --aws-vpc-id=vpc-xxxxxx
+            # AWS region this ingress controller will operate in.
+            # If unspecified, it will be discovered from ec2metadata.
+            # List of regions: http://docs.aws.amazon.com/general/latest/gr/rande.html#vpc_region
+            # - --aws-region=us-west-1
+            # Enables logging on all outbound requests sent to the AWS API.
+            # If logging is desired, set to true.
+            # - --aws-api-debug
+            # Maximum number of times to retry the aws calls.
+            # defaults to 10.
+            # - --aws-max-retries=10
+          env:
+            # AWS key id for authenticating with the AWS API.
+            # This is only here for examples. It's recommended you instead use
+            # a project like kube2iam for granting access.
+            - name: AWS_ACCESS_KEY_ID
+              value: __AWS_ACCESS_KEY_ID__
+
+            # AWS key secret for authenticating with the AWS API.
+            # This is only here for examples. It's recommended you instead use
+            # a project like kube2iam for granting access.
+            - name: AWS_SECRET_ACCESS_KEY
+              value: __AWS_SECRET_ACCESS_KEY__
+          # Repository location of the ALB Ingress Controller.
+          image: docker.io/amazon/aws-alb-ingress-controller:v1.1.4
+      serviceAccountName: alb-ingress-controller
