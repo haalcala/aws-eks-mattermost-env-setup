@@ -116,7 +116,7 @@ data:
       },
       "TeamSettings": {
         "SiteName": "Mattermost",
-        "MaxUsersPerTeam": 50,
+        "MaxUsersPerTeam": 50000,
         "EnableTeamCreation": true,
         "EnableUserCreation": true,
         "EnableOpenServer": false,
