@@ -607,6 +607,7 @@ spec:
     metadata:
       labels:
         app: nginx
+        config_version: "__NGINX_CONFIG_VERSION__"
     spec:
       containers:
         - name: nginx
