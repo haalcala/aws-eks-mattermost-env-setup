@@ -40,8 +40,8 @@ data:
   config.json.template: |
     {
       "ServiceSettings": {
-        "SiteURL": "https://__MM_INSTANCE_DOMAIN__",
-        "WebsocketURL": "https://__MM_INSTANCE_DOMAIN__",
+        "SiteURL": "https://__MM_DOMAIN__",
+        "WebsocketURL": "https://__MM_DOMAIN__",
         "LicenseFileLocation": "",
         "ListenAddress": ":8065",
         "ConnectionSecurity": "",
