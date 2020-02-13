@@ -11,14 +11,14 @@ data:
     echo cat /config/config.json.template
     cat /config/config.json.template
 
-    CONFIG=$(cat /config/config.json.template)
+    CONFIG=$(cat /app/config/config.json.template)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_NAME__/$__DB_NAME__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_USER__/$__DB_USER__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_PASS__/$__DB_PASS__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_HOST__/$__DB_HOST__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_PORT__/$__DB_PORT__/g)
 
-    echo "$CONFIG" > config/config.json
+    echo "$CONFIG" > /app/config/config.json
 
     echo cat config/config.json
 
