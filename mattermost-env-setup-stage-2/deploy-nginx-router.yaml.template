@@ -41,7 +41,7 @@ data:
     {
       "ServiceSettings": {
         "SiteURL": "https://__MM_DOMAIN__",
-        "WebsocketURL": "https://__MM_DOMAIN__",
+        "WebsocketURL": "wss://__MM_DOMAIN__",
         "LicenseFileLocation": "",
         "ListenAddress": ":8065",
         "ConnectionSecurity": "",
@@ -218,7 +218,7 @@ data:
         "InitialFont": "nunito-bold.ttf",
         "AmazonS3AccessKeyId": "__AWS_ACCESS_KEY_ID__",
         "AmazonS3SecretAccessKey": "__AWS_SECRET_ACCESS_KEY__",
-        "AmazonS3Bucket": "s3://__S3_BUCKET__",
+        "AmazonS3Bucket": "__S3_BUCKET__",
         "AmazonS3Region": "__AWS_REGION__",
         "AmazonS3Endpoint": "s3.amazonaws.com",
         "AmazonS3SSL": true,
