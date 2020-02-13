@@ -44,14 +44,14 @@ spec:
             #echo server-id=$((100 + $ordinal)) >> /mnt/conf.d/server-id.cnf
             # Copy appropriate conf.d files from config-map to emptyDir.
             if [[ $ordinal -eq 0 ]]; then
-              echo mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE DATABASE IF NOT EXISTS $__DB_NAME__"
-              mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE DATABASE IF NOT EXISTS $__DB_NAME__"
+              echo mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS $__DB_NAME__"
+              mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS $__DB_NAME__"
 
-              echo mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE USER '"$__DB_USER__"'@'%' IDENTIFIED BY '"$__DB_PASS__"';"
-              mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "CREATE USER '"$__DB_USER__"'@'%' IDENTIFIED BY '"$__DB_PASS__"';"
+              echo mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"$__DB_USER__"'@'%' IDENTIFIED BY '"$__DB_PASS__"';"
+              mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"$__DB_USER__"'@'%' IDENTIFIED BY '"$__DB_PASS__"';"
 
-              echo mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
-              mysql -h $__DB_HOST__ -uadmin -pvcube2192 -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
+              echo mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
+              mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
               
             #  cp /mnt/config-map/master.cnf /mnt/conf.d/
             #else
