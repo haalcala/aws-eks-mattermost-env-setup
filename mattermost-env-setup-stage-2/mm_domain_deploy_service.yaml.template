@@ -26,6 +26,7 @@ spec:
     metadata:
       labels:
         app: __MM_INSTANCE_KEY__
+        mattermost_deploy_version: "__MM_DEPLOY_VERSION__"
     spec:
       initContainers:
         - name: init-mysql

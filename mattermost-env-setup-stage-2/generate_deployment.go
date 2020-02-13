@@ -17,7 +17,8 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: os.Getenv("__AWS_ACCE
 	{Key: "__MATTERMOST_PORT__", Default: "8065", Value: os.Getenv("__MATTERMOST_PORT__")},
 	{Key: "__MM_DB_HOST__", Value: os.Getenv("__MM_DB_HOST__")},
 	{Key: "__MM_DB_PORT__", Value: os.Getenv("__MM_DB_PORT__")},
-	{Key: "__NGINX_CONFIG_VERSION__", Value: os.Getenv("__NGINX_CONFIG_VERSION__")}}
+	{Key: "__NGINX_CONFIG_VERSION__", Value: os.Getenv("__NGINX_CONFIG_VERSION__")},
+	{Key: "__MM_DEPLOY_VERSION__", Value: os.Getenv("__MM_DEPLOY_VERSION__")}}
 
 type Token struct {
 	Key,
