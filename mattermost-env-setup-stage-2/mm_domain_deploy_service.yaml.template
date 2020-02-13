@@ -66,7 +66,7 @@ spec:
             - name: __DB_PASS__
               value: __MM_DB_PASS__
         - name: __MM_INSTANCE_KEY__
-          image: haalcala/python-hello-web-foo-v1
+          image: haalcala/mattermost-prod
           ports:
             - containerPort: 8065
           env:
@@ -78,3 +78,4 @@ spec:
               value: __MM_DB_USER__
             - name: __DB_PASS__
               value: __MM_DB_PASS__
+
