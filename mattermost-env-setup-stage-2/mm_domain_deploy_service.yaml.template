@@ -27,7 +27,7 @@ spec:
       labels:
         app: __MM_INSTANCE_KEY__
     spec:
-      containers:
+      initContainers:
         - name: init-mysql
           image: mysql:5.7
           command:
@@ -56,6 +56,8 @@ spec:
             #else
             #  cp /mnt/config-map/slave.cnf /mnt/conf.d/
             fi
+
+            exit 0
           env:
             - name: __DB_HOST__
               value: __MM_DB_HOST__
@@ -65,8 +67,12 @@ spec:
               value: __MM_DB_USER__
             - name: __DB_PASS__
               value: __MM_DB_PASS__
+      containers:
         - name: __MM_INSTANCE_KEY__
           image: haalcala/mattermost-prod
+          command: 
+            - bash
+            - /start_mattermost_prod.sh
           ports:
             - containerPort: 8065
           env:
@@ -78,4 +84,44 @@ spec:
               value: __MM_DB_USER__
             - name: __DB_PASS__
               value: __MM_DB_PASS__
+          volumeMounts:
+            - name: config-json
+              mountPath: /config/config.json.template # mount nginx-conf volumn to /etc/nginx
+              subPath: config.json.template
+            - name: start-mattermost-prod
+              mountPath: /start_mattermost_prod.sh # mount nginx-conf volumn to /etc/nginx
+              subPath: start_mattermost_prod.sh
+          #readinessProbe:
+          #  exec:
+          #    # Check we can execute queries over TCP (skip-networking is off).
+          #    command: ["mysql", "-h", "127.0.0.1", "-e", "SELECT 1"]
+          #  initialDelaySeconds: 5
+          #  periodSeconds: 2
+          #  timeoutSeconds: 1
+          livenessProbe:
+            exec:
+              command: ["curl", "8065"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8065
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
 
+      volumes:
+        - name: config-json
+          configMap:
+            name: mm-instance-conf
+            items:
+              - key: config.json.template
+                path: config.json.template # dig directory
+        - name: start-mattermost-prod
+          configMap:
+            name: mm-instance-conf
+            items:
+              - key: start_mattermost_prod.sh
+                path: start_mattermost_prod.sh # dig directory
