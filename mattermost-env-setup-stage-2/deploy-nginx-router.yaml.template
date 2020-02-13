@@ -3,6 +3,15 @@ kind: ConfigMap
 metadata:
   name: mm-instance-conf
 data:
+  aws-credentials: |
+    [default]
+    aws_access_key_id = __AWS_ACCESS_KEY_ID__
+    aws_secret_access_key = __AWS_SECRET_ACCESS_KEY__
+  
+  aws-config: |
+    [default]
+    region = __AWS_REGION__
+
   start_mattermost_prod.sh: |
     #!/bin/sh
 
@@ -17,6 +26,8 @@ data:
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_PASS__/$__DB_PASS__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_HOST__/$__DB_HOST__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_PORT__/$__DB_PORT__/g)
+    CONFIG=$(echo "$CONFIG" | sed -e s/__S3_BUCKET__/$__S3_BUCKET__/g)
+    CONFIG=$(echo "$CONFIG" | sed -e s/__MM_DOMAIN__/$__MM_DOMAIN__/g)
 
     echo "$CONFIG" > /app/config/config.json
 
@@ -200,15 +211,15 @@ data:
         "EnableMobileUpload": true,
         "EnableMobileDownload": true,
         "MaxFileSize": 52428800,
-        "DriverName": "local",
+        "DriverName": "amazons3",
         "Directory": "./data/",
         "EnablePublicLink": false,
         "PublicLinkSalt": "",
         "InitialFont": "nunito-bold.ttf",
-        "AmazonS3AccessKeyId": "",
-        "AmazonS3SecretAccessKey": "",
-        "AmazonS3Bucket": "",
-        "AmazonS3Region": "",
+        "AmazonS3AccessKeyId": "__AWS_ACCESS_KEY_ID__",
+        "AmazonS3SecretAccessKey": "__AWS_SECRET_ACCESS_KEY__",
+        "AmazonS3Bucket": "s3://__S3_BUCKET__",
+        "AmazonS3Region": "__AWS_REGION__",
         "AmazonS3Endpoint": "s3.amazonaws.com",
         "AmazonS3SSL": true,
         "AmazonS3SignV2": false,

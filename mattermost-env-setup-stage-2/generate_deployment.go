@@ -8,19 +8,19 @@ import (
 	"strings"
 )
 
-var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: os.Getenv("__AWS_ACCESS_KEY_ID__")},
-	{Key: "__AWS_SECRET_ACCESS_KEY__", Value: os.Getenv("__AWS_SECRET_ACCESS_KEY__")},
-	{Key: "__AWS_EKS_CLUSTER_NAME__", Value: os.Getenv("__AWS_EKS_CLUSTER_NAME__")},
-	{Key: "__AWS_VPC_ID__", Value: os.Getenv("__AWS_VPC_ID__")},
-	{Key: "__AWS_REGION__", Value: os.Getenv("__AWS_REGION__")},
-	{Key: "__AWS_ACM_CERTIFICATE_ARN__", Value: os.Getenv("__AWS_ACM_CERTIFICATE_ARN__")},
-	{Key: "__MATTERMOST_PORT__", Default: "8065", Value: os.Getenv("__MATTERMOST_PORT__")},
-	{Key: "__MM_DB_HOST__", Value: os.Getenv("__MM_DB_HOST__")},
-	{Key: "__MM_DB_PORT__", Value: os.Getenv("__MM_DB_PORT__")},
-	{Key: "__MM_DB_MASTER_USER__", Value: os.Getenv("__MM_DB_MASTER_USER__")},
-	{Key: "__MM_DB_MASTER_PASS__", Value: os.Getenv("__MM_DB_MASTER_PASS__")},
-	{Key: "__NGINX_CONFIG_VERSION__", Value: os.Getenv("__NGINX_CONFIG_VERSION__")},
-	{Key: "__MM_DEPLOY_VERSION__", Value: os.Getenv("__MM_DEPLOY_VERSION__")}}
+var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Getenv("__AWS_ACCESS_KEY_ID__"), "\r")},
+	{Key: "__AWS_SECRET_ACCESS_KEY__", Value: strings.Trim(os.Getenv("__AWS_SECRET_ACCESS_KEY__"), "\r")},
+	{Key: "__AWS_EKS_CLUSTER_NAME__", Value: strings.Trim(os.Getenv("__AWS_EKS_CLUSTER_NAME__"), "\r")},
+	{Key: "__AWS_VPC_ID__", Value: strings.Trim(os.Getenv("__AWS_VPC_ID__"), "\r")},
+	{Key: "__AWS_REGION__", Value: strings.Trim(os.Getenv("__AWS_REGION__"), "\r")},
+	{Key: "__AWS_ACM_CERTIFICATE_ARN__", Value: strings.Trim(os.Getenv("__AWS_ACM_CERTIFICATE_ARN__"), "\r")},
+	{Key: "__MATTERMOST_PORT__", Default: "8065", Value: strings.Trim(os.Getenv("__MATTERMOST_PORT__"), "\r")},
+	{Key: "__MM_DB_HOST__", Value: strings.Trim(os.Getenv("__MM_DB_HOST__"), "\r")},
+	{Key: "__MM_DB_PORT__", Value: strings.Trim(os.Getenv("__MM_DB_PORT__"), "\r")},
+	{Key: "__MM_DB_MASTER_USER__", Value: strings.Trim(os.Getenv("__MM_DB_MASTER_USER__"), "\r")},
+	{Key: "__MM_DB_MASTER_PASS__", Value: strings.Trim(os.Getenv("__MM_DB_MASTER_PASS__"), "\r")},
+	{Key: "__NGINX_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__NGINX_CONFIG_VERSION__"), "\r")},
+	{Key: "__MM_DEPLOY_VERSION__", Value: strings.Trim(os.Getenv("__MM_DEPLOY_VERSION__"), "\r")}}
 
 type Token struct {
 	Key,

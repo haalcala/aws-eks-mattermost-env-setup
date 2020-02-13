@@ -52,10 +52,17 @@ spec:
 
               echo mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
               mysql -h $__DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON $__DB_NAME__.* TO '"$__DB_USER__"'@'%';"
+
+              apt update
+              apt install -y curl unzip python
               
-            #  cp /mnt/config-map/master.cnf /mnt/conf.d/
-            #else
-            #  cp /mnt/config-map/slave.cnf /mnt/conf.d/
+              curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+              unzip awscli-bundle.zip
+              ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+
+              aws --version
+
+              aws s3 mb s3://$__S3_BUCKET__
             fi
 
             exit 0
@@ -68,6 +75,11 @@ spec:
               value: __MM_DB_USER__
             - name: __DB_PASS__
               value: __MM_DB_PASS__
+            - name: __S3_BUCKET__
+              value: mm-__MM_INSTANCE_KEY__
+          volumeMounts:
+            - name: aws-config
+              mountPath: /root/.aws # mount nginx-conf volumn to /etc/nginx
       containers:
         - name: __MM_INSTANCE_KEY__
           image: haalcala/mattermost-prod
@@ -85,6 +97,10 @@ spec:
               value: __MM_DB_USER__
             - name: __DB_PASS__
               value: __MM_DB_PASS__
+            - name: __S3_BUCKET__
+              value: mm-__MM_INSTANCE_KEY__
+            - name: __MM_DOMAIN__
+              value: __MM_INSTANCE_DOMAIN__
           volumeMounts:
             - name: config-json
               mountPath: /app/config/config.json.template # mount nginx-conf volumn to /etc/nginx
@@ -114,6 +130,14 @@ spec:
             successThreshold: 1
 
       volumes:
+        - name: aws-config
+          configMap:
+            name: mm-instance-conf
+            items:
+              - key: aws-credentials
+                path: credentials # dig directory
+              - key: aws-config
+                path: config # dig directory
         - name: config-json
           configMap:
             name: mm-instance-conf
