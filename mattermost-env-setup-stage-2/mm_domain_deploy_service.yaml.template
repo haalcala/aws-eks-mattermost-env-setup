@@ -86,7 +86,7 @@ spec:
               value: __MM_DB_PASS__
           volumeMounts:
             - name: config-json
-              mountPath: /config/config.json.template # mount nginx-conf volumn to /etc/nginx
+              mountPath: /app/config/config.json.template # mount nginx-conf volumn to /etc/nginx
               subPath: config.json.template
             - name: start-mattermost-prod
               mountPath: /start_mattermost_prod.sh # mount nginx-conf volumn to /etc/nginx
@@ -100,7 +100,7 @@ spec:
           #  timeoutSeconds: 1
           livenessProbe:
             exec:
-              command: ["curl", "8065"]
+              command: ["curl", "127.0.0.1:8065"]
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5

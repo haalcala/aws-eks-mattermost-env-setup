@@ -6,7 +6,12 @@ data:
   start_mattermost_prod.sh: |
     #!/bin/sh
 
-    CONFIG=$(cat config/config.json.template)
+    cd /app
+
+    echo cat /config/config.json.template
+    cat /config/config.json.template
+
+    CONFIG=$(cat /config/config.json.template)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_NAME__/$__DB_NAME__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_USER__/$__DB_USER__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_PASS__/$__DB_PASS__/g)
@@ -15,7 +20,9 @@ data:
 
     echo "$CONFIG" > config/config.json
 
-    echo "Holy forking shirt hole!!!!"
+    echo cat config/config.json
+
+    cat config/config.json
 
     ./bin/mattermost
 
@@ -492,6 +499,8 @@ data:
         "RemoteImageProxyOptions": ""
       }
     }  
+
+
 ---
 
 apiVersion: v1
