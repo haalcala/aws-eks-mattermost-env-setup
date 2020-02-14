@@ -477,7 +477,7 @@ data:
       },
       "PluginSettings": {
         "Enable": true,
-        "EnableUploads": false,
+        "EnableUploads": __MM_CONF_PLUGIN_ENABLE_UPLOAD__,
         "AllowInsecureDownloadUrl": false,
         "EnableHealthCheck": true,
         "Directory": "./plugins",

@@ -20,7 +20,8 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__MM_DB_MASTER_USER__", Value: strings.Trim(os.Getenv("__MM_DB_MASTER_USER__"), "\r")},
 	{Key: "__MM_DB_MASTER_PASS__", Value: strings.Trim(os.Getenv("__MM_DB_MASTER_PASS__"), "\r")},
 	{Key: "__NGINX_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__NGINX_CONFIG_VERSION__"), "\r")},
-	{Key: "__MM_DEPLOY_VERSION__", Value: strings.Trim(os.Getenv("__MM_DEPLOY_VERSION__"), "\r")}}
+	{Key: "__MM_DEPLOY_VERSION__", Value: strings.Trim(os.Getenv("__MM_DEPLOY_VERSION__"), "\r")},
+	{Key: "__MM_CONF_PLUGIN_ENABLE_UPLOAD__", Value: strings.Trim(os.Getenv("__MM_CONF_PLUGIN_ENABLE_UPLOAD__"), "\r"), Default: "false"}}
 
 type Token struct {
 	Key,
