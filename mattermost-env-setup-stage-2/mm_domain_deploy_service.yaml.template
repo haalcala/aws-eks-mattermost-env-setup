@@ -77,6 +77,8 @@ spec:
               value: __MM_DB_PASS__
             - name: __S3_BUCKET__
               value: mm-__MM_INSTANCE_KEY__
+            - name: __PLUGIN_ENABLE_UPLOAD__
+              value: "__MM_CONF_PLUGIN_ENABLE_UPLOAD__"
           volumeMounts:
             - name: aws-config
               mountPath: /root/.aws # mount nginx-conf volumn to /etc/nginx

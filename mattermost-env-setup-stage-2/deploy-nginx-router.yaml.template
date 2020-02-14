@@ -28,6 +28,7 @@ data:
     CONFIG=$(echo "$CONFIG" | sed -e s/__DB_PORT__/$__DB_PORT__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__S3_BUCKET__/$__S3_BUCKET__/g)
     CONFIG=$(echo "$CONFIG" | sed -e s/__MM_DOMAIN__/$__MM_DOMAIN__/g)
+    CONFIG=$(echo "$CONFIG" | sed -e s/__PLUGIN_ENABLE_UPLOAD__/$__PLUGIN_ENABLE_UPLOAD__/g)
 
     echo "$CONFIG" > /app/config/config.json
 
