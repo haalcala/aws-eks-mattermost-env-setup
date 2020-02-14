@@ -82,6 +82,36 @@ spec:
           volumeMounts:
             - name: aws-config
               mountPath: /root/.aws # mount nginx-conf volumn to /etc/nginx
+            - name: import-data
+              mountPath: /import-data # mount nginx-conf volumn to /etc/nginx
+        - name: init-config
+          image: haalcala/mattermost-prod
+          command: 
+            - bash
+            - "-c"
+            - |
+              echo "Hello hello"
+              date > /app/config/created.dat
+              exit 0
+          env:
+            - name: __DB_HOST__
+              value: __MM_DB_HOST__
+            - name: __DB_NAME__
+              value: __MM_DB_NAME__
+            - name: __DB_USER__
+              value: __MM_DB_USER__
+            - name: __DB_PASS__
+              value: __MM_DB_PASS__
+            - name: __S3_BUCKET__
+              value: mm-__MM_INSTANCE_KEY__
+            - name: __MM_DOMAIN__
+              value: __MM_INSTANCE_DOMAIN__
+          volumeMounts:
+            - name: config-json
+              mountPath: /app/config/config.json.template # mount nginx-conf volumn to /etc/nginx
+              subPath: config.json.template
+            - name: import-data
+              mountPath: /import-data # mount nginx-conf volumn to /etc/nginx
       containers:
         - name: __MM_INSTANCE_KEY__
           image: haalcala/mattermost-prod
@@ -110,6 +140,8 @@ spec:
             - name: start-mattermost-prod
               mountPath: /start_mattermost_prod.sh # mount nginx-conf volumn to /etc/nginx
               subPath: start_mattermost_prod.sh
+            - name: import-data
+              mountPath: /import-data # mount nginx-conf volumn to /etc/nginx
           #readinessProbe:
           #  exec:
           #    # Check we can execute queries over TCP (skip-networking is off).
@@ -152,3 +184,5 @@ spec:
             items:
               - key: start_mattermost_prod.sh
                 path: start_mattermost_prod.sh # dig directory
+        - name: import-data
+          emptyDir: {}
