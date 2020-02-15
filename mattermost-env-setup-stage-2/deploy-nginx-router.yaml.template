@@ -125,7 +125,8 @@ spec:
           ports:
             - containerPort: 25
           env:
-            container: docker
+            - name: container
+              value: docker
 
 ---
 apiVersion: v1
