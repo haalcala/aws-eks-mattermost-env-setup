@@ -87,7 +87,7 @@ spec:
               {
                 "ServiceSettings": {
                   "SiteURL": "https://__MM_INSTANCE_DOMAIN__",
-                  "WebsocketURL": "wss://__MM_INSTANCE_DOMAIN__",
+                  "WebsocketURL": "",
                   "LicenseFileLocation": "",
                   "ListenAddress": ":8065",
                   "ConnectionSecurity": "",
