@@ -103,49 +103,6 @@ __NGINX_MM_DOMAINS__
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: smtp_server
-spec:
-  replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 25%
-  selector:
-    matchLabels:
-      app: smtp_server
-  template:
-    metadata:
-      labels:
-        app: smtp_server
-    spec:
-      containers:
-        - name: smtp_server
-          image: haalcala/smtp_server
-          ports:
-            - containerPort: 25
-          env:
-            - name: container
-              value: docker
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: smtp_server-svc
-spec:
-  type: NodePort
-  ports:
-    - port: 443
-      targetPort: 80
-      protocol: TCP
-  selector:
-    app: smtp_server
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: nginx
 spec:
   replicas: 2
