@@ -12,6 +12,7 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__AWS_SECRET_ACCESS_KEY__", Value: strings.Trim(os.Getenv("__AWS_SECRET_ACCESS_KEY__"), "\r")},
 	{Key: "__AWS_EKS_CLUSTER_NAME__", Value: strings.Trim(os.Getenv("__AWS_EKS_CLUSTER_NAME__"), "\r")},
 	{Key: "__AWS_VPC_ID__", Value: strings.Trim(os.Getenv("__AWS_VPC_ID__"), "\r")},
+	{Key: "__EKS_PUBLIC_SUBNETS__", Value: strings.Trim(os.Getenv("__EKS_PUBLIC_SUBNETS__"), "\r")},
 	{Key: "__AWS_REGION__", Value: strings.Trim(os.Getenv("__AWS_REGION__"), "\r")},
 	{Key: "__AWS_ACM_CERTIFICATE_ARN__", Value: strings.Trim(os.Getenv("__AWS_ACM_CERTIFICATE_ARN__"), "\r")},
 	{Key: "__MATTERMOST_PORT__", Default: "8065", Value: strings.Trim(os.Getenv("__MATTERMOST_PORT__"), "\r")},
