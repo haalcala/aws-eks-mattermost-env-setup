@@ -1,8 +1,4 @@
   __MM_INSTANCE_KEY__.conf: |
-    upstream __MM_INSTANCE_KEY__ {
-      server __MM_INSTANCE_KEY__-svc:80;
-      keepalive 1024;
-    }
     server {
       listen 80;
       server_name __MM_INSTANCE_DOMAIN__;
