@@ -168,6 +168,7 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/group: nginx-svc
     alb.ingress.kubernetes.io/certificate-arn: __AWS_ACM_CERTIFICATE_ARN__
+    alb.ingress.kubernetes.io/subnets: __EKS_PUBLIC_SUBNETS__
   labels:
     app: nginx-svc
 spec:
@@ -216,6 +217,7 @@ spec:
             - --cluster-name=__AWS_EKS_CLUSTER_NAME__
             - --aws-vpc-id=__AWS_VPC_ID__
             - --aws-region=__AWS_REGION__
+            - --watch-namespace=default
 
             # REQUIRED
             # Name of your cluster. Used when naming resources created
@@ -234,7 +236,7 @@ spec:
             # - --aws-api-debug
             # Maximum number of times to retry the aws calls.
             # defaults to 10.
-            # - --aws-max-retries=10
+            - --aws-max-retries=9999999
           env:
             # AWS key id for authenticating with the AWS API.
             # This is only here for examples. It's recommended you instead use
