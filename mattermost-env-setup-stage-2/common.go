@@ -93,6 +93,7 @@ func LoadDomains() string {
 	ret := []string{}
 
 	err = os.Mkdir("./mm_domain_deploy_service", 0777)
+	err = os.Mkdir("./mm_docker_starter", 0777)
 
 	for _, domain := range domains {
 		fmt.Println("domain:", domain)
@@ -111,6 +112,10 @@ func LoadDomains() string {
 		ret = append(ret, ProcessTemplate("./configmap_domain.yaml.template", "", append(tokens, domain_tokens...)))
 
 		_ = ProcessTemplate("./mm_domain_deploy_service.yaml.template", fmt.Sprintf("./mm_domain_deploy_service/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...))
+
+		if domain.CompanyId != "" {
+			_ = ProcessTemplate("./mm_domain_docker_starter.template", fmt.Sprintf("./mm_docker_starter/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...))
+		}
 	}
 
 	return strings.Join(ret, "\n\n")
