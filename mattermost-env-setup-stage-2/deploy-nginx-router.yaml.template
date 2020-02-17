@@ -7,7 +7,11 @@ data:
     [default]
     aws_access_key_id = __AWS_ACCESS_KEY_ID__
     aws_secret_access_key = __AWS_SECRET_ACCESS_KEY__
-  
+
+    [prod]
+    aws_access_key_id = __AWS_PROD_S3_ACCESS_KEY_ID__
+    aws_secret_access_key = __AWS_PROD_S3_SECRET_ACCESS_KEY__
+
   aws-config: |
     [default]
     region = __AWS_REGION__

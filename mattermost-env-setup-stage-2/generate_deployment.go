@@ -10,6 +10,8 @@ import (
 
 var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Getenv("__AWS_ACCESS_KEY_ID__"), "\r")},
 	{Key: "__AWS_SECRET_ACCESS_KEY__", Value: strings.Trim(os.Getenv("__AWS_SECRET_ACCESS_KEY__"), "\r")},
+	{Key: "__AWS_PROD_S3_ACCESS_KEY_ID__", Value: strings.Trim(os.Getenv("__AWS_PROD_S3_ACCESS_KEY_ID__"), "\r")},
+	{Key: "__AWS_PROD_S3_SECRET_ACCESS_KEY__", Value: strings.Trim(os.Getenv("__AWS_PROD_S3_SECRET_ACCESS_KEY__"), "\r")},
 	{Key: "__AWS_EKS_CLUSTER_NAME__", Value: strings.Trim(os.Getenv("__AWS_EKS_CLUSTER_NAME__"), "\r")},
 	{Key: "__AWS_VPC_ID__", Value: strings.Trim(os.Getenv("__AWS_VPC_ID__"), "\r")},
 	{Key: "__EKS_PUBLIC_SUBNETS__", Value: strings.Trim(os.Getenv("__EKS_PUBLIC_SUBNETS__"), "\r")},
