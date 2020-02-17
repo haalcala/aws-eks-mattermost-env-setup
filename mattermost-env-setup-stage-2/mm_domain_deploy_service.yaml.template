@@ -560,6 +560,8 @@ spec:
 
               if [ "__MM_COMPANY_ID__" != "" ]; then
                 aws s3 sync s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__ /import-data/__MM_COMPANY_ID__
+
+                aws s3 sync s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__ s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID___done
               fi
 
               exit 0
