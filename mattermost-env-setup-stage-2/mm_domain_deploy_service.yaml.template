@@ -559,7 +559,7 @@ spec:
               aws s3 sync s3://__DEPLOY_BUCKET__/default /import-data/default
 
               if [ "__MM_COMPANY_ID__" != "" ]; then
-                aws s3 sync s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__.tar.gz /import-data/__MM_COMPANY_ID__.tar.gz
+                aws s3 cp s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__.tar.gz /import-data/
 
                 cd /import-data
 
