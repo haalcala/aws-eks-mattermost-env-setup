@@ -29,60 +29,56 @@ spec:
         mattermost_deploy_version: "__MM_DEPLOY_VERSION__"
     spec:
       initContainers:
-#        - name: init-mysql
-#          image: mysql:5.7
-#          command:
-#          - bash
-#          - "-c"
-#          - |
-#            set -x
-#
-#            # Generate mysql server-id from pod ordinal index.
-#
-#            [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
-#
-#            ordinal=${BASH_REMATCH[1]}
-#
-#            echo \$ordinal $ordinal
-#
-#            # Add an offset to avoid reserved server-id=0 value.
-#            #echo server-id=$((100 + $ordinal)) >> /mnt/conf.d/server-id.cnf
-#            # Copy appropriate conf.d files from config-map to emptyDir.
-#
-#            if [[ $ordinal -eq 0 ]]; then
-#              echo mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
-#              mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
-#
-#              echo mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"__MM_DB_USER__"'@'%' IDENTIFIED BY '"__MM_DB_PASS__"';"
-#              mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"__MM_DB_USER__"'@'%' IDENTIFIED BY '"__MM_DB_PASS__"';"
-#
-#              echo mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '"__MM_DB_USER__"'@'%';"
-#              mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '"__MM_DB_USER__"'@'%';"
-#
-#              apt update
-#              apt install -y curl unzip python
-#              
-#              curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-#              unzip awscli-bundle.zip
-#              ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-#
-#              aws --version
-#
-#              aws s3 mb s3://mm-__MM_INSTANCE_KEY__
-#            fi
-#
-#            exit 0
-#          volumeMounts:
-#            - name: aws-config
-#              mountPath: /root/.aws # mount nginx-conf volumn to /etc/nginx
-#            - name: import-data
-#              mountPath: /import-data # mount nginx-conf volumn to /etc/nginx
+        - name: init-mysql-mattermost
+          image: haalcala/mm-init-container
+          command:
+          - bash
+          - "-c"
+          - |
+            set -x
+
+            # Generate mysql server-id from pod ordinal index.
+
+            [[ `hostname` =~ -([0-9]+)$ ]] || exit 1
+
+            ordinal=${BASH_REMATCH[1]}
+
+            echo \$ordinal $ordinal
+
+            # Add an offset to avoid reserved server-id=0 value.
+            #echo server-id=$((100 + $ordinal)) >> /mnt/conf.d/server-id.cnf
+            # Copy appropriate conf.d files from config-map to emptyDir.
+
+            if [[ $ordinal -eq 0 ]]; then
+              echo mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
+              mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
+
+              echo mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"__MM_DB_USER__"'@'%' IDENTIFIED BY '"__MM_DB_PASS__"';"
+              mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"__MM_DB_USER__"'@'%' IDENTIFIED BY '"__MM_DB_PASS__"';"
+
+              echo mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '"__MM_DB_USER__"'@'%';"
+              mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '"__MM_DB_USER__"'@'%';"
+
+              aws --version
+
+              aws s3 mb s3://mm-__MM_INSTANCE_KEY__
+            fi
+
+            exit 0
+          volumeMounts:
+            - name: aws-config
+              mountPath: /root/.aws 
+            - name: import-data
+              mountPath: /import-data 
         - name: init-config
-          image: haalcala/mattermost-prod
+          image: haalcala/mm-init-container
           command: 
             - bash
             - "-c"
             - |
+
+              set -x
+
               cat > /app/config/config.json <<EOF
               {
                 "ServiceSettings": {
@@ -565,6 +561,8 @@ spec:
               exit 0
 
           volumeMounts:
+            - name: aws-config
+              mountPath: /root/.aws 
             - name: import-data
               mountPath: /import-data 
             - name: mattermost-conf
