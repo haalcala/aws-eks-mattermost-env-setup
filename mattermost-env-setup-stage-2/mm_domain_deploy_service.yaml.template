@@ -560,7 +560,7 @@ spec:
 
               # cat /app/config/config.json
 
-              
+              aws s3 sync s3://__DEPLOY_BUCKET__/default /import-data/default
 
               exit 0
 
