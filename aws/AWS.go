@@ -18,6 +18,12 @@ type EKS struct {
 	clusterKey string
 }
 
+func (aws *AWS) Init() {
+	if aws.Profile == "" {
+		aws.Profile = "default"
+	}
+}
+
 func (aws *AWS) CreateTags(resourceIds, tags string) error {
 	err, _, stderr := Execute(fmt.Sprintf("aws ec2 create-tags --profile %s --region %s --resources %s --tags %s", aws.Profile, aws.Region, resourceIds, tags), true, false)
 
