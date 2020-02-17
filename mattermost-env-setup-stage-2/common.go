@@ -11,8 +11,8 @@ import (
 type MattermostDeployment struct {
 	Key       string `json:"key"`
 	Domain    string `json:"domain"`
-	CompanyId string `json:"companyId"`
 	Replicas  string `json:"replicas"`
+	CompanyId string `json:"companyId"`
 }
 
 type Token struct {
@@ -101,7 +101,7 @@ func LoadDomains() string {
 			{Key: "__MM_INSTANCE_KEY__", Value: domain.Key},
 			{Key: "__MM_INSTANCE_DOMAIN__", Value: domain.Domain},
 			{Key: "__MM_INSTANCE_REPLICAS__", Value: domain.Replicas},
-			{Key: "__MM_COMPANY_ID__", Value: domain.Replicas},
+			{Key: "__MM_COMPANY_ID__", Value: domain.CompanyId},
 			{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
 			{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
 			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"}}
