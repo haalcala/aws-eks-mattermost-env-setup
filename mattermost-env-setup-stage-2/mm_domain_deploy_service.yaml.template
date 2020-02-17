@@ -558,7 +558,9 @@ spec:
               }  
               EOF
 
-              cat /app/config/config.json
+              # cat /app/config/config.json
+
+              
 
               exit 0
 
