@@ -566,7 +566,7 @@ spec:
 
           volumeMounts:
             - name: import-data
-              mountPath: /import-data # mount nginx-conf volumn to /etc/nginx
+              mountPath: /import-data 
             - name: mattermost-conf
               mountPath: /app/config 
       containers:
@@ -587,7 +587,7 @@ spec:
             - containerPort: 8065
           volumeMounts:
             - name: import-data
-              mountPath: /import-data # mount nginx-conf volumn to /etc/nginx
+              mountPath: /import-data 
             - name: mattermost-conf
               mountPath: /app/config 
           #readinessProbe:
