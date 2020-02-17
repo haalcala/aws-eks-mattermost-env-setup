@@ -1,0 +1,16 @@
+FROM mysql:5.7
+
+RUN apt update
+RUN apt install -y telnet net-tools curl unzip jq python
+
+RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+RUN unzip awscli-bundle.zip
+RUN ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+
+RUN wget https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz
+
+RUN tar -C /usr/local -xzf go1.13.8.linux-amd64.tar.gz
+
+RUN curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+
+RUN sudo mv /tmp/eksctl /usr/local/bin
