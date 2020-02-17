@@ -625,7 +625,6 @@ spec:
               - key: aws-config
                 path: config # dig directory
         - name: import-data
-          awsElasticBlockStore:
-            volumeID: vol-0804618d1283c610d
+          emptyDir: {}
         - name: mattermost-conf
           emptyDir: {}
