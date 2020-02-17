@@ -1,7 +1,7 @@
 FROM mysql:5.7
 
 RUN apt update
-RUN apt install -y telnet net-tools curl unzip jq python
+RUN apt install -y telnet net-tools curl unzip jq python wget
 
 RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 RUN unzip awscli-bundle.zip
