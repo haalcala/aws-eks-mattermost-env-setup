@@ -114,7 +114,7 @@ func main() {
 		if command.returnType != "" {
 		}
 
-		cliParams := "aws.Region"
+		cliParams := "aws.Profile, aws.Region"
 
 		if command.cliParamsParams != "" {
 			cliParams = cliParams + ", " + command.cliParamsParams
@@ -143,7 +143,7 @@ func main() {
 %s
 
 func (aws *AWS) %s(%s) (%s) {
-	%s := Execute(fmt.Sprintf("%s --region %%s %s", %s), %t, %t)
+	%s := Execute(fmt.Sprintf("%s --profile %%s --region %%s %s", %s), %t, %t)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)

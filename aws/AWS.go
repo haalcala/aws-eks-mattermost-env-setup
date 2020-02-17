@@ -9,7 +9,8 @@ import (
 )
 
 type AWS struct {
-	Region string
+	Region  string
+	Profile string
 }
 
 type EKS struct {
@@ -18,7 +19,7 @@ type EKS struct {
 }
 
 func (aws *AWS) CreateTags(resourceIds, tags string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws ec2 create-tags --region %s --resources %s --tags %s", aws.Region, resourceIds, tags), true, false)
+	err, _, stderr := Execute(fmt.Sprintf("aws ec2 create-tags --profile %s --region %s --resources %s --tags %s", aws.Profile, aws.Region, resourceIds, tags), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -28,7 +29,7 @@ func (aws *AWS) CreateTags(resourceIds, tags string) error {
 }
 
 func (aws *AWS) GetStackWithTag(key, value string) (error, *AWSCFStackType) {
-	err, describe_cloudformation_response, stderr := Execute(fmt.Sprintf("aws cloudformation describe-stacks --region %s", aws.Region), true, false)
+	err, describe_cloudformation_response, stderr := Execute(fmt.Sprintf("aws cloudformation describe-stacks --profile %s --region %s", aws.Profile, aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -74,7 +75,7 @@ func (aws *AWS) GetStackWithTag(key, value string) (error, *AWSCFStackType) {
 }
 
 func (aws *AWS) GetRDS() (error, RDSDescribeResponse) {
-	err, get_rds_response, stderr := Execute("aws rds describe-db-instances --region "+aws.Region, true, false)
+	err, getRDSResponse, stderr := Execute(fmt.Sprintf("aws rds describe-db-instances --profile %s --region %s ", aws.Profile, aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -83,9 +84,9 @@ func (aws *AWS) GetRDS() (error, RDSDescribeResponse) {
 
 	var get_rds_json RDSDescribeResponse
 
-	json.NewDecoder(strings.NewReader(get_rds_response)).Decode(&get_rds_json)
+	json.NewDecoder(strings.NewReader(getRDSResponse)).Decode(&get_rds_json)
 
-	fmt.Println("get_rds_response:", get_rds_response)
+	fmt.Println("getRDSResponse:", getRDSResponse)
 
 	return err, get_rds_json
 }
@@ -95,7 +96,7 @@ func (aws *AWS) createRDS() {
 }
 
 func (aws *AWS) GetVPCs() (error, []AWSVPCType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-vpcs --region %s", aws.Region), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-vpcs --profile %s --region %s", aws.Profile, aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -110,7 +111,7 @@ func (aws *AWS) GetVPCs() (error, []AWSVPCType) {
 }
 
 func (aws *AWS) CreateVPC(name, cidr_block string) (error, *AWSVPCType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-vpc --cidr-block %s --region %s", cidr_block, aws.Region), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-vpc --cidr-block %s --profile %s --region %s", cidr_block, aws.Profile, aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -128,7 +129,7 @@ func (aws *AWS) CreateVPC(name, cidr_block string) (error, *AWSVPCType) {
 }
 
 func (aws *AWS) GetSubnetsByVPCId(vpcId string) (error, []AWSSubnetType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-subnets --region %s", aws.Region), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-subnets --profile %s --region %s", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -152,7 +153,7 @@ func (aws *AWS) GetSubnetsByVPCId(vpcId string) (error, []AWSSubnetType) {
 }
 
 func (aws *AWS) CreateSubnet(vpcId, cidr, zone string) (error, AWSSubnetType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-subnet --region %s --vpc-id %s --cidr-block %s --availability-zone %s", aws.Region, vpcId, cidr, zone), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-subnet --profile %s --region %s --vpc-id %s --cidr-block %s --availability-zone %s", aws.Region, vpcId, cidr, zone), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -167,7 +168,7 @@ func (aws *AWS) CreateSubnet(vpcId, cidr, zone string) (error, AWSSubnetType) {
 }
 
 func (aws *AWS) CreateInternetGateway() (error, *AWSInternetGatewayType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-internet-gateway --region %s", aws.Region), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-internet-gateway --profile %s --region %s", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -182,7 +183,7 @@ func (aws *AWS) CreateInternetGateway() (error, *AWSInternetGatewayType) {
 }
 
 func (aws *AWS) CreateNatGateway(elasticIpAllocationId, subnetId string) (error, *AWSNatGatewayType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-nat-gateway --region %s --allocation-id %s --subnet-id %s", aws.Region, elasticIpAllocationId, subnetId), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 create-nat-gateway --profile %s --region %s --allocation-id %s --subnet-id %s", aws.Region, elasticIpAllocationId, subnetId), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -197,7 +198,7 @@ func (aws *AWS) CreateNatGateway(elasticIpAllocationId, subnetId string) (error,
 }
 
 func (aws *AWS) GetNatGateways() (error, []AWSNatGatewayType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-nat-gateways --region %s", aws.Region), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-nat-gateways --profile %s --region %s", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -212,7 +213,7 @@ func (aws *AWS) GetNatGateways() (error, []AWSNatGatewayType) {
 }
 
 func (aws *AWS) AttachInternetGatewayToVPC(vpcId, internetGatewayId string) error {
-	err, _, stderr := Execute(fmt.Sprintf("aws ec2 attach-internet-gateway --region %s --internet-gateway-id %s --vpc-id %s", aws.Region, internetGatewayId, vpcId), true, false)
+	err, _, stderr := Execute(fmt.Sprintf("aws ec2 attach-internet-gateway --profile %s --region %s --internet-gateway-id %s --vpc-id %s", aws.Region, internetGatewayId, vpcId), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
@@ -225,7 +226,7 @@ func (aws *AWS) AttachInternetGatewayToVPC(vpcId, internetGatewayId string) erro
 // Availability Zones
 
 func (aws *AWS) GetAvailabilityZones() (error, []AWSAvailabilityZoneType) {
-	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-availability-zones --region %s", aws.Region), true, false)
+	err, _resp, stderr := Execute(fmt.Sprintf("aws ec2 describe-availability-zones --profile %s --region %s", aws.Region), true, false)
 
 	if err != nil {
 		fmt.Println("stderr:", stderr)
