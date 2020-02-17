@@ -579,7 +579,7 @@ spec:
               cd /app
 
               if [ -e "/import-data/plugins" ]; then
-                ./bin/mattermost plugin add /import-data/plugins/*.tar.gz
+                ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz
               fi
 
               ./bin/mattermost
