@@ -496,11 +496,11 @@ _PWD=$PWD
 
 cd ~/import-data/__MM_COMPANY_ID__
 
-go run download_from_s3.go
+go run download_from_s3.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
 
 chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh
 
- docker run --rm -it \
+docker run --rm -it \
  	-v $HOME/.aws:/root/.aws \
 	-v $HOME/import-data/default:/import-data/default \
 	-v $HOME/import-data/__MM_COMPANY_ID__:/import-data \
