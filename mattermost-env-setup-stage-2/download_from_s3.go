@@ -134,6 +134,14 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 	return
 }
 
+func fileExists(filename string) bool {
+    info, err := os.Stat(filename)
+    if os.IsNotExist(err) {
+        return false
+    }
+    return !info.IsDir()
+}
+
 var instances int = 0
 
 func main() {
@@ -148,6 +156,10 @@ func main() {
 
 		for instances > 10 {
 			time.Sleep(1000)
+		}
+
+		if fileExists("contents/"+line) {
+			return
 		}
 
 		instances = instances + 1
