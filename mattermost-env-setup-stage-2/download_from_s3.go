@@ -82,7 +82,7 @@ func Execute(command string, showCommand, showOutput bool) (error, string, strin
 }
 
 func downloadFromS3(file string) error {
-	err, ret, stderr := Execute(fmt.Sprintf("aws s3 cp s3://%s/%s contents/%s --profile prod", os.Getenv("__IMPORT_EXTERNAL_BUCKET__"), file, file), true, true)
+	err, ret, stderr := Execute(fmt.Sprintf("aws s3 cp s3://%s/%s contents/%s --profile prod", os.Getenv("IMPORT_EXTERNAL_BUCKET"), file, file), true, true)
 
 	if err != nil {
 		fmt.Println("err:", stderr)
@@ -141,6 +141,11 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 var instances int = 0
 
 func main() {
+
+	if os.Getenv("IMPORT_EXTERNAL_BUCKET")=="" {
+		fmt.Printf("Environment variable IMPORT_EXTERNAL_BUCKET not found.")
+		os.Exit(1)
+	}
 
 	err := readFileWithReadString("to-download-from-s3.txt", func(line string) {
 		fmt.Println("Found line:", line)

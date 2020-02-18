@@ -30,6 +30,7 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__EKS_PUBLIC_SUBNETS__", Value: strings.Trim(os.Getenv("__EKS_PUBLIC_SUBNETS__"), "\r")},
 	{Key: "__AWS_REGION__", Value: strings.Trim(os.Getenv("__AWS_REGION__"), "\r")},
 	{Key: "__DEPLOY_BUCKET__", Value: strings.Trim(os.Getenv("__DEPLOY_BUCKET__"), "\r")},
+	{Key: "__IMPORT_EXTERNAL_BUCKET__", Value: strings.Trim(os.Getenv("__IMPORT_EXTERNAL_BUCKET__"), "\r")},
 	{Key: "__AWS_ACM_CERTIFICATE_ARN__", Value: strings.Trim(os.Getenv("__AWS_ACM_CERTIFICATE_ARN__"), "\r")},
 	{Key: "__MATTERMOST_PORT__", Default: "8065", Value: strings.Trim(os.Getenv("__MATTERMOST_PORT__"), "\r")},
 	{Key: "__MM_DB_HOST__", Value: strings.Trim(os.Getenv("__MM_DB_HOST__"), "\r")},

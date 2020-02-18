@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
+
 [ ! -e "$HOME/import-data/__MM_COMPANY_ID__" ] && mkdir -p ~/import-data/__MM_COMPANY_ID__
 
 cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
