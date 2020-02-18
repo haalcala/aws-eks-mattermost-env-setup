@@ -1,11 +1,8 @@
 #!/bin/bash
 
-cat > /tmp/mm_domain_docker_starter-__MM_COMPANY_ID__.sh <<EOF
-#!/bin/bash
+[ ! -e "$HOME/import-data/__MM_COMPANY_ID__" ] && mkdir -p ~/import-data/__MM_COMPANY_ID__
 
-set -x
-
-cat > /app/config/config.json << EOF
+cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 {
 	"ServiceSettings": {
 		"SiteURL": "https://__MM_INSTANCE_DOMAIN__",
@@ -478,23 +475,12 @@ cat > /app/config/config.json << EOF
 		"RemoteImageProxyOptions": ""
 	}
 }  
- EOF
+EOF
 
-# cat /app/config/config.json
+cat > ~/import-data/mm_domain_docker_starter-__MM_COMPANY_ID__.sh <<EOF
+#!/bin/bash -x
 
-aws s3 sync s3://__DEPLOY_BUCKET__/default /import-data/default
-
-if [ "__MM_COMPANY_ID__" != "" ]; then
-	aws s3 sync s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__/ /import-data/tmp/
-
-	cd /import-data
-
-	cat tmp/* > __MM_COMPANY_ID__.tar.gz
-
-	tar xvzf __MM_COMPANY_ID__.tar.gz
-
-	aws s3 mv s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__ s3://__DEPLOY_BUCKET__/done/__MM_COMPANY_ID__.tar.gz
-fi
+cp /import-data/__MM_COMPANY_ID__-config.json /app/config/config.json
 
 # ./bin/mattermost import 
 
@@ -502,4 +488,19 @@ sleep 300
 
 EOF
 
-chmod u+x /tmp/mm_domain_docker_starter-__MM_COMPANY_ID__.sh
+cp ../download_from_s3.go ~/import-data/__MM_COMPANY_ID__
+
+_PWD=$PWD
+
+cd ~/import-data/__MM_COMPANY_ID__
+
+go run download_from_s3.go
+
+chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh
+
+ docker run --rm -it \
+ 	-v $HOME/.aws:/root/.aws \
+	-v $HOME/import-data/default:/import-data/default \
+	-v $HOME/import-data/__MM_COMPANY_ID__:/import-data \
+	-v $HOME/import-data/mm_domain_docker_starter-__MM_COMPANY_ID__.sh:/app/start-mattermost.sh \
+	haalcala/mattermost-prod /app/start-mattermost.sh
