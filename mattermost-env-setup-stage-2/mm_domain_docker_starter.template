@@ -490,13 +490,13 @@ sleep 300
 
 EOF
 
-cp ../download_from_s3.go ~/import-data/__MM_COMPANY_ID__
+cp ../download_from_s3_aws_lib.go ~/import-data/__MM_COMPANY_ID__
 
 _PWD=$PWD
 
 cd ~/import-data/__MM_COMPANY_ID__
 
-go run download_from_s3.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
+go run download_from_s3_aws_lib.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
 
 chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh
 

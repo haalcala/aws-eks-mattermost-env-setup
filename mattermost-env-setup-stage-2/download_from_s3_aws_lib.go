@@ -102,7 +102,7 @@ func downloadFromS3(item string) error {
 		return nil
 	}
 
-	os.MkdirAll("contents/"+item[:(strings.LastIndex(item, "/"))], 777)
+	os.MkdirAll("contents/"+item[:(strings.LastIndex(item, "/"))], 0755)
 
 	file, err := os.Create("contents/" + item)
 
@@ -184,7 +184,7 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
+	if info == nil || os.IsNotExist(err) {
 		return false
 	}
 	return !info.IsDir()
