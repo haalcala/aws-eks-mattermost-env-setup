@@ -1,5 +1,27 @@
 #!/bin/bash
 
+cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh <<EOF
+#!/bin/bash -x
+
+mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
+
+mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"__MM_DB_USER__"'@'%' IDENTIFIED BY '"__MM_DB_PASS__"';"
+
+mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '"__MM_DB_USER__"'@'%';"
+
+aws --version
+
+aws s3 mb s3://mm-__MM_INSTANCE_KEY__
+EOF
+
+chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh
+
+docker run --rm -it \
+	-v $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh:/init_mysql.sh \
+	haalcala/mm-init-container /init_mysql.sh
+
+[ "__MM_COMPANY_ID__" == "" ] && exit 0
+
 export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
 
 [ ! -e "$HOME/import-data/__MM_COMPANY_ID__" ] && mkdir -p ~/import-data/__MM_COMPANY_ID__
@@ -487,7 +509,6 @@ cp /import-data/__MM_COMPANY_ID__-config.json /app/config/config.json
 # ./bin/mattermost import 
 
 sleep 300
-
 EOF
 
 cp ../download_from_s3_aws_lib.go ~/import-data/__MM_COMPANY_ID__
@@ -506,3 +527,6 @@ docker run --rm -it \
 	-v $HOME/import-data/__MM_COMPANY_ID__:/import-data \
 	-v $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh:/app/start-mattermost.sh \
 	haalcala/mattermost-prod /app/start-mattermost.sh
+
+
+
