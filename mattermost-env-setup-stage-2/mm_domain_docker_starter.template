@@ -17,6 +17,7 @@ EOF
 chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh
 
 docker run --rm -it \
+ 	-v $HOME/.aws:/root/.aws \
 	-v $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh:/init_mysql.sh \
 	haalcala/mm-init-container /init_mysql.sh
 
