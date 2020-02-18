@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"time"
 
@@ -92,19 +93,26 @@ func Execute(command string, showCommand, showOutput bool) (error, string, strin
 
 func downloadFromS3(item string) error {
 	fmt.Println("----- item:", item)
-	fmt.Println("-----", item[:strings.LastIndex(item, "/")])
 
-	filename := item[strings.LastIndex(item, "/")+1:]
+	folder := ""
+	filename := ""
 
-	fmt.Println("filename:", filename)
+	if strings.LastIndex(item, "/") > 0 {
+		folder = item[:strings.LastIndex(item, "/")]
+		filename = item[strings.LastIndex(item, "/")+1:]
+	} else {
+		filename = item
+	}
+
+	fmt.Println("----- folder:", folder, "filename:", filename)
 
 	if filename == "" {
 		return nil
 	}
 
-	os.MkdirAll("contents/"+item[:(strings.LastIndex(item, "/"))], 0755)
+	os.MkdirAll(path.Join("contents", folder), 0755)
 
-	file, err := os.Create("contents/" + item)
+	file, err := os.Create(path.Join("contents", item))
 
 	if err != nil {
 		exitErrorf(">>> Unable to open file %q, %v", item, err)
