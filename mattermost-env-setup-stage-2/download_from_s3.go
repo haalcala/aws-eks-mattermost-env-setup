@@ -112,8 +112,6 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 
 	var line string
 
-	maxLines := 0
-
 	for {
 		line, err = reader.ReadString('\n')
 
@@ -124,9 +122,7 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 
 		handleLine(strings.Trim(line, "\n"))
 
-		maxLines = maxLines + 1
-
-		if err != nil || maxLines >= 200 {
+		if err != nil {
 			break
 		}
 	}
