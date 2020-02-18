@@ -42,7 +42,7 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__MM_DEPLOY_VERSION__", Value: strings.Trim(os.Getenv("__MM_DEPLOY_VERSION__"), "\r")},
 	{Key: "__MM_CONF_PLUGIN_ENABLE_UPLOAD__", Value: strings.Trim(os.Getenv("__MM_CONF_PLUGIN_ENABLE_UPLOAD__"), "\r"), Default: "false"}}
 
-func ProcessTemplate(templateFile, destinationFile string, tokens []Token) string {
+func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
 	dat, err := ioutil.ReadFile(templateFile)
 
 	if err != nil {
@@ -68,7 +68,7 @@ func ProcessTemplate(templateFile, destinationFile string, tokens []Token) strin
 	fmt.Println("template:", template)
 
 	if destinationFile != "" {
-		ioutil.WriteFile(destinationFile, []byte(template), 0666)
+		ioutil.WriteFile(destinationFile, []byte(template), mode)
 	}
 
 	return template
@@ -111,11 +111,11 @@ func LoadDomains() string {
 
 		fmt.Println("domain_tokens:", domain_tokens)
 
-		ret = append(ret, ProcessTemplate("./configmap_domain.yaml.template", "", append(tokens, domain_tokens...)))
+		ret = append(ret, ProcessTemplate("./configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666))
 
-		_ = ProcessTemplate("./mm_domain_deploy_service.yaml.template", fmt.Sprintf("./mm_domain_deploy_service/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...))
+		_ = ProcessTemplate("./mm_domain_deploy_service.yaml.template", fmt.Sprintf("./mm_domain_deploy_service/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
 
-		_ = ProcessTemplate("./mm_domain_docker_starter.template", fmt.Sprintf("./mm_docker_starter/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...))
+		_ = ProcessTemplate("./mm_domain_docker_starter.template", fmt.Sprintf("./mm_docker_starter/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
 	}
 
 	return strings.Join(ret, "\n\n")

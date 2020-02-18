@@ -21,5 +21,5 @@ func main() {
 
 	// fmt.Println("domain_conf:", domain_conf)
 
-	ProcessTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml", append(tokens, Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf}))
+	ProcessTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml", append(tokens, Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf}), 0666)
 }
