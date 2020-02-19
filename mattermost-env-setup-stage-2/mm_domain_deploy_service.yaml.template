@@ -578,6 +578,9 @@ spec:
 
               ./bin/mattermost
               EOF
+
+              chmod u+x /import-data/start_mattermost.sh
+
               # cat /app/config/config.json
 
               aws s3 sync s3://__DEPLOY_BUCKET__/default /import-data/default
