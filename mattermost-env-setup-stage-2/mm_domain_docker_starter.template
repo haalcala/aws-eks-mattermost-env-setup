@@ -528,6 +528,7 @@ chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMP
 docker run --rm -it \
  	-v $HOME/.aws:/root/.aws \
 	-v $HOME/import-data/default:/import-data/default \
+	-v $HOME/import-data/__MM_COMPANY_ID__:/import-data \
 	-v $HOME/import-data/__MM_COMPANY_ID__:/import-data/__MM_COMPANY_ID__ \
 	-v $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh:/app/start-mattermost.sh \
 	haalcala/mattermost-prod /app/start-mattermost.sh
