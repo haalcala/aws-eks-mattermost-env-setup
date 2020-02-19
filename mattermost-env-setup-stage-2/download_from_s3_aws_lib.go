@@ -122,7 +122,7 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 		// fmt.Println(" > > " + limitLength(line, 50))
 
 		for instances > 50 {
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 		}
 
 		instances = instances + 1
