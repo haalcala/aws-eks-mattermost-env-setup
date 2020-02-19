@@ -474,8 +474,8 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"ClientDirectory": "./client/plugins",
 		"Plugins": {
 			"com.vcube.mattermost.sticker": {
-				"stickerpath": "/sticker/",
-				"stickerset": "/sticker/mattermost-gate-sticker-sets.jsonl"
+				"stickerpath": "/app/sticker/",
+				"stickerset": "/app/sticker/mattermost-gate-sticker-sets.jsonl"
             }
 		},
 		"PluginStates": {
@@ -515,7 +515,7 @@ cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_
 
 cp /import-data/__MM_COMPANY_ID__-config.json /app/config/config.json
 
-./bin/mattermost import bulk /import-data/__MM_COMPANY_ID__/mattermost-gate-db.jsonl --apply
+./bin/mattermost import bulk /import-data/mattermost-gate-db.jsonl --apply
 
 sleep 300
 EOF
