@@ -566,17 +566,17 @@ spec:
 
               aws s3 sync s3://__DEPLOY_BUCKET__/default /import-data/default
 
-#              if [ "__MM_COMPANY_ID__" != "" ]; then
-#                aws s3 sync s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__/ /import-data/tmp/
-#
-#                cd /import-data
-#
-#                cat tmp/* > __MM_COMPANY_ID__.tar.gz
-#
-#                tar xvzf __MM_COMPANY_ID__.tar.gz
-#
-#                aws s3 mv s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__ s3://__DEPLOY_BUCKET__/done/__MM_COMPANY_ID__.tar.gz
-#              fi
+              #if [ "__MM_COMPANY_ID__" != "" ]; then
+              #  aws s3 sync s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__/ /import-data/tmp/
+              #
+              #  cd /import-data
+              #
+              #  cat tmp/* > __MM_COMPANY_ID__.tar.gz
+              #
+              #  tar xvzf __MM_COMPANY_ID__.tar.gz
+              #
+              #  aws s3 mv s3://__DEPLOY_BUCKET__/__MM_COMPANY_ID__ s3://__DEPLOY_BUCKET__/done/__MM_COMPANY_ID__.tar.gz
+              #fi
 
               exit 0
 
