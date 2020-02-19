@@ -600,7 +600,9 @@ spec:
                 ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz
               fi
               if [ -e "/import-data/default/stickers" ]; then
-               cp -R /import-data/default/stickers /app/plugins/stickers
+                cp -R /import-data/default/stickers /app/plugins/stickers
+
+                cp -R /app/plugins/stickers/stickers /app/plugins/stickers
               fi
 
               ./bin/mattermost
