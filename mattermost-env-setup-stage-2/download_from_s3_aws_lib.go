@@ -35,10 +35,6 @@ func downloadFromS3(item string) error {
 	fmt.Println("----- folder:", folder, "filename:", filename)
 
 	if filename == "" {
-		instances = instances - 1
-		in_progress = in_progress - 1
-		processed = processed + 1
-
 		return nil
 	}
 
@@ -79,10 +75,6 @@ func downloadFromS3(item string) error {
 	}
 
 	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
-
-	instances = instances - 1
-	in_progress = in_progress - 1
-	processed = processed + 1
 
 	return err
 }
@@ -129,7 +121,14 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 		// Process the line here.
 		// fmt.Println(" > > " + limitLength(line, 50))
 
-		handleLine(strings.Trim(line, "\n"))
+		for instances > 50 {
+			time.Sleep(1 * time.Second)
+		}
+
+		instances = instances + 1
+		in_progress = in_progress + 1
+
+		go handleLine(strings.Trim(line, "\n"))
 
 		if err != nil {
 			break
@@ -182,24 +181,22 @@ func main() {
 	err := readFileWithReadString("to-download-from-s3.txt", func(line string) {
 		fmt.Println("Found line:", line)
 
-		for instances > 50 {
-			time.Sleep(1 * time.Second)
+		if !fileExists("contents/" + line) {
+			downloadFromS3(line)
 		}
 
-		if fileExists("contents/" + line) {
-			return
-		}
-
-		instances = instances + 1
-		in_progress = in_progress + 1
-
-		go downloadFromS3(line)
+		instances = instances - 1
+		in_progress = in_progress - 1
+		processed = processed + 1
 	})
 
 	if err != nil {
 		fmt.Println("err:", err)
 
 		os.Exit(1)
+	}
+
+	for processed < line_count {
 	}
 
 	fmt.Println("Finished downloading files.")
