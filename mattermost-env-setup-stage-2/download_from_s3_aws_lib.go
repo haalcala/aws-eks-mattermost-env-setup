@@ -182,7 +182,7 @@ func main() {
 	err := readFileWithReadString("to-download-from-s3.txt", func(line string) {
 		fmt.Println("Found line:", line)
 
-		for instances > 10 {
+		for instances > 50 {
 			time.Sleep(1 * time.Second)
 		}
 
