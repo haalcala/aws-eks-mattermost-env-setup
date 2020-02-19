@@ -599,7 +599,7 @@ spec:
               if [ -e "/import-data/default/plugins" ]; then
                 ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz
               fi
-              if [-e "/import-data/default/stickers"]; then
+              if [-e "/import-data/default/stickers" ]; then
                cp -r /import-data/default/stickers /app/sticker
               fi
 
