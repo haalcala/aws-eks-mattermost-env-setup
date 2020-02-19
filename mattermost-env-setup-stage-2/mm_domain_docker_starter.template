@@ -515,7 +515,7 @@ cp /import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json /app/config/conf
 sleep 300
 EOF
 
-cp ../download_from_s3_aws_lib.go ~/import-data/__MM_COMPANY_ID__
+cp ../download_from_s3_aws_lib.go $HOME/import-data/__MM_COMPANY_ID__
 
 _PWD=$PWD
 
