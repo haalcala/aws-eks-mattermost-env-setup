@@ -227,7 +227,7 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"FeedbackEmail": "",
 		"ReplyToAddress": "",
 		"FeedbackOrganization": "",
-		"EnableSMTPAuth": false,
+		"EnableSMTPAuth": true,
 		"SMTPUsername": "__SMTP_USER__",
 		"SMTPPassword": "__SMTP_PASS__",
 		"SMTPServer": "__SMTP_HOST__",
