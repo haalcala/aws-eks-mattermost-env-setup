@@ -531,6 +531,9 @@ spec:
                     }                    
                   },
                   "PluginStates": {
+                    "com.vcube.mattermost.sticker": {
+                      "Enable": true
+                    },
                     "com.mattermost.nps": {
                       "Enable": true
                     }
