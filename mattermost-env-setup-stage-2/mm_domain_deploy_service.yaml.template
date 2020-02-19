@@ -170,7 +170,7 @@ spec:
                 "TeamSettings": {
                   "SiteName": "Mattermost",
                   "MaxUsersPerTeam": 50000,
-                  "EnableTeamCreation": true,
+                  "EnableTeamCreation": false,
                   "EnableUserCreation": true,
                   "EnableOpenServer": false,
                   "EnableUserDeactivation": false,
@@ -178,7 +178,7 @@ spec:
                   "EnableCustomBrand": false,
                   "CustomBrandText": "",
                   "CustomDescriptionText": "",
-                  "RestrictDirectMessage": "any",
+                  "RestrictDirectMessage": "team",
                   "RestrictTeamInvite": "all",
                   "RestrictPublicChannelManagement": "all",
                   "RestrictPrivateChannelManagement": "all",
@@ -590,6 +590,9 @@ spec:
 
               if [ -e "/import-data/default/plugins" ]; then
                 ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz
+              fi
+              if [-e "/import-data/default/stickers"]; then
+               cp -r /import-data/default/stickers /stickers
               fi
 
               ./bin/mattermost
