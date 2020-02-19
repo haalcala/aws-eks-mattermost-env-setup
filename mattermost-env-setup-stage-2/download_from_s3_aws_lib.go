@@ -91,7 +91,6 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 	fmt.Println("readFileWithReadString")
 
 	file, err := os.Open(fn)
-	defer file.Close()
 
 	if err != nil {
 		return err
@@ -112,7 +111,13 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 		line_count = line_count + 1
 	}
 
+	file.Close()
+
 	count := 0
+
+	file, err = os.Open(fn)
+	reader = bufio.NewReader(file)
+	defer file.Close()
 
 	for {
 		line, err = reader.ReadString('\n')
@@ -152,7 +157,7 @@ func displayProgress() {
 	time.Sleep(1000)
 
 	for processed < line_count {
-		fmt.Println("------------------------------------------ processed:", processed, "in_progress:", in_progress)
+		fmt.Println("------------------------------------------ processed:", processed, "in_progress:", in_progress, "line_count:", line_count)
 
 		time.Sleep(3000)
 	}
