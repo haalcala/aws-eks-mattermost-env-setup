@@ -117,7 +117,7 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 	},
 	"TeamSettings": {
 		"SiteName": "Mattermost",
-		"MaxUsersPerTeam": 50000,
+		"MaxUsersPerTeam": 100000,
 		"EnableTeamCreation": true,
 		"EnableUserCreation": true,
 		"EnableOpenServer": false,
@@ -137,7 +137,7 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"RestrictPrivateChannelManageMembers": "all",
 		"EnableXToLeaveChannelsFromLHS": false,
 		"UserStatusAwayTimeout": 300,
-		"MaxChannelsPerTeam": 2000,
+		"MaxChannelsPerTeam": 200000,
 		"MaxNotificationsPerChannel": 1000,
 		"EnableConfirmNotificationsToChannel": true,
 		"TeammateNameDisplay": "username",
