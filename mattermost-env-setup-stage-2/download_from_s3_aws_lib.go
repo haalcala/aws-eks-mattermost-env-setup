@@ -154,12 +154,12 @@ func fileExists(filename string) bool {
 }
 
 func displayProgress() {
-	time.Sleep(1000)
+	time.Sleep(1 * time.Second)
 
 	for processed < line_count {
 		fmt.Println("------------------------------------------ processed:", processed, "in_progress:", in_progress, "line_count:", line_count)
 
-		time.Sleep(3000)
+		time.Sleep(3 * time.Second)
 	}
 }
 
@@ -183,7 +183,7 @@ func main() {
 		fmt.Println("Found line:", line)
 
 		for instances > 10 {
-			time.Sleep(1000)
+			time.Sleep(1 * time.Second)
 		}
 
 		if fileExists("contents/" + line) {
