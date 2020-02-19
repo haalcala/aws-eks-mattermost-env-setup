@@ -526,8 +526,8 @@ spec:
                   "ClientDirectory": "./client/plugins",
                   "Plugins": {
                     "com.vcube.mattermost.sticker": {
-                      "stickerpath": "/app/stickers/",
-                      "stickerset": "/app/stickers/mattermost-gate-sticker-sets.jsonl"
+                      "stickerpath": "stickers/",
+                      "stickerset": "stickers/mattermost-gate-sticker-sets.jsonl"
                     }                    
                   },
                   "PluginStates": {
