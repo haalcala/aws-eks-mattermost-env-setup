@@ -524,7 +524,12 @@ spec:
                   "EnableHealthCheck": true,
                   "Directory": "./plugins",
                   "ClientDirectory": "./client/plugins",
-                  "Plugins": {},
+                  "Plugins": {
+                    "com.vcube.mattermost.sticker": {
+                      "stickerpath": "/app/sticker/",
+                      "stickerset": "/app/sticker/mattermost-gate-sticker-sets.jsonl"
+                    }                    
+                  },
                   "PluginStates": {
                     "com.mattermost.nps": {
                       "Enable": true
