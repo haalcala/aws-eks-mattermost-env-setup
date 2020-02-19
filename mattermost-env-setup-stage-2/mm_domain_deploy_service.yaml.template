@@ -169,7 +169,7 @@ spec:
                 },
                 "TeamSettings": {
                   "SiteName": "Mattermost",
-                  "MaxUsersPerTeam": 50000,
+                  "MaxUsersPerTeam": 100000,
                   "EnableTeamCreation": false,
                   "EnableUserCreation": true,
                   "EnableOpenServer": false,
@@ -189,7 +189,7 @@ spec:
                   "RestrictPrivateChannelManageMembers": "all",
                   "EnableXToLeaveChannelsFromLHS": false,
                   "UserStatusAwayTimeout": 300,
-                  "MaxChannelsPerTeam": 2000,
+                  "MaxChannelsPerTeam": 100000,
                   "MaxNotificationsPerChannel": 1000,
                   "EnableConfirmNotificationsToChannel": true,
                   "TeammateNameDisplay": "username",
