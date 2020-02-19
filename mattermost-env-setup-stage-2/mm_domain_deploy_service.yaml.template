@@ -594,6 +594,8 @@ spec:
             - bash
             - "-c"
             - |
+              set -x
+              
               cd /app
 
               if [ -e "/import-data/default/plugins" ]; then
