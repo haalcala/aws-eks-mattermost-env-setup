@@ -526,8 +526,8 @@ spec:
                   "ClientDirectory": "./client/plugins",
                   "Plugins": {
                     "com.vcube.mattermost.sticker": {
-                      "stickerpath": "/app/plugins/stickers/",
-                      "stickerset": "/app/plugins/stickers/mattermost-gate-sticker-sets.jsonl"
+                      "stickerpath": "/app/stickers/",
+                      "stickerset": "/app/stickers/mattermost-gate-sticker-sets.jsonl"
                     }                    
                   },
                   "PluginStates": {
@@ -562,6 +562,22 @@ spec:
               }  
               EOF
 
+              cat >/import-data/start_mattermost.sh<<EOF
+              #!/bin/bash -x
+              cd /app
+
+              if [ -e "/import-data/default/stickers" ]; then
+                cp -R /import-data/default/stickers /app/stickers
+
+                cp -R /app/stickers/stickers/* /app/stickers/
+              fi
+
+              if [ -e "/import-data/default/plugins" ]; then
+                ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz
+              fi
+
+              ./bin/mattermost
+              EOF
               # cat /app/config/config.json
 
               aws s3 sync s3://__DEPLOY_BUCKET__/default /import-data/default
@@ -591,24 +607,7 @@ spec:
         - name: __MM_INSTANCE_KEY__
           image: haalcala/mattermost-prod
           command :
-            - bash
-            - "-c"
-            - |
-              set -x
-
-              cd /app
-
-              if [ -e "/import-data/default/stickers" ]; then
-                cp -R /import-data/default/stickers /app/plugins/stickers
-
-                cp -R /app/plugins/stickers/stickers/* /app/plugins/stickers/
-              fi
-
-              if [ -e "/import-data/default/plugins" ]; then
-                ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz
-              fi
-
-              ./bin/mattermost
+            - /import-data/start_mattermost.sh
           ports:
             - containerPort: 8065
           volumeMounts:
