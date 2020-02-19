@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -20,76 +18,6 @@ import (
 
 var BUCKET string = os.Args[1]
 var REGION string = os.Args[2]
-
-func Execute(command string, showCommand, showOutput bool) (error, string, string) {
-	_command := strings.Split(command, " ")
-
-	if showCommand {
-		log.Println("--->>>:", command)
-	}
-	// fmt.Println("_command[0]:", _command[0])
-	// fmt.Println("_command[1:]:", _command[1:])
-
-	cmd := exec.Command(_command[0], _command[1:]...)
-	// cmd.Stdin = strings.NewReader("some input")
-
-	stdout, err := cmd.StdoutPipe()
-	stderr, err := cmd.StderrPipe()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cmd.Start()
-
-	// cmd.Stdout = &stdout
-	// cmd.Stderr = &stderr
-
-	// err := cmd.Run()
-	var output, errput string
-
-	buf := bufio.NewReader(stdout) // Notice that this is not in a loop
-
-	for {
-		line, _, err := buf.ReadLine()
-
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			fmt.Println("Error while reading file, err", err)
-			break
-		}
-
-		output = output + string(line) + "\n"
-
-		// fmt.Println(string(line))
-	}
-
-	buf = bufio.NewReader(stderr) // Notice that this is not in a loop
-
-	for {
-		line, _, err := buf.ReadLine()
-
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			fmt.Println("Error while reading file, err", err)
-			break
-		}
-
-		output = errput + string(line) + "\n"
-
-		if showOutput {
-			fmt.Println(string(line))
-		}
-	}
-
-	return err, strings.Trim(output, "\n"), strings.Trim(errput, "\n")
-}
 
 func downloadFromS3(item string) error {
 	fmt.Println("----- item:", item)
@@ -107,6 +35,10 @@ func downloadFromS3(item string) error {
 	fmt.Println("----- folder:", folder, "filename:", filename)
 
 	if filename == "" {
+		instances = instances - 1
+		in_progress = in_progress - 1
+		processed = processed + 1
+
 		return nil
 	}
 
@@ -149,6 +81,8 @@ func downloadFromS3(item string) error {
 	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
 
 	instances = instances - 1
+	in_progress = in_progress - 1
+	processed = processed + 1
 
 	return err
 }
@@ -169,6 +103,16 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 	var line string
 
 	for {
+		_, err = reader.ReadString('\n')
+
+		if err != nil {
+			break
+		}
+
+		line_count = line_count + 1
+	}
+
+	for {
 		line, err = reader.ReadString('\n')
 
 		fmt.Printf(" > Read %d characters\n", len(line))
@@ -187,6 +131,8 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 		fmt.Printf(" > Failed!: %v\n", err)
 	}
 
+	fmt.Println("Finished readling all lines.")
+
 	return
 }
 
@@ -198,7 +144,22 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-var instances int = 0
+func displayProgress() {
+	time.Sleep(1000)
+
+	for processed < line_count {
+		fmt.Println("------------------------------------------ processed:", processed, "in_progress:", in_progress)
+
+		time.Sleep(3000)
+	}
+}
+
+var instances = 0
+
+var done = false
+var processed = 0
+var in_progress = 0
+var line_count = 0
 
 func main() {
 	fmt.Println(os.Getenv("HOME"))
@@ -206,6 +167,8 @@ func main() {
 		fmt.Printf("Environment variable IMPORT_EXTERNAL_BUCKET not found.")
 		os.Exit(1)
 	}
+
+	go displayProgress()
 
 	err := readFileWithReadString("to-download-from-s3.txt", func(line string) {
 		fmt.Println("Found line:", line)
@@ -219,6 +182,7 @@ func main() {
 		}
 
 		instances = instances + 1
+		in_progress = in_progress + 1
 
 		go downloadFromS3(line)
 	})
@@ -228,6 +192,8 @@ func main() {
 
 		os.Exit(1)
 	}
+
+	fmt.Println("Finished downloading files.")
 }
 
 func exitErrorf(msg string, args ...interface{}) {
