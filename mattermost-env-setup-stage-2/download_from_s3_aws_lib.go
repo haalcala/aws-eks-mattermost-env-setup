@@ -112,10 +112,14 @@ func readFileWithReadString(fn string, handleLine func(line string)) (err error)
 		line_count = line_count + 1
 	}
 
+	count := 0
+
 	for {
 		line, err = reader.ReadString('\n')
 
-		fmt.Printf(" > Read %d characters\n", len(line))
+		count = count + 1
+
+		fmt.Printf("line #%d > Read %d characters\n", count, len(line))
 
 		// Process the line here.
 		// fmt.Println(" > > " + limitLength(line, 50))
