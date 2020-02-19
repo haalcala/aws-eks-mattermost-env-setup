@@ -568,8 +568,6 @@ spec:
 
               if [ -e "/import-data/default/stickers" ]; then
                 cp -R /import-data/default/stickers /app/stickers
-
-                cp -R /app/stickers/stickers/* /app/stickers/
               fi
 
               if [ -e "/import-data/default/plugins" ]; then
