@@ -21,7 +21,6 @@ spec:
   selector:
     matchLabels:
       app: __MM_INSTANCE_KEY__
-  serviceName: "__MM_INSTANCE_KEY__-svc"
   template:
     metadata:
       labels:
@@ -631,7 +630,7 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
-          startupProbe:
+          readinessProbe:
             httpGet:
               path: /
               port: liveness-port
