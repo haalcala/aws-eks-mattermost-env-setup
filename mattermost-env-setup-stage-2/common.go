@@ -44,7 +44,8 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__SMTP_USER__", Value: strings.Trim(os.Getenv("__SMTP_USER__"), "\r"), Default: "false"},
 	{Key: "__SMTP_PASS__", Value: strings.Trim(os.Getenv("__SMTP_PASS__"), "\r"), Default: "false"},
 	{Key: "__SMTP_HOST__", Value: strings.Trim(os.Getenv("__SMTP_HOST__"), "\r"), Default: "false"},
-	{Key: "__SMTP_PORT__", Value: strings.Trim(os.Getenv("__SMTP_PORT__"), "\r"), Default: "false"}}
+	{Key: "__SMTP_PORT__", Value: strings.Trim(os.Getenv("__SMTP_PORT__"), "\r"), Default: "false"},
+	{Key: "__SMTP_FROM__", Value: strings.Trim(os.Getenv("__SMTP_FROM__"), "\r"), Default: "false"}}
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
 	dat, err := ioutil.ReadFile(templateFile)
@@ -110,7 +111,7 @@ func LoadDomains() string {
 			{Key: "__MM_INSTANCE_REPLICAS__", Value: domain.Replicas},
 			{Key: "__MM_COMPANY_ID__", Value: domain.CompanyId},
 			{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
-			{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
+			{Key: "__MM_DB_USER__", Value: domain.Key},
 			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"}}
 
 		fmt.Println("domain_tokens:", domain_tokens)
