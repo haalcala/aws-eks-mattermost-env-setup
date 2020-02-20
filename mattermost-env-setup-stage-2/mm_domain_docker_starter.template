@@ -5,9 +5,9 @@ cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_
 
 mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
 
-mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '"__MM_DB_USER__"'@'%' IDENTIFIED BY '"__MM_DB_PASS__"';"
+mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '__MM_DB_USER__'@'%' IDENTIFIED BY '__MM_DB_PASS__';"
 
-mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '"__MM_DB_USER__"'@'%';"
+mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '__MM_DB_USER__'@'%';"
 
 aws --version
 
