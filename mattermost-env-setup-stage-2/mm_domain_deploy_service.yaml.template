@@ -13,7 +13,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: __MM_INSTANCE_KEY__
 spec:
@@ -610,7 +610,8 @@ spec:
           command :
             - /import-data/start_mattermost.sh
           ports:
-            - containerPort: 8065
+            - name: liveness-port
+              containerPort: 8065
           volumeMounts:
             - name: import-data
               mountPath: /import-data 
@@ -624,18 +625,20 @@ spec:
           #  periodSeconds: 2
           #  timeoutSeconds: 1
           livenessProbe:
-            exec:
-              command: ["curl", "127.0.0.1:8065"]
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-          readinessProbe:
             httpGet:
               path: /
-              port: 8065
-            initialDelaySeconds: 5
+              port: liveness-port
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /
+              port: liveness-port
+            initialDelaySeconds: 60
             periodSeconds: 5
             successThreshold: 1
+            failureThreshold: 30
 
       volumes:
         - name: aws-config
