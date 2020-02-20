@@ -167,7 +167,7 @@ spec:
                   "EnableLatex": false
                 },
                 "TeamSettings": {
-                  "SiteName": "Mattermost",
+                  "SiteName": "__MM_INSTANCE_COMPANY_NAME__",
                   "MaxUsersPerTeam": 100000,
                   "EnableTeamCreation": false,
                   "EnableUserCreation": true,
@@ -274,8 +274,8 @@ spec:
                   "SendEmailNotifications": false,
                   "UseChannelInEmailNotifications": false,
                   "RequireEmailVerification": false,
-                  "FeedbackName": "Feedback???",
-                  "FeedbackEmail": "__SMTP_FROM__",
+                  "FeedbackName": "__MM_INSTANCE_ADMIN_EMAIL_NAME__",
+                  "FeedbackEmail": "__MM_INSTANCE_ADMIN_EMAIL__",
                   "ReplyToAddress": "__SMTP_FROM__",
                   "FeedbackOrganization": "",
                   "EnableSMTPAuth": true,

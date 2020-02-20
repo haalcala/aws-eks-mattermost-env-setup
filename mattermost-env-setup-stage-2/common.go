@@ -9,10 +9,14 @@ import (
 )
 
 type MattermostDeployment struct {
-	Key       string `json:"key"`
-	Domain    string `json:"domain"`
-	Replicas  string `json:"replicas"`
-	CompanyId string `json:"companyId"`
+	Key            string `json:"key"`
+	Domain         string `json:"domain"`
+	Replicas       string `json:"replicas"`
+	CompanyId      string `json:"companyId"`
+	SiteName       string `json:"site-name"`
+	AdminEmail     string `json:"admin-email"`
+	AdminEmailName string `json:"admin-email-name"`
+	CompanyName    string `json:"company-name"`
 }
 
 type Token struct {
@@ -106,6 +110,9 @@ func LoadDomains() string {
 		fmt.Println("domain:", domain)
 
 		domain_tokens := []Token{
+			{Key: "__MM_INSTANCE_COMPANY_NAME__", Value: domain.CompanyName},
+			{Key: "__MM_INSTANCE_ADMIN_EMAIL_NAME__", Value: domain.AdminEmailName},
+			{Key: "__MM_INSTANCE_ADMIN_EMAIL__", Value: domain.AdminEmail},
 			{Key: "__MM_INSTANCE_KEY__", Value: domain.Key},
 			{Key: "__MM_INSTANCE_DOMAIN__", Value: domain.Domain},
 			{Key: "__MM_INSTANCE_REPLICAS__", Value: domain.Replicas},
