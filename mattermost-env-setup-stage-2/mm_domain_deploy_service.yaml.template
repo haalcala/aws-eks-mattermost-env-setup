@@ -160,7 +160,7 @@ spec:
                   "ExperimentalEnableHardenedMode": false,
                   "DisableLegacyMFA": true,
                   "ExperimentalStrictCSRFEnforcement": false,
-                  "EnableEmailInvitations": false,
+                  "EnableEmailInvitations": true,
                   "DisableBotsWhenOwnerIsDeactivated": true,
                   "EnableBotAccountCreation": false,
                   "EnableSVGs": false,
