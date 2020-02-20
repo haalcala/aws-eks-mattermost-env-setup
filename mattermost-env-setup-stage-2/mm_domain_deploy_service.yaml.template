@@ -276,7 +276,7 @@ spec:
                   "RequireEmailVerification": false,
                   "FeedbackName": "__MM_INSTANCE_ADMIN_EMAIL_NAME__",
                   "FeedbackEmail": "__MM_INSTANCE_ADMIN_EMAIL__",
-                  "ReplyToAddress": "__SMTP_FROM__",
+                  "ReplyToAddress": "__MM_INSTANCE_ADMIN_EMAIL__",
                   "FeedbackOrganization": "",
                   "EnableSMTPAuth": true,
                   "SMTPUsername": "__SMTP_USER__",
