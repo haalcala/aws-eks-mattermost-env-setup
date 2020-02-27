@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash 
 
 LOCAL_DB_HOST=$1
 shift
@@ -36,8 +36,8 @@ echo \$DEST_DB_NAME $DEST_DB_NAME
 echo \$DEST_DB_USER $DEST_DB_USER
 echo \$DEST_DB_PASS $DEST_DB_PASS
 
-# TABLES=$(mysql -h$LOCAL_DB_HOST -P$LOCAL_DB_PORT -u$LOCAL_DB_USER -p$LOCAL_DB_PASS $LOCAL_DB_NAME -e 'show tables' | grep -v Tables_in_$LOCAL_DB_NAME | awk '{print $1}')
-TABLES=Posts
+TABLES=$(mysql -h$LOCAL_DB_HOST -P$LOCAL_DB_PORT -u$LOCAL_DB_USER -p$LOCAL_DB_PASS $LOCAL_DB_NAME -e 'show tables' | grep -v Tables_in_$LOCAL_DB_NAME | awk '{print $1}')
+# TABLES=Posts
 
 echo \$TABLES $TABLES
 
