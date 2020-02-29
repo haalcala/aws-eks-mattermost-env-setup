@@ -11,7 +11,7 @@
       access_log /var/log/nginx/__MM_INSTANCE_DOMAIN__.access_log main;
       error_log /var/log/nginx/__MM_INSTANCE_DOMAIN__.error_log;
 
-      client_max_body_size 50m
+      client_max_body_size 50m;
 
       location / {
         proxy_pass http://__MM_INSTANCE_KEY__-svc;
