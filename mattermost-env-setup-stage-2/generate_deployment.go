@@ -17,9 +17,12 @@ func main() {
 		}
 	}
 
-	domain_conf := LoadDomains()
+	domain_conf, alb_domain_conf := LoadDomains()
 
 	// fmt.Println("domain_conf:", domain_conf)
 
-	ProcessTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml", append(tokens, Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf}), 0666)
+	_tokens := append(tokens, Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf})
+	_tokens = append(_tokens, Token{Key: "__ALB_DOMAIN_RULES__", Value: alb_domain_conf})
+
+	ProcessTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml", _tokens, 0666)
 }

@@ -177,12 +177,13 @@ metadata:
     app: nginx-svc
 spec:
   rules:
-    - http:
-        paths:
-          - path: /*
-            backend:
-              serviceName: "nginx-svc"
-              servicePort: 443
+__ALB_DOMAIN_RULES__
+#    - http:
+#        paths:
+#          - path: /*
+#            backend:
+#              serviceName: "nginx-svc"
+#              servicePort: 443
 
 ---
 # Application Load Balancer (ALB) Ingress Controller Deployment Manifest.

@@ -83,7 +83,7 @@ func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode 
 	return template
 }
 
-func LoadDomains() string {
+func LoadDomains() (string, string) {
 	dat, err := ioutil.ReadFile("./domains.json")
 
 	if err != nil {
@@ -101,7 +101,8 @@ func LoadDomains() string {
 
 	fmt.Println("domains:", domains)
 
-	ret := []string{}
+	nginx_domains := []string{}
+	alb_domains := []string{}
 
 	err = os.Mkdir("./mm_domain_deploy_service", 0777)
 	err = os.Mkdir("./mm_docker_starter", 0777)
@@ -123,12 +124,13 @@ func LoadDomains() string {
 
 		fmt.Println("domain_tokens:", domain_tokens)
 
-		ret = append(ret, ProcessTemplate("./configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666))
+		nginx_domains = append(nginx_domains, ProcessTemplate("./configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666))
+		alb_domains = append(alb_domains, ProcessTemplate("./alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666))
 
 		_ = ProcessTemplate("./mm_domain_deploy_service.yaml.template", fmt.Sprintf("./mm_domain_deploy_service/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
 
 		_ = ProcessTemplate("./mm_domain_docker_starter.template", fmt.Sprintf("./mm_docker_starter/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
 	}
 
-	return strings.Join(ret, "\n\n")
+	return strings.Join(nginx_domains, "\n"), strings.Join(alb_domains, "\n")
 }
