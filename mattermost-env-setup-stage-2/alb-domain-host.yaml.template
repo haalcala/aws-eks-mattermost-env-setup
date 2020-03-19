@@ -1,4 +1,4 @@
-    - hostname: __MM_INSTANCE_DOMAIN__
+    - host: __MM_INSTANCE_DOMAIN__
       http:
         paths:
         - path: /*

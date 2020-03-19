@@ -177,7 +177,7 @@ metadata:
     app: nginx-svc
 spec:
   rules:
-    - hostname: mattermost-push-proxy-staging.vcube.sg
+    - host: mattermost-push-proxy-staging.vcube.sg
       http:
         paths:
         - path: /*
