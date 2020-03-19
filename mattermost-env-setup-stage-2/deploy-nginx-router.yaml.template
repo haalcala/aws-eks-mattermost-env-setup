@@ -177,6 +177,13 @@ metadata:
     app: nginx-svc
 spec:
   rules:
+    - hostname: mattermost-push-proxy-staging.vcube.sg
+      http:
+        paths:
+        - path: /*
+          backend:
+            serviceName: "mattermost-push-proxy-svc"
+            servicePort: 8066
 __ALB_DOMAIN_RULES__
 #    - http:
 #        paths:
@@ -257,3 +264,94 @@ spec:
           # Repository location of the ALB Ingress Controller.
           image: docker.io/amazon/aws-alb-ingress-controller:v1.1.4
       serviceAccountName: alb-ingress-controller
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mattermost-push-proxy
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: mattermost-push-proxy
+  template:
+    metadata:
+      labels:
+        app: mattermost-push-proxy
+        config_version: "__MM_PROXY_PROXY_CONFIG_VERSION__"
+    spec:
+      containers:
+        - name: mattermost-push-proxy
+          image: mattermost-push-proxy
+          ports:
+            - containerPort: 8066
+#          command: 
+#            - bash
+#            - "-c"
+#            - |
+#
+#              set -x
+#
+#              cat > ./config/mattermost-push-proxy.json <<EOF
+#              {
+#                  "ListenAddress":":8066",
+#                  "ThrottlePerSec":10000,
+#                  "ThrottleMemoryStoreSize":50000,
+#                  "ThrottleVaryByHeader":"X-Forwarded-For",
+#                  "EnableMetrics": false,
+#                  "ApplePushSettings":[
+#                      {
+#                          "Type":"apple",
+#                          "ApplePushUseDevelopment":false,
+#                          "ApplePushCertPrivate":"",
+#                          "ApplePushCertPassword":"",
+#                          "ApplePushTopic":"com.mattermost.Mattermost"
+#                      },
+#                      {
+#                          "Type":"apple_rn",
+#                          "ApplePushUseDevelopment":false,
+#                          "ApplePushCertPrivate":"",
+#                          "ApplePushCertPassword":"",
+#                          "ApplePushTopic":"com.mattermost.react.native"
+#                      }
+#                  ],
+#                  "AndroidPushSettings":[
+#                      {
+#                          "Type":"android",
+#                          "AndroidApiKey":""
+#                      },
+#                      {
+#                          "Type":"android_rn",
+#                          "AndroidApiKey":""
+#                      }
+#                  ]
+#              }
+#              EOF
+          volumeMounts:
+            - name: mattermost-push-proxy-conf
+              mountPath: /app/config
+      volumes:
+        - name: mattermost-push-proxy-conf
+          configMap:
+            name: mattermost-push-proxy-conf
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mattermost-push-proxy-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 8066
+      targetPort: 8066
+      protocol: TCP
+  selector:
+    app: mattermost-push-proxy
+
