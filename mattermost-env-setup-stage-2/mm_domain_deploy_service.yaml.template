@@ -285,7 +285,7 @@ spec:
                   "SMTPPort": "__SMTP_PORT__",
                   "ConnectionSecurity": "TLS",
                   "SendPushNotifications": true,
-                  "PushNotificationServer": "https://push-test.mattermost.com",
+                  "PushNotificationServer": "__MATTERMOST_PUSH_NOTIFICATION_URL__",
                   "PushNotificationContents": "generic",
                   "EnableEmailBatching": false,
                   "EmailBatchingBufferSize": 256,

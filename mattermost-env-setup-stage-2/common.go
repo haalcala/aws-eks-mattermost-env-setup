@@ -50,7 +50,8 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__SMTP_HOST__", Value: strings.Trim(os.Getenv("__SMTP_HOST__"), "\r"), Default: "false"},
 	{Key: "__SMTP_PORT__", Value: strings.Trim(os.Getenv("__SMTP_PORT__"), "\r"), Default: "false"},
 	{Key: "__SMTP_FROM__", Value: strings.Trim(os.Getenv("__SMTP_FROM__"), "\r"), Default: "false"},
-	{Key: "__MM_PROXY_PROXY_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__MM_PROXY_PROXY_CONFIG_VERSION__"), "\r"), Default: "false"}}
+	{Key: "__MM_PROXY_PROXY_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__MM_PROXY_PROXY_CONFIG_VERSION__"), "\r"), Default: "false"},
+	{Key: "__MATTERMOST_PUSH_NOTIFICATION_URL__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_NOTIFICATION_URL__"), "\r"), Default: "false"}}
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
 	dat, err := ioutil.ReadFile(templateFile)
