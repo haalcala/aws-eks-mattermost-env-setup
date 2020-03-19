@@ -288,7 +288,7 @@ spec:
     spec:
       containers:
         - name: mattermost-push-proxy
-          image: mattermost-push-proxy
+          image: __MATTERMOST_PUSH_PROXY_DOCKER_REPO__
           ports:
             - containerPort: 8066
 #          command: 

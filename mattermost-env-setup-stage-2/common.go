@@ -45,13 +45,14 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__NGINX_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__NGINX_CONFIG_VERSION__"), "\r")},
 	{Key: "__MM_DEPLOY_VERSION__", Value: strings.Trim(os.Getenv("__MM_DEPLOY_VERSION__"), "\r")},
 	{Key: "__MM_CONF_PLUGIN_ENABLE_UPLOAD__", Value: strings.Trim(os.Getenv("__MM_CONF_PLUGIN_ENABLE_UPLOAD__"), "\r"), Default: "false"},
-	{Key: "__SMTP_USER__", Value: strings.Trim(os.Getenv("__SMTP_USER__"), "\r"), Default: "false"},
-	{Key: "__SMTP_PASS__", Value: strings.Trim(os.Getenv("__SMTP_PASS__"), "\r"), Default: "false"},
-	{Key: "__SMTP_HOST__", Value: strings.Trim(os.Getenv("__SMTP_HOST__"), "\r"), Default: "false"},
-	{Key: "__SMTP_PORT__", Value: strings.Trim(os.Getenv("__SMTP_PORT__"), "\r"), Default: "false"},
-	{Key: "__SMTP_FROM__", Value: strings.Trim(os.Getenv("__SMTP_FROM__"), "\r"), Default: "false"},
-	{Key: "__MM_PROXY_PROXY_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__MM_PROXY_PROXY_CONFIG_VERSION__"), "\r"), Default: "false"},
-	{Key: "__MATTERMOST_PUSH_NOTIFICATION_URL__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_NOTIFICATION_URL__"), "\r"), Default: "false"}}
+	{Key: "__SMTP_USER__", Value: strings.Trim(os.Getenv("__SMTP_USER__"), "\r"), Default: ""},
+	{Key: "__SMTP_PASS__", Value: strings.Trim(os.Getenv("__SMTP_PASS__"), "\r"), Default: ""},
+	{Key: "__SMTP_HOST__", Value: strings.Trim(os.Getenv("__SMTP_HOST__"), "\r"), Default: ""},
+	{Key: "__SMTP_PORT__", Value: strings.Trim(os.Getenv("__SMTP_PORT__"), "\r"), Default: ""},
+	{Key: "__SMTP_FROM__", Value: strings.Trim(os.Getenv("__SMTP_FROM__"), "\r"), Default: ""},
+	{Key: "__MM_PROXY_PROXY_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__MM_PROXY_PROXY_CONFIG_VERSION__"), "\r"), Default: "v1"},
+	{Key: "__MATTERMOST_PUSH_NOTIFICATION_URL__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_NOTIFICATION_URL__"), "\r"), Default: "https://push-test.mattermost.com"},
+	{Key: "__MATTERMOST_PUSH_PROXY_DOCKER_REPO__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_PROXY_DOCKER_REPO__"), "\r"), Default: "haalcala/mattermost-push-proxy"}}
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
 	dat, err := ioutil.ReadFile(templateFile)
