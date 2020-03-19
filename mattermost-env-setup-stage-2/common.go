@@ -52,7 +52,8 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__SMTP_FROM__", Value: strings.Trim(os.Getenv("__SMTP_FROM__"), "\r"), Default: ""},
 	{Key: "__MM_PROXY_PROXY_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__MM_PROXY_PROXY_CONFIG_VERSION__"), "\r"), Default: "v1"},
 	{Key: "__MATTERMOST_PUSH_NOTIFICATION_URL__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_NOTIFICATION_URL__"), "\r"), Default: "https://push-test.mattermost.com"},
-	{Key: "__MATTERMOST_PUSH_PROXY_DOCKER_REPO__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_PROXY_DOCKER_REPO__"), "\r"), Default: "haalcala/mattermost-push-proxy"}}
+	{Key: "__MATTERMOST_PUSH_PROXY_DOCKER_REPO__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_PROXY_DOCKER_REPO__"), "\r"), Default: "haalcala/mattermost-push-proxy"},
+	{Key: "__MM_DOCKER_REPO__", Value: strings.Trim(os.Getenv("__MM_DOCKER_REPO__"), "\r"), Default: "haalcala/mattermost-prod"}}
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
 	dat, err := ioutil.ReadFile(templateFile)

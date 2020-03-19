@@ -605,7 +605,7 @@ spec:
               mountPath: /app/config 
       containers:
         - name: __MM_INSTANCE_KEY__
-          image: haalcala/mattermost-prod
+          image: __MM_DOCKER_REPO__
           command :
             - /import-data/start_mattermost.sh
           ports:
