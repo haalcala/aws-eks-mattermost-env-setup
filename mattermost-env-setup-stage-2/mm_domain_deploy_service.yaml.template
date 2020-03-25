@@ -13,7 +13,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: __MM_INSTANCE_KEY__
 spec:
@@ -21,7 +21,6 @@ spec:
   selector:
     matchLabels:
       app: __MM_INSTANCE_KEY__
-  serviceName: __MM_INSTANCE_KEY__
   template:
     metadata:
       labels:
@@ -172,24 +171,8 @@ spec:
                 path: credentials # dig directory
               - key: aws-config
                 path: config # dig directory
-#        - name: import-data
-#          emptyDir: {}
-#        - name: mattermost-conf
-#          emptyDir: {}
-  volumeClaimTemplates:
-    - metadata:
-        name: import-data
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "import-data"
-        resources:
-          requests:
-            storage: 1Gi
-    - metadata:
-        name: mattermost-conf
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "mattermost-conf"
-        resources:
-          requests:
-            storage: 1Gi
+        - name: import-data
+          emptyDir: {}
+        - name: mattermost-conf
+          emptyDir: {}
+
