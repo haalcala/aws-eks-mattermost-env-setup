@@ -126,10 +126,10 @@ spec:
           resources:
             limits:
               memory: 4Gi
-              cpu: "2"
+              cpu: "1"
             requests:
               memory: 4Gi
-              cpu: "1" 
+              cpu: "0.5" 
           command :
             - /import-data/start_mattermost.sh
           ports:
