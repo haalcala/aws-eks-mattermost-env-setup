@@ -21,6 +21,7 @@ spec:
   selector:
     matchLabels:
       app: __MM_INSTANCE_KEY__
+  serviceName: __MM_INSTANCE_KEY__
   template:
     metadata:
       labels:
