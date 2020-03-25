@@ -176,20 +176,20 @@ spec:
 #          emptyDir: {}
 #        - name: mattermost-conf
 #          emptyDir: {}
-    volumeClaimTemplates:
-      - metadata:
-          name: import-data
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          storageClassName: "import-data"
-          resources:
-            requests:
-              storage: 1Gi
-      - metadata:
-          name: mattermost-conf
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          storageClassName: "mattermost-conf"
-          resources:
-            requests:
-              storage: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: import-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "import-data"
+        resources:
+          requests:
+            storage: 1Gi
+    - metadata:
+        name: mattermost-conf
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "mattermost-conf"
+        resources:
+          requests:
+            storage: 1Gi
