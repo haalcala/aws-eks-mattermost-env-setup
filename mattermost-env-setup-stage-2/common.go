@@ -17,6 +17,7 @@ type MattermostDeployment struct {
 	AdminEmail     string `json:"admin-email"`
 	AdminEmailName string `json:"admin-email-name"`
 	CompanyName    string `json:"company-name"`
+	DockerRepoTag  string `json:"docker_repo_tag"`
 }
 
 type Token struct {
@@ -124,7 +125,8 @@ func LoadDomains() (string, string) {
 			{Key: "__MM_COMPANY_ID__", Value: domain.CompanyId},
 			{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
 			{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
-			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"}}
+			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"},
+			{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag, Default: "latest"}}
 
 		fmt.Println("domain_tokens:", domain_tokens)
 

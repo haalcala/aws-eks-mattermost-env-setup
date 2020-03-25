@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh <<EOF
 #!/bin/bash -x
@@ -109,16 +109,16 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"ExperimentalEnableHardenedMode": false,
 		"DisableLegacyMFA": true,
 		"ExperimentalStrictCSRFEnforcement": false,
-		"EnableEmailInvitations": false,
+		"EnableEmailInvitations": true,
 		"DisableBotsWhenOwnerIsDeactivated": true,
 		"EnableBotAccountCreation": false,
 		"EnableSVGs": false,
 		"EnableLatex": false
 	},
 	"TeamSettings": {
-		"SiteName": "Mattermost",
+		"SiteName": "__MM_INSTANCE_COMPANY_NAME__",
 		"MaxUsersPerTeam": 100000,
-		"EnableTeamCreation": true,
+		"EnableTeamCreation": false,
 		"EnableUserCreation": true,
 		"EnableOpenServer": false,
 		"EnableUserDeactivation": false,
@@ -126,7 +126,7 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"EnableCustomBrand": false,
 		"CustomBrandText": "",
 		"CustomDescriptionText": "",
-		"RestrictDirectMessage": "any",
+		"RestrictDirectMessage": "team",
 		"RestrictTeamInvite": "all",
 		"RestrictPublicChannelManagement": "all",
 		"RestrictPrivateChannelManagement": "all",
@@ -137,7 +137,7 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"RestrictPrivateChannelManageMembers": "all",
 		"EnableXToLeaveChannelsFromLHS": false,
 		"UserStatusAwayTimeout": 300,
-		"MaxChannelsPerTeam": 200000,
+		"MaxChannelsPerTeam": 100000,
 		"MaxNotificationsPerChannel": 1000,
 		"EnableConfirmNotificationsToChannel": true,
 		"TeammateNameDisplay": "username",
@@ -223,9 +223,9 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"SendEmailNotifications": false,
 		"UseChannelInEmailNotifications": false,
 		"RequireEmailVerification": false,
-		"FeedbackName": "Feedback???",
-		"FeedbackEmail": "__SMTP_FROM__",
-		"ReplyToAddress": "__SMTP_FROM__",
+		"FeedbackName": "__MM_INSTANCE_ADMIN_EMAIL_NAME__",
+		"FeedbackEmail": "__MM_INSTANCE_ADMIN_EMAIL__",
+		"ReplyToAddress": "__MM_INSTANCE_ADMIN_EMAIL__",
 		"FeedbackOrganization": "",
 		"EnableSMTPAuth": true,
 		"SMTPUsername": "__SMTP_USER__",
@@ -234,7 +234,7 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"SMTPPort": "__SMTP_PORT__",
 		"ConnectionSecurity": "TLS",
 		"SendPushNotifications": true,
-		"PushNotificationServer": "https://push-test.mattermost.com",
+		"PushNotificationServer": "__MATTERMOST_PUSH_NOTIFICATION_URL__",
 		"PushNotificationContents": "generic",
 		"EnableEmailBatching": false,
 		"EmailBatchingBufferSize": 256,
@@ -473,13 +473,18 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"Directory": "./plugins",
 		"ClientDirectory": "./client/plugins",
 		"Plugins": {
-
+		"com.vcube.mattermost.sticker": {
+			"stickerpath": "/app/stickers/",
+			"stickerset": "/app/stickers/mattermost-gate-sticker-sets.jsonl"
+		}                    
 		},
 		"PluginStates": {
-
-			"com.mattermost.nps": {
-				"Enable": true
-			}
+		"com.vcube.mattermost.sticker": {
+			"Enable": true
+		},
+		"com.mattermost.nps": {
+			"Enable": true
+		}
 		},
 		"EnableMarketplace": true,
 		"RequirePluginSignature": false,
@@ -511,18 +516,20 @@ cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_
 cp /import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json /app/config/config.json
 # cp /import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json /mattermost/config/config.json
 
-./bin/mattermost import bulk /import-data/__MM_COMPANY_ID__/mattermost-gate-db.jsonl --apply --workers 4
+./bin/mattermost config migrate /app/config/config.json "mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
+
+# ./bin/mattermost import bulk /import-data/__MM_COMPANY_ID__/mattermost-gate-db.jsonl --apply --workers 4
 
 sleep 300
 EOF
 
-cp ../download_from_s3_aws_lib.go $HOME/import-data/__MM_COMPANY_ID__
+# cp ../download_from_s3_aws_lib.go $HOME/import-data/__MM_COMPANY_ID__
 
 _PWD=$PWD
 
 cd ~/import-data/__MM_COMPANY_ID__
 
-go run download_from_s3_aws_lib.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
+# go run download_from_s3_aws_lib.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
 
 chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh
 
@@ -534,7 +541,7 @@ docker run --rm -it \
 	-v $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh:/app/start-mattermost.sh \
     --memory 4000000000 \
     --memory-swap -1 \
-	haalcala/mattermost-prod /app/start-mattermost.sh
+	__MM_DOCKER_REPO__ /app/start-mattermost.sh
 
 # docker run --rm -it \
 #     -v $HOME/.aws:/root/.aws \
