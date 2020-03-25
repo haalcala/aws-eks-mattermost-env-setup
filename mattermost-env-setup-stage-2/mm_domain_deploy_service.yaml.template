@@ -123,6 +123,13 @@ spec:
       containers:
         - name: __MM_INSTANCE_KEY__
           image: __MM_DOCKER_REPO__:__MM_DOCKER_REPO_TAG__
+          resources:
+            limits:
+              memory: 4Gi
+              cpu: "2"
+            requests:
+              memory: 4Gi
+              cpu: "1" 
           command :
             - /import-data/start_mattermost.sh
           ports:
@@ -155,23 +162,6 @@ spec:
             periodSeconds: 5
             successThreshold: 1
             failureThreshold: 30
-      volumeClaimTemplates:
-        - metadata:
-            name: import-data
-          spec:
-            accessModes: [ "ReadWriteOnce" ]
-            storageClassName: "import-data"
-            resources:
-              requests:
-                storage: 1Gi
-        - metadata:
-            name: mattermost-conf
-          spec:
-            accessModes: [ "ReadWriteOnce" ]
-            storageClassName: "mattermost-conf"
-            resources:
-              requests:
-                storage: 1Gi
       volumes:
         - name: aws-config
           configMap:
@@ -185,3 +175,20 @@ spec:
 #          emptyDir: {}
 #        - name: mattermost-conf
 #          emptyDir: {}
+    volumeClaimTemplates:
+      - metadata:
+          name: import-data
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          storageClassName: "import-data"
+          resources:
+            requests:
+              storage: 1Gi
+      - metadata:
+          name: mattermost-conf
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          storageClassName: "mattermost-conf"
+          resources:
+            requests:
+              storage: 1Gi
