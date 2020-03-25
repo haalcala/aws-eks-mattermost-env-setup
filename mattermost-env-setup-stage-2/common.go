@@ -18,6 +18,8 @@ type MattermostDeployment struct {
 	AdminEmailName string `json:"admin-email-name"`
 	CompanyName    string `json:"company-name"`
 	DockerRepoTag  string `json:"docker_repo_tag"`
+	ServerLocale   string `json:"server_locale"`
+	ClientLocale   string `json:"client_locale"`
 }
 
 type Token struct {
@@ -117,6 +119,8 @@ func LoadDomains() (string, string) {
 
 		domain_tokens := []Token{
 			{Key: "__MM_INSTANCE_COMPANY_NAME__", Value: domain.CompanyName},
+			{Key: "__MM_INSTANCE_SERVER_LOCALE__", Value: domain.ServerLocale, Default: "en"},
+			{Key: "__MM_INSTANCE_CLIENT_LOCALE__", Value: domain.ClientLocale, Default: "en"},
 			{Key: "__MM_INSTANCE_ADMIN_EMAIL_NAME__", Value: domain.AdminEmailName},
 			{Key: "__MM_INSTANCE_ADMIN_EMAIL__", Value: domain.AdminEmail},
 			{Key: "__MM_INSTANCE_KEY__", Value: domain.Key},

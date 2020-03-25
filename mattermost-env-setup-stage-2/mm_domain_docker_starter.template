@@ -347,8 +347,8 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 		"EnableDaily": false
 	},
 	"LocalizationSettings": {
-		"DefaultServerLocale": "en",
-		"DefaultClientLocale": "en",
+		"DefaultServerLocale": "__MM_INSTANCE_SERVER_LOCALE__",
+		"DefaultClientLocale": "__MM_INSTANCE_CLIENT_LOCALE__",
 		"AvailableLocales": ""
 	},
 	"SamlSettings": {
