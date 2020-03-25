@@ -125,10 +125,10 @@ spec:
           image: __MM_DOCKER_REPO__:__MM_DOCKER_REPO_TAG__
           resources:
             limits:
-              memory: 4Gi
-              cpu: "1"
+              memory: 2000Mi
+              cpu: "0.5"
             requests:
-              memory: 4Gi
+              memory: 2000Mi
               cpu: "0.5" 
           command :
             - /import-data/start_mattermost.sh
