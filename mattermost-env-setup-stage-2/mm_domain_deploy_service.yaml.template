@@ -87,7 +87,7 @@ spec:
               fi
 
               if [ -e "/import-data/default/plugins" ]; then
-                ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz
+                ./bin/mattermost plugin add /import-data/default/plugins/*.tar.gz  --config="mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
               fi
 
               ./bin/mattermost --config="mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
