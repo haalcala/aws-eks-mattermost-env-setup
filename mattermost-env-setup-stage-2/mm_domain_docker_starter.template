@@ -16,7 +16,16 @@ aws --version
 aws s3 mb s3://mm-__MM_INSTANCE_KEY__
 EOF
 
-cat > $DIR/__MM_COMPANY_ID__-config.json <<EOF
+chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh
+
+docker run --rm -it \
+ 	-v $HOME/.aws:/root/.aws \
+	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh:/init_mysql.sh \
+	haalcala/mm-init-container /init_mysql.sh
+
+export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
+
+cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
 {
 	"ServiceSettings": {
 		"SiteURL": "https://__MM_INSTANCE_DOMAIN__",
@@ -499,46 +508,35 @@ cat > $DIR/__MM_COMPANY_ID__-config.json <<EOF
 }  
 EOF
 
-chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh
-
-docker run --rm -it \
- 	-v $HOME/.aws:/root/.aws \
-	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh:/init_mysql.sh \
-	haalcala/mm-init-container /init_mysql.sh
-
-[ "__MM_COMPANY_ID__" == "" ] && exit 0
-
-export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
-
-cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh <<EOF
+cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__.sh <<EOF
 #!/bin/bash -x
 
-cp /import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json /app/config/config.json
-# cp /import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json /mattermost/config/config.json
+cp /import-data/__MM_INSTANCE_KEY__/__MM_INSTANCE_KEY__-config.json /app/config/config.json
+# cp /import-data/__MM_INSTANCE_KEY__/__MM_INSTANCE_KEY__-config.json /mattermost/config/config.json
 
 ./bin/mattermost config migrate /app/config/config.json "mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
 
-# ./bin/mattermost import bulk /import-data/__MM_COMPANY_ID__/mattermost-gate-db.jsonl --apply --workers 4
+# ./bin/mattermost import bulk /import-data/__MM_INSTANCE_KEY__/mattermost-gate-db.jsonl --apply --workers 4
 
 sleep 300
 EOF
 
-# cp ../download_from_s3_aws_lib.go $HOME/import-data/__MM_COMPANY_ID__
+# cp ../download_from_s3_aws_lib.go $HOME/import-data/__MM_INSTANCE_KEY__
 
 _PWD=$PWD
 
-cd ~/import-data/__MM_COMPANY_ID__
+cd ~/import-data/__MM_INSTANCE_KEY__
 
 # go run download_from_s3_aws_lib.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
 
-chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh
+chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__.sh
 
 docker run --rm -it \
  	-v $HOME/.aws:/root/.aws \
 	-v $HOME/import-data/default:/import-data/default \
-	-v $HOME/import-data/__MM_COMPANY_ID__:/import-data \
-	-v $HOME/import-data/__MM_COMPANY_ID__:/import-data/__MM_COMPANY_ID__ \
-	-v $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh:/app/start-mattermost.sh \
+	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data \
+	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data/__MM_INSTANCE_KEY__ \
+	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__.sh:/app/start-mattermost.sh \
     --memory 4000000000 \
     --memory-swap -1 \
 	__MM_DOCKER_REPO__ /app/start-mattermost.sh
