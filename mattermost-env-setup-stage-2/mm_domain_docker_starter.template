@@ -1,6 +1,8 @@
 #!/bin/bash -x
 
-cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh <<EOF
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh <<EOF
 #!/bin/bash -x
 
 mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
@@ -14,20 +16,7 @@ aws --version
 aws s3 mb s3://mm-__MM_INSTANCE_KEY__
 EOF
 
-chmod u+x $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh
-
-docker run --rm -it \
- 	-v $HOME/.aws:/root/.aws \
-	-v $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__-mysql.sh:/init_mysql.sh \
-	haalcala/mm-init-container /init_mysql.sh
-
-[ "__MM_COMPANY_ID__" == "" ] && exit 0
-
-export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
-
-[ ! -e "$HOME/import-data/__MM_COMPANY_ID__" ] && mkdir -p ~/import-data/__MM_COMPANY_ID__
-
-cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
+cat > $DIR/__MM_COMPANY_ID__-config.json <<EOF
 {
 	"ServiceSettings": {
 		"SiteURL": "https://__MM_INSTANCE_DOMAIN__",
@@ -509,6 +498,17 @@ cat > ~/import-data/__MM_COMPANY_ID__/__MM_COMPANY_ID__-config.json <<EOF
 	}
 }  
 EOF
+
+chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh
+
+docker run --rm -it \
+ 	-v $HOME/.aws:/root/.aws \
+	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh:/init_mysql.sh \
+	haalcala/mm-init-container /init_mysql.sh
+
+[ "__MM_COMPANY_ID__" == "" ] && exit 0
+
+export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
 
 cat > $HOME/import-data/__MM_COMPANY_ID__/mm_domain_docker_starter-__MM_COMPANY_ID__.sh <<EOF
 #!/bin/bash -x
