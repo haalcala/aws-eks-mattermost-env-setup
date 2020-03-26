@@ -511,7 +511,7 @@ EOF
 cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
 #!/bin/bash -x
 
-cp /import-data/__MM_INSTANCE_KEY__/__MM_INSTANCE_KEY__-config.json /app/config/config.json
+# cp /import-data/__MM_INSTANCE_KEY__-config.json /app/config/config.json
 # cp /import-data/__MM_INSTANCE_KEY__/__MM_INSTANCE_KEY__-config.json /mattermost/config/config.json
 
 ./bin/mattermost config migrate /app/config/config.json "mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
@@ -537,6 +537,7 @@ docker run --rm -it \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data/__MM_INSTANCE_KEY__ \
 	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh:/app/start-mattermost.sh \
+	-v $DIR/__MM_INSTANCE_KEY__-config.json:/app/config/config.json \
     --memory 4000000000 \
     --memory-swap -1 \
 	__MM_DOCKER_REPO__ /app/start-mattermost.sh
