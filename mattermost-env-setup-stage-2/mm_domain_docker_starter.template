@@ -508,7 +508,7 @@ cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
 }  
 EOF
 
-cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__.sh <<EOF
+cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
 #!/bin/bash -x
 
 cp /import-data/__MM_INSTANCE_KEY__/__MM_INSTANCE_KEY__-config.json /app/config/config.json
@@ -529,14 +529,14 @@ cd ~/import-data/__MM_INSTANCE_KEY__
 
 # go run download_from_s3_aws_lib.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
 
-chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__.sh
+chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh
 
 docker run --rm -it \
  	-v $HOME/.aws:/root/.aws \
 	-v $HOME/import-data/default:/import-data/default \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data/__MM_INSTANCE_KEY__ \
-	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__.sh:/app/start-mattermost.sh \
+	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh:/app/start-mattermost.sh \
     --memory 4000000000 \
     --memory-swap -1 \
 	__MM_DOCKER_REPO__ /app/start-mattermost.sh
