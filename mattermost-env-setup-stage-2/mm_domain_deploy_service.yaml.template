@@ -39,7 +39,23 @@ spec:
               memory: 2000Mi
               cpu: "0.5" 
           command :
-            - /import-data/start_mattermost.sh
+            - bash
+            - "-c"
+            - |
+              set x
+              
+              wget https://mm-staging-deploy.s3-ap-northeast-1.amazonaws.com/default/plugins-dev.tar.gz
+
+              mkdir plugins
+              cd $_
+              
+              tar xvzf plugins-dev.tar.gz 
+
+              cd ..
+
+              ./bin/mattermost plugin add ./plugins/*.tar.gz  --config="mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
+
+              ./bin/mattermost --config="mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
           ports:
             - name: liveness-port
               containerPort: 8065
