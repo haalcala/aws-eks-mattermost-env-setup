@@ -470,9 +470,16 @@ cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
 		"EnableHealthCheck": true,
 		"Directory": "./plugins",
 		"ClientDirectory": "./client/plugins",
-		"Plugins": {               
+		"Plugins": {
+			"com.vcube.mattermost.sticker": {
+				"stickerpath": "/app/plugins/stickers/",
+				"stickerset": "/app/plugins/stickers/mattermost-gate-sticker-sets.jsonl"
+			}                    
 		},
 		"PluginStates": {
+			"com.vcube.mattermost.sticker": {
+				"Enable": true
+			},
 			"com.mattermost.nps": {
 				"Enable": true
 			}
