@@ -347,7 +347,7 @@ cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
 	"LocalizationSettings": {
 		"DefaultServerLocale": "__MM_INSTANCE_SERVER_LOCALE__",
 		"DefaultClientLocale": "__MM_INSTANCE_CLIENT_LOCALE__",
-		"AvailableLocales": ""
+		"AvailableLocales": "__MM_INSTANCE_SERVER_LOCALE__,__MM_INSTANCE_CLIENT_LOCALE__"
 	},
 	"SamlSettings": {
 		"Enable": false,
@@ -470,19 +470,12 @@ cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
 		"EnableHealthCheck": true,
 		"Directory": "./plugins",
 		"ClientDirectory": "./client/plugins",
-		"Plugins": {
-		"com.vcube.mattermost.sticker": {
-			"stickerpath": "/app/stickers/",
-			"stickerset": "/app/stickers/mattermost-gate-sticker-sets.jsonl"
-		}                    
+		"Plugins": {               
 		},
 		"PluginStates": {
-		"com.vcube.mattermost.sticker": {
-			"Enable": true
-		},
-		"com.mattermost.nps": {
-			"Enable": true
-		}
+			"com.mattermost.nps": {
+				"Enable": true
+			}
 		},
 		"EnableMarketplace": true,
 		"RequirePluginSignature": false,
@@ -514,7 +507,11 @@ cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
 # cp /import-data/__MM_INSTANCE_KEY__-config.json /app/config/config.json
 # cp /import-data/__MM_INSTANCE_KEY__/__MM_INSTANCE_KEY__-config.json /mattermost/config/config.json
 
-./bin/mattermost config migrate /app/config/config.json "mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
+aws s3 sync s3://__DEPLOY_BUCKET__/plugins /app/plugins
+
+./bin/mattermost plugin add ./plugins/*.tar.gz
+
+./bin/mattermost config migrate ./config/config.json "mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
 
 # ./bin/mattermost import bulk /import-data/__MM_INSTANCE_KEY__/mattermost-gate-db.jsonl --apply --workers 4
 

@@ -17,9 +17,9 @@ type MattermostDeployment struct {
 	AdminEmail     string `json:"admin-email"`
 	AdminEmailName string `json:"admin-email-name"`
 	CompanyName    string `json:"company-name"`
-	DockerRepoTag  string `json:"docker_repo_tag"`
-	ServerLocale   string `json:"server_locale"`
-	ClientLocale   string `json:"client_locale"`
+	DockerRepoTag  string `json:"docker-repo-tag"`
+	DeployEnv      string `json:"deploy-env"`
+	ClientLocale   string `json:"client-locale"`
 }
 
 type Token struct {
@@ -119,7 +119,6 @@ func LoadDomains() (string, string) {
 
 		domain_tokens := []Token{
 			{Key: "__MM_INSTANCE_COMPANY_NAME__", Value: domain.CompanyName},
-			{Key: "__MM_INSTANCE_SERVER_LOCALE__", Value: domain.ServerLocale, Default: "en"},
 			{Key: "__MM_INSTANCE_CLIENT_LOCALE__", Value: domain.ClientLocale, Default: "en"},
 			{Key: "__MM_INSTANCE_ADMIN_EMAIL_NAME__", Value: domain.AdminEmailName},
 			{Key: "__MM_INSTANCE_ADMIN_EMAIL__", Value: domain.AdminEmail},
@@ -130,7 +129,8 @@ func LoadDomains() (string, string) {
 			{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
 			{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
 			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"},
-			{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag, Default: "latest"}}
+			{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag, Default: "latest"},
+			{Key: "__MM_DEPLOY_ENV__", Value: domain.DeployEnv, Default: "dev"}}
 
 		fmt.Println("domain_tokens:", domain_tokens)
 
