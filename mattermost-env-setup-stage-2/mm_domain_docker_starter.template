@@ -345,9 +345,9 @@ cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
 		"EnableDaily": false
 	},
 	"LocalizationSettings": {
-		"DefaultServerLocale": "__MM_INSTANCE_SERVER_LOCALE__",
+		"DefaultServerLocale": "en",
 		"DefaultClientLocale": "__MM_INSTANCE_CLIENT_LOCALE__",
-		"AvailableLocales": "__MM_INSTANCE_SERVER_LOCALE__,__MM_INSTANCE_CLIENT_LOCALE__"
+		"AvailableLocales": "en,__MM_INSTANCE_CLIENT_LOCALE__"
 	},
 	"SamlSettings": {
 		"Enable": false,
