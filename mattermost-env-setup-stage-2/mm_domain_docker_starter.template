@@ -532,7 +532,7 @@ cd ~/import-data/__MM_INSTANCE_KEY__
 chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh
 
 
-export REPO=__MM_DOCKER_REPO__
+export REPO=__MM_DOCKER_REPO__:__MM_DOCKER_REPO_TAG__
 
 aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin $REPO
 
