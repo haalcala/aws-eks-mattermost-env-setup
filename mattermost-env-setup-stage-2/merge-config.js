@@ -41,33 +41,47 @@ connection.connect(async err => {
 
 		console.log("results:", results);
 
-		connection.query("select CreateAt, Active, Value from Configurations order by CreateAt", function(error, results, fields) {
-			if (error) throw error;
-			// connected!
+		let has_configuration_table;
 
-			let initial_config, current_config;
-
-			results.map(row => {
-				row.CreateAt = new Date(row.CreateAt);
-
-				if (!initial_config) {
-					initial_config = row;
-				}
-				if (row.Active === 1) {
-					current_config = row;
-				}
-			});
-
-			console.log("results:", results);
-			console.log("initial_config:", initial_config);
-			console.log("current_config:", current_config);
-
-			compare_and_patch_config(new_config, JSON.parse(initial_config.Value), JSON.parse(current_config.Value));
-
-			fs.writeFileSync(program.mergedConfig, JSON.stringify(new_config, " ", 4));
-
-			process.exit(0);
+		results.map(row => {
+			if (row.Name === "Configurations") {
+				has_configuration_table = true;
+			}
 		});
+
+		if (has_configuration_table) {
+			connection.query("select CreateAt, Active, Value from Configurations order by CreateAt", function(error, results, fields) {
+				if (error) throw error;
+				// connected!
+
+				let initial_config, current_config;
+
+				results.map(row => {
+					row.CreateAt = new Date(row.CreateAt);
+
+					if (!initial_config) {
+						initial_config = row;
+					}
+					if (row.Active === 1) {
+						current_config = row;
+					}
+				});
+
+				console.log("results:", results);
+				console.log("initial_config:", initial_config);
+				console.log("current_config:", current_config);
+
+				compare_and_patch_config(new_config, JSON.parse(initial_config.Value), JSON.parse(current_config.Value));
+
+				fs.writeFileSync(program.mergedConfig, JSON.stringify(new_config, " ", 4));
+
+				console.log("new_config:", new_config);
+
+				process.exit(0);
+			});
+		} else {
+			process.exit(0);
+		}
 	});
 });
 
