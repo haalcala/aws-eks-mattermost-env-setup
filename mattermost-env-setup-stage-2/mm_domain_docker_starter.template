@@ -529,6 +529,8 @@ EOF
 
 mkdir tmp
 
+touch $DIR/__MM_INSTANCE_KEY__-merged-config.json
+
 docker build -f $DIR/mm_domain_docker_starter-config-merge-Dockerfile -t mm_domain_docker_starter-config-merge ./tmp
 
 docker run --rm \

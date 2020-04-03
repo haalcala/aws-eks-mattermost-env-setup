@@ -44,7 +44,7 @@ connection.connect(async err => {
 		let has_configuration_table;
 
 		results.map(row => {
-			if (row.Name === "Configurations") {
+			if (Object.values(row)[0] === "Configurations") {
 				has_configuration_table = true;
 			}
 		});
