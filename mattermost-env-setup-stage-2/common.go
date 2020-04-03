@@ -129,7 +129,7 @@ func LoadDomains() (string, string) {
 			{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
 			{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
 			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"},
-			{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag, Default: "latest"},
+			{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag, Default: "test"},
 			{Key: "__MM_DEPLOY_ENV__", Value: domain.DeployEnv, Default: "dev"}}
 
 		fmt.Println("domain_tokens:", domain_tokens)
