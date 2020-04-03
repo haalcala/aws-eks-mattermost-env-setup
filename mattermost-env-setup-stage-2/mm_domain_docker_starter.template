@@ -529,7 +529,7 @@ EOF
 
 mkdir tmp
 
-touch $DIR/__MM_INSTANCE_KEY__-merged-config.json
+cp $DIR/__MM_INSTANCE_KEY__-config.json $DIR/__MM_INSTANCE_KEY__-merged-config.json
 
 docker build -f $DIR/mm_domain_docker_starter-config-merge-Dockerfile -t mm_domain_docker_starter-config-merge ./tmp
 
@@ -542,9 +542,6 @@ docker run --rm \
 	-v $DIR/../package.json:/app/package.json \
 	mm_domain_docker_starter-config-merge \
 	bash /app/entrypoint.sh
-
-
-exit 0
 
 
 cat > ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
@@ -585,8 +582,8 @@ docker run --rm -it \
 	-v $HOME/import-data/default:/import-data/default \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data/__MM_INSTANCE_KEY__ \
-	-v ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh:/app/start-mattermost.sh \
-	-v ./__MM_INSTANCE_KEY__-config.json:/app/config/config.json \
+	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh:/app/start-mattermost.sh \
+	-v $DIR/__MM_INSTANCE_KEY__-merged-config.json:/app/config/config.json \
     --memory 4000000000 \
     --memory-swap -1 \
 	$REPO /app/start-mattermost.sh
