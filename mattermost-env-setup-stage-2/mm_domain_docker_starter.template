@@ -1,13 +1,17 @@
 #!/bin/bash -x
 
+_PWD=$PWD
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh <<EOF
+cd $DIR
+
+cat > ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh <<EOF
 #!/bin/bash -x
 
 mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
 
-mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '__MM_DB_USER__'@'%' IDENTIFIED BY '__MM_DB_PASS__';"
+mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '__MM_DB_USER__'@'%' IDENTIFIED WITH mysql_native_password	 BY '__MM_DB_PASS__';"
 
 mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '__MM_DB_USER__'@'%';"
 
@@ -16,16 +20,17 @@ aws --version
 aws s3 mb s3://mm-__MM_INSTANCE_KEY__
 EOF
 
-chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh
+chmod u+x ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh
 
 docker run --rm -it \
+	--network dockernet \
  	-v $HOME/.aws:/root/.aws \
 	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh:/init_mysql.sh \
 	haalcala/mm-init-container /init_mysql.sh
 
 export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
 
-cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
+cat > ./__MM_INSTANCE_KEY__-config.json <<EOF
 {
 	"ServiceSettings": {
 		"SiteURL": "https://__MM_INSTANCE_DOMAIN__",
@@ -508,8 +513,44 @@ cat > $DIR/__MM_INSTANCE_KEY__-config.json <<EOF
 }  
 EOF
 
-cat > $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
+cat > ./mm_domain_docker_starter-config-merge-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
 #!/bin/bash -x
+
+npm install
+
+node merge-config.js -b config.json -h __MM_DB_HOST__ -P __MM_DB_PORT__ -u __MM_DB_USER__ -p __MM_DB_PASS__ -n __MM_DB_NAME__ -m merged-config.json
+EOF
+
+cat > ./mm_domain_docker_starter-config-merge-Dockerfile <<EOF
+FROM node:12.16.1
+
+WORKDIR /app
+EOF
+
+mkdir tmp
+
+docker build -f $DIR/mm_domain_docker_starter-config-merge-Dockerfile -t mm_domain_docker_starter-config-merge ./tmp
+
+docker run --rm \
+	--network dockernet \
+	-v $DIR/mm_domain_docker_starter-config-merge-__MM_INSTANCE_KEY__-entrypoint.sh:/app/entrypoint.sh \
+	-v $DIR/__MM_INSTANCE_KEY__-config.json:/app/config.json \
+	-v $DIR/__MM_INSTANCE_KEY__-merged-config.json:/app/merged-config.json \
+	-v $DIR/../merge-config.js:/app/merge-config.js \
+	-v $DIR/../package.json:/app/package.json \
+	mm_domain_docker_starter-config-merge \
+	bash /app/entrypoint.sh
+
+
+exit 0
+
+
+cat > ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
+#!/bin/bash -x
+
+apt update
+
+apt install
 
 # cp /import-data/__MM_INSTANCE_KEY__-config.json /app/config/config.json
 # cp /import-data/__MM_INSTANCE_KEY__/__MM_INSTANCE_KEY__-config.json /mattermost/config/config.json
@@ -523,13 +564,12 @@ EOF
 
 # cp ../download_from_s3_aws_lib.go $HOME/import-data/__MM_INSTANCE_KEY__
 
-_PWD=$PWD
 
-cd ~/import-data/__MM_INSTANCE_KEY__
+# cd ~/import-data/__MM_INSTANCE_KEY__
 
 # go run download_from_s3_aws_lib.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
 
-chmod u+x $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh
+chmod u+x ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh
 
 
 export REPO=__MM_DOCKER_REPO__:__MM_DOCKER_REPO_TAG__
@@ -543,8 +583,8 @@ docker run --rm -it \
 	-v $HOME/import-data/default:/import-data/default \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data \
 	-v $HOME/import-data/__MM_INSTANCE_KEY__:/import-data/__MM_INSTANCE_KEY__ \
-	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh:/app/start-mattermost.sh \
-	-v $DIR/__MM_INSTANCE_KEY__-config.json:/app/config/config.json \
+	-v ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh:/app/start-mattermost.sh \
+	-v ./__MM_INSTANCE_KEY__-config.json:/app/config/config.json \
     --memory 4000000000 \
     --memory-swap -1 \
 	$REPO /app/start-mattermost.sh
@@ -561,6 +601,6 @@ docker run --rm -it \
 #     mattermost/mattermost-prod-app:5.18.0 \
 #	  sh
 
-
+cd $_PWD
 
 
