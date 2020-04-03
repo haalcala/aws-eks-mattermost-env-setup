@@ -89,7 +89,7 @@ connection.connect(async err => {
 function compare_and_patch_config(new_config, initial_config, current_config) {
 	for (prop in new_config) {
 		console.log("**** Processing prop:", prop);
-		if (current_config[prop] === null && new_config[prop] !== null) {
+		if ((current_config[prop] === null && new_config[prop] !== null) || (current_config[prop] === undefined && new_config[prop] !== undefined)) {
 			current_config[prop] = new_config[prop];
 		} else if (new_config[prop] !== null && typeof new_config[prop] == "object" && !(new_config[prop] instanceof Array || new_config[prop] instanceof Date)) {
 			console.log("Processing object:", prop, new_config[prop]);
