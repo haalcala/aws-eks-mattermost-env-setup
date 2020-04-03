@@ -50,6 +50,7 @@ connection.connect(async err => {
 		});
 
 		if (has_configuration_table) {
+			console.log("select CreateAt, Active, Value from Configurations order by CreateAt");
 			connection.query("select CreateAt, Active, Value from Configurations order by CreateAt", function(error, results, fields) {
 				if (error) throw error;
 				// connected!
@@ -88,18 +89,18 @@ connection.connect(async err => {
 function compare_and_patch_config(new_config, initial_config, current_config) {
 	for (prop in new_config) {
 		console.log("**** Processing prop:", prop);
-		if (current_config[prop] !== null && new_config[prop] === null) {
-			new_config[prop] = current_config[prop];
+		if (current_config[prop] === null && new_config[prop] !== null) {
+			current_config[prop] = new_config[prop];
 		} else if (new_config[prop] !== null && typeof new_config[prop] == "object" && !(new_config[prop] instanceof Array || new_config[prop] instanceof Date)) {
 			console.log("Processing object:", prop, new_config[prop]);
 
 			if (
-				(current_config[prop] !== undefined && initial_config[prop] === undefined) ||
+				(current_config[prop] === undefined && initial_config[prop] !== undefined) ||
 				(initial_config[prop] !== undefined && current_config[prop] === undefined) ||
-				(current_config[prop] !== null && initial_config[prop] === null) ||
+				(current_config[prop] === null && initial_config[prop] !== null) ||
 				(initial_config[prop] !== null && current_config[prop] === null)
 			) {
-				new_config[prop] = current_config[prop];
+				current_config[prop] = new_config[prop];
 			} else {
 				compare_and_patch_config(new_config[prop], initial_config[prop], current_config[prop]);
 			}
