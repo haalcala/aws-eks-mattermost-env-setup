@@ -51,32 +51,39 @@ connection.connect(async err => {
 
 		if (has_configuration_table) {
 			console.log("select CreateAt, Active, Value from Configurations order by CreateAt");
-			connection.query("select CreateAt, Active, Value from Configurations order by CreateAt", function(error, results, fields) {
+			connection.query("select CreateAt, Active, Value from Configurations order by CreateAt", async (error, results, fields) => {
+				let initial_config, current_config;
+
 				if (error) throw error;
 				// connected!
 
-				let initial_config, current_config;
+				try {
+					results.map(row => {
+						row.CreateAt = new Date(row.CreateAt);
 
-				results.map(row => {
-					row.CreateAt = new Date(row.CreateAt);
+						if (!initial_config) {
+							initial_config = row;
+						}
 
-					if (!initial_config) {
-						initial_config = row;
-					}
-					if (row.Active === 1) {
-						current_config = row;
-					}
-				});
+						if (row.Active === 1) {
+							current_config = row;
+						}
+					});
 
-				console.log("results:", results);
-				console.log("initial_config:", initial_config);
+					console.log("results.length:", results.length);
+					console.log("initial_config:", initial_config);
+					console.log("current_config:", current_config);
+
+					compare_and_patch_config(new_config, JSON.parse(initial_config.Value), JSON.parse(current_config.Value));
+
+					fs.writeFileSync(program.mergedConfig, JSON.stringify(current_config, " ", 4));
+				} catch (e) {
+					console.log("e:", e);
+				}
+
 				console.log("current_config:", current_config);
 
-				compare_and_patch_config(new_config, JSON.parse(initial_config.Value), JSON.parse(current_config.Value));
-
-				fs.writeFileSync(program.mergedConfig, JSON.stringify(new_config, " ", 4));
-
-				console.log("new_config:", new_config);
+				await setTimeout(() => {}, 2000);
 
 				process.exit(0);
 			});
