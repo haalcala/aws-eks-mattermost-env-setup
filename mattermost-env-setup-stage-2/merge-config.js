@@ -100,35 +100,39 @@ function compare_and_patch_config(new_config, initial_config, current_config) {
 		console.log("initial_config[" + prop + "]:", initial_config[prop]);
 		console.log("current_config[" + prop + "]:", current_config[prop]);
 
-		let changed_by_user =
-			(current_config[prop] !== undefined && initial_config[prop] === undefined) ||
-			(initial_config[prop] !== undefined && current_config[prop] === undefined) ||
-			(current_config[prop] !== null && initial_config[prop] === null) ||
-			(initial_config[prop] !== null && current_config[prop] === null) ||
-			current_config[prop] !== initial_config[prop];
-
-		if (current_config[prop] instanceof Array) {
-			changed_by_user = current_config[prop].join("") !== initial_config[prop].join("");
-		}
-
-		console.log("changed_by_user:", changed_by_user);
-
-		if (changed_by_user) {
-			console.log("--- prop", prop, 'was CHANGED by the user. NOT TOUCHING! "', initial_config[prop], '" --> "', current_config[prop], '"');
+		if (typeof current_config[prop] === "object") {
+			compare_and_patch_config(new_config[prop], initial_config[prop], current_config[prop]);
 		} else {
-			console.log("--- prop", prop, "has NOT been changed by the user");
+			let changed_by_user =
+				(current_config[prop] !== undefined && initial_config[prop] === undefined) ||
+				(initial_config[prop] !== undefined && current_config[prop] === undefined) ||
+				(current_config[prop] !== null && initial_config[prop] === null) ||
+				(initial_config[prop] !== null && current_config[prop] === null) ||
+				current_config[prop] !== initial_config[prop];
 
-			let changed_in_template = new_config[prop] !== current_config[prop];
-
-			if (new_config[prop] instanceof Array) {
-				changed_in_template = new_config[prop].join("") !== current_config[prop].join("");
+			if (current_config[prop] instanceof Array) {
+				changed_by_user = current_config[prop].join("") !== initial_config[prop].join("");
 			}
 
-			if (changed_in_template) {
-				console.log("--- prop", prop, 'was CHANGED in the template. CHANGING!"', new_config[prop], '" --> "', current_config[prop], '"');
-				current_config[prop] = new_config[prop];
+			console.log("changed_by_user:", changed_by_user);
+
+			if (changed_by_user) {
+				console.log("--- prop", prop, 'was CHANGED by the user. NOT TOUCHING! "', initial_config[prop], '" --> "', current_config[prop], '"');
 			} else {
-				console.log("--- prop", prop, "was NOT changed in the template.");
+				console.log("--- prop", prop, "has NOT been changed by the user");
+
+				let changed_in_template = new_config[prop] !== current_config[prop];
+
+				if (new_config[prop] instanceof Array) {
+					changed_in_template = new_config[prop].join("") !== current_config[prop].join("");
+				}
+
+				if (changed_in_template) {
+					console.log("--- prop", prop, 'was CHANGED in the template. CHANGING!"', new_config[prop], '" --> "', current_config[prop], '"');
+					current_config[prop] = new_config[prop];
+				} else {
+					console.log("--- prop", prop, "was NOT changed in the template.");
+				}
 			}
 		}
 	}
