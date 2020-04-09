@@ -11,7 +11,7 @@ func main() {
 
 		fmt.Println("Key:", token.Key, "val:", val)
 
-		if val == "" && token.Default == "" {
+		if val == "" && token.Default == "" && token.Required {
 			fmt.Println("Missing required environment variable:", token)
 			os.Exit(1)
 		}
