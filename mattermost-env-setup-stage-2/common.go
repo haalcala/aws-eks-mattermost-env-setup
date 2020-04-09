@@ -56,7 +56,11 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__MM_PROXY_PROXY_CONFIG_VERSION__", Value: strings.Trim(os.Getenv("__MM_PROXY_PROXY_CONFIG_VERSION__"), "\r"), Default: "v1"},
 	{Key: "__MATTERMOST_PUSH_NOTIFICATION_URL__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_NOTIFICATION_URL__"), "\r"), Default: "https://push-test.mattermost.com"},
 	{Key: "__MATTERMOST_PUSH_PROXY_DOCKER_REPO__", Value: strings.Trim(os.Getenv("__MATTERMOST_PUSH_PROXY_DOCKER_REPO__"), "\r"), Default: "haalcala/mattermost-push-proxy"},
-	{Key: "__MM_DOCKER_REPO__", Value: strings.Trim(os.Getenv("__MM_DOCKER_REPO__"), "\r"), Default: "haalcala/mattermost-prod"}}
+	{Key: "__MM_DOCKER_REPO__", Value: strings.Trim(os.Getenv("__MM_DOCKER_REPO__"), "\r"), Default: "haalcala/mattermost-prod"},
+	{Key: "__MM_CLUSTER_DRIVER__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_DRIVER__"), "\r"), Default: ""},
+	{Key: "__MM_CLUSTER_REDIS_HOST__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_HOST__"), "\r"), Default: "localhost"},
+	{Key: "__MM_CLUSTER_REDIS_PORT__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_PORT__"), "\r"), Default: "6379"},
+	{Key: "__MM_CLUSTER_REDIS_PASS__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_PASS__"), "\r"), Default: ""}}
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
 	dat, err := ioutil.ReadFile(templateFile)
@@ -127,7 +131,7 @@ func LoadDomains() (string, string) {
 			{Key: "__MM_INSTANCE_REPLICAS__", Value: domain.Replicas},
 			{Key: "__MM_COMPANY_ID__", Value: domain.CompanyId},
 			{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
-			{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
+			{Key: "__MM_DB_USER__", Value: domain.Key},
 			{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"},
 			{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag, Default: "test"},
 			{Key: "__MM_DEPLOY_ENV__", Value: domain.DeployEnv, Default: "dev"}}

@@ -392,7 +392,7 @@ cat > ./__MM_INSTANCE_KEY__-config.json <<EOF
 	},
 	"ClusterSettings": {
 		"Enable": false,
-		"ClusterName": "",
+		"ClusterName": "__MM_INSTANCE_KEY__",
 		"OverrideHostname": "",
 		"NetworkInterface": "",
 		"BindAddress": "",
@@ -404,7 +404,11 @@ cat > ./__MM_INSTANCE_KEY__-config.json <<EOF
 		"StreamingPort": 8075,
 		"MaxIdleConns": 100,
 		"MaxIdleConnsPerHost": 128,
-		"IdleConnTimeoutMilliseconds": 90000
+		"IdleConnTimeoutMilliseconds": 90000,
+        "ClusterDriver": "__MM_CLUSTER_DRIVER__",
+        "ClusterRedisHost": "__MM_CLUSTER_REDIS_HOST__",
+        "ClusterRedisPort": "__MM_CLUSTER_REDIS_PORT__",
+        "ClusterRedisPass": "__MM_CLUSTER_REDIS_PASS__"
 	},
 	"MetricsSettings": {
 		"Enable": false,
