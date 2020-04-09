@@ -81,7 +81,7 @@ connection.connect(async (err) => {
 					console.log("e:", e);
 				}
 
-				console.log("current_config:", current_config);
+				console.log("updated current_config:", current_config);
 
 				await setTimeout(() => {}, 2000);
 
@@ -95,7 +95,7 @@ connection.connect(async (err) => {
 
 function compare_and_patch_config(new_config, initial_config, current_config) {
 	for (prop in new_config) {
-		console.log("**** Processing prop:", prop);
+		console.log("\n**** Processing prop:", prop);
 		console.log("new_config[" + prop + "]:", new_config[prop]);
 		console.log("initial_config[" + prop + "]:", initial_config[prop]);
 		console.log("current_config[" + prop + "]:", current_config[prop]);
@@ -128,7 +128,7 @@ function compare_and_patch_config(new_config, initial_config, current_config) {
 				}
 
 				if (changed_in_template) {
-					console.log("--- prop", prop, 'was CHANGED in the template. CHANGING!"', new_config[prop], '" --> "', current_config[prop], '"');
+					console.log("--- prop", prop, 'was CHANGED in the template. CHANGING!"', current_config[prop], '" --> "', new_config[prop], '"');
 					current_config[prop] = new_config[prop];
 				} else {
 					console.log("--- prop", prop, "was NOT changed in the template.");
