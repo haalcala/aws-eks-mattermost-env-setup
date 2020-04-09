@@ -25,6 +25,7 @@ func main() {
 	_tokens = append(_tokens, Token{Key: "__ALB_DOMAIN_RULES__", Value: alb_domain_conf})
 
 	ProcessTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-aws-alb.yaml.template", "./deploy-aws-alb.yaml", _tokens, 0666)
 	ProcessTemplate("./deploy-smtp.yaml.template", "./deploy-smtp.yaml", _tokens, 0666)
 	ProcessTemplate("./deploy-push-proxy.yaml.template", "./deploy-push-proxy.yaml", _tokens, 0666)
 	ProcessTemplate("./deploy-redis.yaml.template", "./deploy-redis.yaml", _tokens, 0666)
