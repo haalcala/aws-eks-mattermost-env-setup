@@ -16,11 +16,10 @@ spec:
     metadata:
       labels:
         app: redis
-        config_version: "__MM_PROXY_PROXY_CONFIG_VERSION__"
     spec:
       containers:
         - name: redis
-          image: __MATTERMOST_PUSH_PROXY_DOCKER_REPO__
+          image: redis
           ports:
             - containerPort: 6379
 
