@@ -26,6 +26,7 @@ type Token struct {
 	Key,
 	Value,
 	Default string
+	Required boolean
 }
 
 var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Getenv("__AWS_ACCESS_KEY_ID__"), "\r"), Required: true},
