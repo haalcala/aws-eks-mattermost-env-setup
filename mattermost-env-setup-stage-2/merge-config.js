@@ -70,18 +70,21 @@ connection.connect(async (err) => {
 						}
 					});
 
+					initial_config = JSON.parse(initial_config.Value);
+					current_config = JSON.parse(current_config.Value);
+
 					console.log("results.length:", results.length);
 					console.log("initial_config:", initial_config);
 					console.log("current_config:", current_config);
 
-					compare_and_patch_config(new_config, JSON.parse(initial_config.Value), JSON.parse(current_config.Value));
+					compare_and_patch_config(new_config, initial_config, current_config);
 
 					fs.writeFileSync(program.mergedConfig, JSON.stringify(current_config, " ", 4));
 				} catch (e) {
 					console.log("e:", e);
 				}
 
-				console.log("updated current_config:", current_config);
+				console.log("updated current_config:", JSON.stringify(current_config, " ", 4));
 
 				await setTimeout(() => {}, 2000);
 
@@ -100,39 +103,49 @@ function compare_and_patch_config(new_config, initial_config, current_config) {
 		console.log("initial_config[" + prop + "]:", initial_config[prop]);
 		console.log("current_config[" + prop + "]:", current_config[prop]);
 
-		if (typeof current_config[prop] === "object") {
+		if (typeof new_config[prop] === "object" && !(new_config[prop] instanceof Array) && new_config[prop] !== null) {
 			compare_and_patch_config(new_config[prop], initial_config[prop], current_config[prop]);
-		} else {
-			let changed_by_user =
-				(current_config[prop] !== undefined && initial_config[prop] === undefined) ||
-				(initial_config[prop] !== undefined && current_config[prop] === undefined) ||
-				(current_config[prop] !== null && initial_config[prop] === null) ||
-				(initial_config[prop] !== null && current_config[prop] === null) ||
-				current_config[prop] !== initial_config[prop];
+			continue;
+		}
 
-			if (current_config[prop] instanceof Array) {
-				changed_by_user = current_config[prop].join("") !== initial_config[prop].join("");
+		if (initial_config[prop] === undefined && current_config[prop] === undefined && new_config[prop] !== undefined) {
+			console.log("--- prop", prop, "has NOT been changed by the user");
+			console.log("--- prop", prop, 'was CHANGED in the template. CHANGING!"', current_config[prop], '" --> "', new_config[prop], '"');
+			current_config[prop] = new_config[prop];
+			continue;
+		}
+
+		let changed_by_user = current_config[prop] !== initial_config[prop];
+
+		if (changed_by_user) {
+			console.log("--- prop", prop, 'was CHANGED by the user. NOT TOUCHING! "', initial_config[prop], '" --> "', current_config[prop], '"');
+			continue;
+		}
+
+		if (current_config[prop] instanceof Array) {
+			changed_by_user = current_config[prop].join("") !== initial_config[prop].join("");
+		} else if (typeof current_config[prop] !== "object") {
+			changed_by_user = current_config[prop] !== initial_config[prop];
+		}
+
+		console.log("changed_by_user:", changed_by_user);
+
+		if (changed_by_user) {
+			console.log("--- prop", prop, 'was CHANGED by the user. NOT TOUCHING! "', initial_config[prop], '" --> "', current_config[prop], '"');
+		} else {
+			console.log("--- prop", prop, "has NOT been changed by the user");
+
+			let changed_in_template = current_config[prop] !== new_config[prop];
+
+			if (new_config[prop] instanceof Array) {
+				changed_in_template = new_config[prop].join("") !== current_config[prop].join("");
 			}
 
-			console.log("changed_by_user:", changed_by_user);
-
-			if (changed_by_user) {
-				console.log("--- prop", prop, 'was CHANGED by the user. NOT TOUCHING! "', initial_config[prop], '" --> "', current_config[prop], '"');
+			if (changed_in_template) {
+				console.log("--- prop", prop, 'was CHANGED in the template. CHANGING!"', current_config[prop], '" --> "', new_config[prop], '"');
+				current_config[prop] = new_config[prop];
 			} else {
-				console.log("--- prop", prop, "has NOT been changed by the user");
-
-				let changed_in_template = new_config[prop] !== current_config[prop];
-
-				if (new_config[prop] instanceof Array) {
-					changed_in_template = new_config[prop].join("") !== current_config[prop].join("");
-				}
-
-				if (changed_in_template) {
-					console.log("--- prop", prop, 'was CHANGED in the template. CHANGING!"', current_config[prop], '" --> "', new_config[prop], '"');
-					current_config[prop] = new_config[prop];
-				} else {
-					console.log("--- prop", prop, "was NOT changed in the template.");
-				}
+				console.log("--- prop", prop, "was NOT changed in the template.");
 			}
 		}
 	}
