@@ -43,6 +43,12 @@ spec:
             - "-c"
             - |
               set x
+
+              ordinal=${BASH_REMATCH[1]}
+
+              if [[ $ordinal -eq 0 ]]; then
+                export MM_REDIS_CLUSTER_ROLE=master
+              fi
               
               wget https://mm-staging-deploy.s3-ap-northeast-1.amazonaws.com/default/plugins-dev.tar.gz
 
