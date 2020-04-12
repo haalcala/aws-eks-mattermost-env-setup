@@ -20,13 +20,11 @@ aws --version
 aws s3 mb s3://mm-__MM_INSTANCE_KEY__
 EOF
 
-chmod u+x ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh
-
 docker run --rm -it \
 	--network dockernet \
  	-v $HOME/.aws:/root/.aws \
 	-v $DIR/mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh:/init_mysql.sh \
-	haalcala/mm-init-container /init_mysql.sh
+	haalcala/mm-init-container bash -x /init_mysql.sh
 
 export IMPORT_EXTERNAL_BUCKET=__IMPORT_EXTERNAL_BUCKET__
 
@@ -545,7 +543,7 @@ docker run --rm \
 	-v $DIR/../merge-config.js:/app/merge-config.js \
 	-v $DIR/../package.json:/app/package.json \
 	mm_domain_docker_starter-config-merge \
-	bash /app/entrypoint.sh
+	bash -x /app/entrypoint.sh
 
 
 cat > ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
@@ -572,9 +570,6 @@ EOF
 
 # go run download_from_s3_aws_lib.go __IMPORT_EXTERNAL_BUCKET__ __IMPORT_EXTERNAL_BUCKET_REGION__
 
-chmod u+x ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-entrypoint.sh
-
-
 export REPO=__MM_DOCKER_REPO__:__MM_DOCKER_REPO_TAG__
 
 aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin $REPO
@@ -590,7 +585,7 @@ docker run --rm -it \
 	-v $DIR/__MM_INSTANCE_KEY__-merged-config.json:/app/config/config.json \
     --memory 4000000000 \
     --memory-swap -1 \
-	$REPO /app/start-mattermost.sh
+	$REPO bash -x /app/start-mattermost.sh
 
 # docker run --rm -it \
 #     -v $HOME/.aws:/root/.aws \
