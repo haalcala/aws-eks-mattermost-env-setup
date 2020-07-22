@@ -4,19 +4,19 @@ metadata:
   name: vcube-vid-oauth-provider-conf-files
 data:
     ormconfig.json : |
-        {
-        "type": "mysql",
-        "host": "__MM_DB_HOST__",
+      {
+        "type": mysql,
+        "host": __MM_DB_HOST__,
         "port": __MM_DB_PORT__,
-        "username": "vcube_vid_oauth",
-        "password": "vcube2192",
-        "database": "__VCUBE_VID_OAUTH_DB_NAME__",
+        "username": vcube_vid_oauth,
+        "password": vcube2192,
+        "database": __VCUBE_VID_OAUTH_DB_NAME__,
         "synchronize": true,
         "logging": false,
         "entities": ["src/entity/**/*.ts"],
         "migrations": ["src/migration/**/*.ts"],
         "subscribers": ["src/subscriber/**/*.ts"]
-        }
+      }
 
 ---
 
@@ -25,14 +25,14 @@ kind: ConfigMap
 metadata:
   name: vcube-vid-oauth-provider-env
 data:
-    INITIAL_ADMIN_USERNAME : __VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME__
-    INITIAL_ADMIN_PASSWORD : __VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD__
-    EXPRESS_SESSION_SECRET : __VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET__
-    VMEETING_URL : __VCUBE_VID_OAUTH_VMEETING_URL__
-    VID_CONSUMER_KEY : __VCUBE_VID_OAUTH_VID_CONSUMER_KEY__
-    VID_REST_PWD : __VCUBE_VID_OAUTH_VID_REST_PWD__
-    VID_REST_URL : __VCUBE_VID_OAUTH_VID_REST_URL__
-    VID_SECRET_AUTH_CODE : __VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__
+  INITIAL_ADMIN_USERNAME: __VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME__
+  INITIAL_ADMIN_PASSWORD: __VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD__
+  EXPRESS_SESSION_SECRET: __VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET__
+  VMEETING_URL: __VCUBE_VID_OAUTH_VMEETING_URL__
+  VID_CONSUMER_KEY: __VCUBE_VID_OAUTH_VID_CONSUMER_KEY__
+  VID_REST_PWD: __VCUBE_VID_OAUTH_VID_REST_PWD__
+  VID_REST_URL: __VCUBE_VID_OAUTH_VID_REST_URL__
+  VID_SECRET_AUTH_CODE: __VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__
 
 ---
 
@@ -41,7 +41,7 @@ kind: Deployment
 metadata:
   name: vcube-vid-oauth-provider
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -64,45 +64,45 @@ spec:
           env:
             # Define the environment variable
             - name: INITIAL_ADMIN_USERNAME
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: INITIAL_ADMIN_USERNAME
+                  name: vcube-vid-oauth-provider-env
+                  key: INITIAL_ADMIN_USERNAME
             - name: INITIAL_ADMIN_PASSWORD
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: INITIAL_ADMIN_PASSWORD
+                  name: vcube-vid-oauth-provider-env
+                  key: INITIAL_ADMIN_PASSWORD
             - name: EXPRESS_SESSION_SECRET
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: EXPRESS_SESSION_SECRET
+                  name: vcube-vid-oauth-provider-env
+                  key: EXPRESS_SESSION_SECRET
             - name: VMEETING_URL
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: VMEETING_URL
+                  name: vcube-vid-oauth-provider-env
+                  key: VMEETING_URL
             - name: VID_CONSUMER_KEY
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: VID_CONSUMER_KEY
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_CONSUMER_KEY
             - name: VID_REST_PWD
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: VID_REST_PWD
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_REST_PWD
             - name: VID_REST_URL
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: VID_REST_URL
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_REST_URL
             - name: VID_SECRET_AUTH_CODE
-            valueFrom:
+              valueFrom:
                 configMapKeyRef:
-                mame: vcube-vid-oauth-provider-env
-                key: VID_SECRET_AUTH_CODE
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_SECRET_AUTH_CODE
 
           volumeMounts:
             - name: vcube-vid-oauth-provider-conf
@@ -110,13 +110,13 @@ spec:
               subPath: ormconfig.json
       volumes:
         - name: vcube-vid-oauth-provider-conf
-        configMap:
+          configMap:
             # Provide the name of the ConfigMap you want to mount.
             name: vcube-vid-oauth-provider-conf-files
             # An array of keys from the ConfigMap to create as files
             items:
             - key: "ormconfig.json"
-            path: "ormconfig.json"
+              path: "ormconfig.json"
 
 ---
 apiVersion: v1
