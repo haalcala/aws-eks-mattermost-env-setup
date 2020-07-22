@@ -29,7 +29,8 @@ type Token struct {
 	Required bool
 }
 
-var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Getenv("__AWS_ACCESS_KEY_ID__"), "\r"), Required: true},
+var tokens = []Token{
+	{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Getenv("__AWS_ACCESS_KEY_ID__"), "\r"), Required: true},
 	{Key: "__AWS_SECRET_ACCESS_KEY__", Value: strings.Trim(os.Getenv("__AWS_SECRET_ACCESS_KEY__"), "\r"), Required: true},
 	{Key: "__AWS_PROD_S3_ACCESS_KEY_ID__", Value: strings.Trim(os.Getenv("__AWS_PROD_S3_ACCESS_KEY_ID__"), "\r"), Required: true},
 	{Key: "__AWS_PROD_S3_SECRET_ACCESS_KEY__", Value: strings.Trim(os.Getenv("__AWS_PROD_S3_SECRET_ACCESS_KEY__"), "\r"), Required: true},
@@ -61,7 +62,16 @@ var tokens = []Token{{Key: "__AWS_ACCESS_KEY_ID__", Value: strings.Trim(os.Geten
 	{Key: "__MM_CLUSTER_DRIVER__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_DRIVER__"), "\r"), Default: "", Required: true},
 	{Key: "__MM_CLUSTER_REDIS_HOST__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_HOST__"), "\r"), Default: "localhost", Required: true},
 	{Key: "__MM_CLUSTER_REDIS_PORT__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_PORT__"), "\r"), Default: "6379", Required: true},
-	{Key: "__MM_CLUSTER_REDIS_PASS__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_PASS__"), "\r"), Default: "", Required: false}}
+	{Key: "__MM_CLUSTER_REDIS_PASS__", Value: strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_PASS__"), "\r"), Default: "", Required: false},
+	{Key: "__VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_VMEETING_URL__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VMEETING_URL__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_VID_CONSUMER_KEY__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_CONSUMER_KEY__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_VID_REST_PWD__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_REST_PWD__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_VID_REST_URL__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_REST_URL__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__"), "\r"), Default: "", Required: true},
+}
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
 	dat, err := ioutil.ReadFile(templateFile)
