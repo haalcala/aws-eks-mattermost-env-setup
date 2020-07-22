@@ -134,8 +134,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - port: 8066
-      targetPort: 8066
+    - port: 4003
+      targetPort: 4003
       protocol: TCP
   selector:
     app: vcube-vid-oauth-provider
