@@ -71,6 +71,8 @@ var tokens = []Token{
 	{Key: "__VCUBE_VID_OAUTH_VID_REST_PWD__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_REST_PWD__"), "\r"), Default: "", Required: true},
 	{Key: "__VCUBE_VID_OAUTH_VID_REST_URL__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_REST_URL__"), "\r"), Default: "", Required: true},
 	{Key: "__VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_CONTAINER_VERSION__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_CONTAINER_VERSION__"), "\r"), Default: "", Required: true},
+	{Key: "__VCUBE_VID_OAUTH_CONTAINER_REPO__", Value: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_CONTAINER_REPO__"), "\r"), Default: "", Required: true},
 }
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []Token, mode os.FileMode) string {
