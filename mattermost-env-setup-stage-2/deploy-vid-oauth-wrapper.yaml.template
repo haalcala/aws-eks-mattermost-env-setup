@@ -5,12 +5,12 @@ metadata:
 data:
     ormconfig.json : |
       {
-        "type": mysql,
-        "host": __MM_DB_HOST__,
-        "port": __MM_DB_PORT__,
-        "username": vcube_vid_oauth,
-        "password": vcube2192,
-        "database": __VCUBE_VID_OAUTH_DB_NAME__,
+        "type": "mysql",
+        "host": "__MM_DB_HOST__",
+        "port": "__MM_DB_PORT__",
+        "username": "__VCUBE_VID_OAUTH_DB_USERNAME__",
+        "password": "__VCUBE_VID_OAUTH_DB_PASSWORD__",
+        "database": "__VCUBE_VID_OAUTH_DB_NAME__",
         "synchronize": true,
         "logging": false,
         "entities": ["src/entity/**/*.ts"],
@@ -109,6 +109,14 @@ spec:
               mountPath: /app/ormconfig.json
               subPath: ormconfig.json
       volumes:
+        - name: vcube-vid-oauth-provider-conf
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: vcube-vid-oauth-provider-conf-files
+            # An array of keys from the ConfigMap to create as files
+            items:
+            - key: "ormconfig.json"
+              path: "ormconfig.json"
         - name: vcube-vid-oauth-provider-conf
           configMap:
             # Provide the name of the ConfigMap you want to mount.
