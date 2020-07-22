@@ -132,7 +132,7 @@ kind: Service
 metadata:
   name: vcube-vid-oauth-provider-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 4003
       targetPort: 4003
