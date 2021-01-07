@@ -5,8 +5,16 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
+	"time"
+)
+
+const (
+	EKS_STATUS_CREATING              string = "CREATING"
+	RDS_DB_INSTANCE_STATUS_CREATING  string = "creating"
+	RDS_DB_INSTANCE_STATUS_AVAILABLE string = "available"
 )
 
 func Execute(command string, showCommand, showOutput bool) (error, string, string) {
@@ -77,4 +85,15 @@ func Execute(command string, showCommand, showOutput bool) (error, string, strin
 	}
 
 	return err, strings.Trim(output, "\n"), strings.Trim(errput, "\n")
+}
+
+func ExitErrorf(msg string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, msg+"\n", args...)
+	os.Exit(1)
+}
+
+func WaitUntilTrue(cb func() bool) {
+	for !cb() {
+		time.Sleep(time.Second * 10)
+	}
 }
