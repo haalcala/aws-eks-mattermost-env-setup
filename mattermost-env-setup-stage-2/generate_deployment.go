@@ -29,4 +29,5 @@ func main() {
 	ProcessTemplate("./deploy-smtp.yaml.template", "./deploy-smtp.yaml", _tokens, 0666)
 	ProcessTemplate("./deploy-push-proxy.yaml.template", "./deploy-push-proxy.yaml", _tokens, 0666)
 	ProcessTemplate("./deploy-redis.yaml.template", "./deploy-redis.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-vid-oauth-wrapper.yaml.template", "./deploy-vid-oauth-wrapper.yaml", _tokens, 0666)
 }
