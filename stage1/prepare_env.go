@@ -22,16 +22,18 @@ import (
 )
 
 type MMDeployEnvironment struct {
-	ClusterName         string   `json:"ClusterName"`
-	AvailabilityZones   []string `json:"AvailabilityZones"`
-	Subnets             []string `json:"Subnets`
-	VPC                 string   `json:"VPC"`
-	Region              string   `json:"Region"`
-	RDSName             string   `json:"RDSName"`
-	RDSDeployAZ         string   `json:"RDSDeployAZ"`
-	KubernetesVersion   string   `json:"KubernetesVersion"`
-	DBSecurityGroupName string   `json:"DBSecurityGroupName"`
-	DBInstanceName      string   `json:"DBInstanceName"`
+	ClusterName                            string   `json:"ClusterName"`
+	AvailabilityZones                      []string `json:"AvailabilityZones"`
+	Subnets                                []string `json:"Subnets`
+	VPC                                    string   `json:"VPC"`
+	Region                                 string   `json:"Region"`
+	RDSName                                string   `json:"RDSName"`
+	RDSDeployAZ                            string   `json:"RDSDeployAZ"`
+	KubernetesVersion                      string   `json:"KubernetesVersion"`
+	DBSecurityGroupName                    string   `json:"DBSecurityGroupName"`
+	DBInstanceName                         string   `json:"DBInstanceName"`
+	AWSLoadBalancerControllerIAMPolicyName string   `json:"AWSLoadBalancerControllerIAMPolicyName"`
+	AWSLoadBalancerControllerIAMPolicyARN  string   `json:"AWSLoadBalancerControllerIAMPolicyARN"`
 }
 
 // MMDeployContext bla bla bla
@@ -71,6 +73,10 @@ func (m *MMDeployContext) LoadClusterConfig(conf string) error {
 
 	if config.DBInstanceName == "" {
 		config.DBInstanceName = config.ClusterName
+	}
+
+	if config.AWSLoadBalancerControllerIAMPolicyName == "" {
+		config.AWSLoadBalancerControllerIAMPolicyName = "AWSLoadBalancerControllerIAMPolicyName"
 	}
 
 	m.Context = config
@@ -121,6 +127,16 @@ func (m *MMDeployContext) ProbeResources() error {
 
 	m.EKSCluster = eks_cluster
 
+	iam_policy, err := m.GetAWSLoadBalancerControllerIAMPolicy()
+
+	if err != nil {
+		return err
+	}
+
+	if iam_policy != nil {
+		m.Context.AWSLoadBalancerControllerIAMPolicyARN = *iam_policy.Arn
+	}
+
 	return nil
 }
 
@@ -163,7 +179,7 @@ func (m *MMDeployContext) DeleteDB(dbInstanceIdentifier string, result chan stri
 		for _, db := range dbs.DBInstances {
 			if *db.DBInstanceIdentifier == dbInstanceIdentifier && *db.DBInstanceStatus == "available" {
 				delete_output, err := m.RDS.DeleteDBInstance(&rds.DeleteDBInstanceInput{
-					DBInstanceIdentifier: &dbInstanceIdentifier,
+					DBInstanceIdentifier: aws.String(dbInstanceIdentifier),
 					SkipFinalSnapshot:    aws.Bool(true),
 				})
 
@@ -187,10 +203,33 @@ func (m *MMDeployContext) DeleteDB(dbInstanceIdentifier string, result chan stri
 				continue
 			}
 		}
-
 	}
 
+	m.DeleteSubnetGroup()
+
 	result <- "done"
+
+	return nil
+}
+
+// this is just a comment
+func (m *MMDeployContext) DeleteSubnetGroup() error {
+	fmt.Println("------ func (m *MMDeployContext) DeleteSubnetGroup() error")
+
+	subnet_groups, err := m.RDS.DescribeDBSubnetGroups(nil)
+
+	if err != nil {
+		return err
+	}
+
+	for _, subnet_group := range subnet_groups.DBSubnetGroups {
+		if *subnet_group.DBSubnetGroupName == m.Context.ClusterName {
+			m.RDS.DeleteDBSubnetGroup(&rds.DeleteDBSubnetGroupInput{
+				DBSubnetGroupName: aws.String(m.Context.ClusterName),
+			})
+		}
+
+	}
 
 	return nil
 }

@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	aws_util "../aws"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/rds"
 )
 
@@ -241,16 +243,102 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 }
 
 // this is just a comment
+func (m *MMDeployContext) GetAWSLoadBalancerControllerIAMPolicy() (*iam.Policy, error) {
+	fmt.Println("------ func (m *MMDeployContext) GetOrCreateALBIAMPolicy() error")
+
+	if policies, err := m.IAM.ListPolicies(nil); err != nil {
+		return nil, err
+	} else {
+		for _, policy := range policies.Policies {
+			if *policy.PolicyName == m.Context.AWSLoadBalancerControllerIAMPolicyName {
+				return policy, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+// this is just a comment
+func (m *MMDeployContext) GetOrCreateALBIAMPolicy() (*iam.Policy, error) {
+	fmt.Println("------ func (m *MMDeployContext) GetOrCreateALBIAMPolicy() error")
+
+	iam_policy, err := m.GetAWSLoadBalancerControllerIAMPolicy()
+
+	if err != nil {
+		return nil, err
+	}
+
+	err, out1, out2 := aws_util.Execute(fmt.Sprintf("eksctl utils associate-iam-oidc-provider --region %v --cluster %v --approve", m.Context.Region, m.Context.ClusterName), true, true)
+
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
+
+	if iam_policy == nil {
+		err, out1, out2 = aws_util.Execute("curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.1.0/docs/install/iam_policy.json", true, true)
+
+		fmt.Println("err:", err)
+		fmt.Println("out1:", out1)
+		fmt.Println("out2:", out2)
+
+		policy_document, err := ioutil.ReadFile("iam-policy.json")
+
+		if err != nil {
+			return nil, err
+		}
+
+		create_policy_output, err := m.IAM.CreatePolicy(&iam.CreatePolicyInput{
+			PolicyName:     aws.String(m.Context.AWSLoadBalancerControllerIAMPolicyName),
+			PolicyDocument: aws.String(string(policy_document)),
+		})
+
+		if err != nil && !strings.Contains(err.Error(), "already exists") {
+			return nil, err
+		}
+
+		fmt.Println("create_policy_output:", create_policy_output)
+	}
+
+	return m.GetAWSLoadBalancerControllerIAMPolicy()
+}
+
+// this is just a comment
+func (m *MMDeployContext) GetOrCreateEKSServiceAccount() error {
+	fmt.Println("------ func (m *MMDeployContext) GetOrCreateEKSServiceAccount() error")
+
+	err, out1, out2 := aws_util.Execute(
+		fmt.Sprintf("eksctl --region=%v create iamserviceaccount --cluster=%v --namespace=kube-system --name=aws-load-balancer-controller --attach-policy-arn=%v --approve",
+			m.Context.Region, m.Context.ClusterName, m.Context.AWSLoadBalancerControllerIAMPolicyARN), true, true)
+
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
+
+	return nil
+}
+
+// this is just a comment
 func (m *MMDeployContext) FixMissing() error {
 	fmt.Println("------ func (m *MMDeployContext) FixMissing() error")
 
 	db, err := m.GetOrCreateDB()
 
 	if err != nil {
-		aws_util.ExitErrorf("Unable to get or create db, %v", err)
+		return err
 	}
 
 	fmt.Println("db:", db)
+
+	iam_policy, err := m.GetOrCreateALBIAMPolicy()
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("iam_policy:", iam_policy)
+
+	m.GetOrCreateEKSServiceAccount()
 
 	return nil
 }
