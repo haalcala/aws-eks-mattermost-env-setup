@@ -17,18 +17,18 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 	fmt.Println("------ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, error)")
 
 	sg, err := m.EC2.CreateSecurityGroup(&ec2.CreateSecurityGroupInput{
-		GroupName:   aws.String(m.Context.RDS.DBSecurityGroupName),
-		Description: aws.String(m.Context.RDS.DBSecurityGroupName),
+		GroupName:   aws.String(m.DeployConfig.RDS.DBSecurityGroupName),
+		Description: aws.String(m.DeployConfig.RDS.DBSecurityGroupName),
 		VpcId:       m.EKSCluster.ResourcesVpcConfig.VpcId,
 
 		TagSpecifications: []*ec2.TagSpecification{
 			&ec2.TagSpecification{
 				ResourceType: aws.String("security-group"),
 				Tags: []*ec2.Tag{
-					&ec2.Tag{Key: aws.String("alpha.eksctl.io/cluster-name"), Value: aws.String(m.Context.ClusterName)},
-					&ec2.Tag{Key: aws.String("eksctl.cluster.k8s.io/v1alpha1/cluster-name"), Value: aws.String(m.Context.ClusterName)},
+					&ec2.Tag{Key: aws.String("alpha.eksctl.io/cluster-name"), Value: aws.String(m.DeployConfig.ClusterName)},
+					&ec2.Tag{Key: aws.String("eksctl.cluster.k8s.io/v1alpha1/cluster-name"), Value: aws.String(m.DeployConfig.ClusterName)},
 					&ec2.Tag{Key: aws.String("harold-cluster-create-tool-version"), Value: aws.String("0.0.1")},
-					&ec2.Tag{Key: aws.String("Name"), Value: aws.String(m.Context.RDS.DBSecurityGroupName)},
+					&ec2.Tag{Key: aws.String("Name"), Value: aws.String(m.DeployConfig.RDS.DBSecurityGroupName)},
 				},
 			},
 		},
@@ -42,7 +42,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 	if sg != nil && sg.GroupId != nil {
 		authorise_sg_output, err := m.EC2.AuthorizeSecurityGroupIngress(&ec2.AuthorizeSecurityGroupIngressInput{
 			GroupId: sg.GroupId,
-			// GroupName:  aws.String(m.Context.RDS.DBSecurityGroupName),
+			// GroupName:  aws.String(m.DeployConfig.RDS.DBSecurityGroupName),
 			// IpProtocol: aws.String("tcp"),
 			// ToPort:     aws.Int64(3306),
 			// CidrIp:     aws.String("0.0.0.0/0"),
@@ -74,7 +74,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 	fmt.Println("sg2:", sg2)
 
 	for _, _sg := range sg2.SecurityGroups {
-		if *_sg.GroupName == m.Context.RDS.DBSecurityGroupName {
+		if *_sg.GroupName == m.DeployConfig.RDS.DBSecurityGroupName {
 			return _sg, nil
 		}
 	}
@@ -87,9 +87,9 @@ func (m *MMDeployContext) GetOrCreateDBSubnetGroup() (*rds.DBSubnetGroup, error)
 	fmt.Println("------ func (m *MMDeployContext) GetOrCreateDBSubnetGroup() (*rds.DBSubnetGroup, error)")
 
 	create_subnetgroup_output, err := m.RDS.CreateDBSubnetGroup(&rds.CreateDBSubnetGroupInput{
-		DBSubnetGroupName:        aws.String(m.Context.ClusterName),
+		DBSubnetGroupName:        aws.String(m.DeployConfig.ClusterName),
 		SubnetIds:                m.EKSCluster.ResourcesVpcConfig.SubnetIds,
-		DBSubnetGroupDescription: aws.String(m.Context.ClusterName),
+		DBSubnetGroupDescription: aws.String(m.DeployConfig.ClusterName),
 	})
 
 	if err != nil && !strings.Contains(err.Error(), "already exists") {
@@ -99,11 +99,11 @@ func (m *MMDeployContext) GetOrCreateDBSubnetGroup() (*rds.DBSubnetGroup, error)
 	fmt.Println("create_subnetgroup_output:", create_subnetgroup_output)
 
 	db_subnet_groups, err := m.RDS.DescribeDBSubnetGroups(&rds.DescribeDBSubnetGroupsInput{
-		DBSubnetGroupName: aws.String(m.Context.ClusterName),
+		DBSubnetGroupName: aws.String(m.DeployConfig.ClusterName),
 	})
 
 	for _, subnet_group := range db_subnet_groups.DBSubnetGroups {
-		if *subnet_group.DBSubnetGroupName == m.Context.ClusterName {
+		if *subnet_group.DBSubnetGroupName == m.DeployConfig.ClusterName {
 			return subnet_group, nil
 		}
 	}
@@ -136,7 +136,7 @@ func (m *MMDeployContext) GetDBInstance() (*rds.DBInstance, error) {
 	fmt.Println("dbs:", dbs)
 
 	for _, db := range dbs.DBInstances {
-		if *db.DBInstanceIdentifier == m.Context.RDS.DBInstanceName {
+		if *db.DBInstanceIdentifier == m.DeployConfig.RDS.DBInstanceName {
 			return db, nil
 		}
 	}
@@ -187,10 +187,10 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 
 		create_instance_output, err := m.RDS.CreateDBInstance(&rds.CreateDBInstanceInput{
 			AllocatedStorage: aws.Int64(20),
-			// DBClusterIdentifier:     &m.Context.ClusterName,
+			// DBClusterIdentifier:     &m.DeployConfig.ClusterName,
 			DBName:               aws.String("test"),
 			DBInstanceClass:      aws.String("db.t2.micro"),
-			DBInstanceIdentifier: aws.String(m.Context.RDS.DBInstanceName),
+			DBInstanceIdentifier: aws.String(m.DeployConfig.RDS.DBInstanceName),
 			// DBSecurityGroups:        aws.StringSlice([]string{*sg.GroupId}),
 			Engine:                  aws.String("MySQL"),
 			EngineVersion:           aws.String("8.0.21"),
@@ -207,10 +207,10 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 			VpcSecurityGroupIds:     aws.StringSlice([]string{*sg.GroupId}),
 			DBSubnetGroupName:       db_subnet_group.DBSubnetGroupName,
 			Tags: []*rds.Tag{
-				&rds.Tag{Key: aws.String("alpha.eksctl.io/cluster-name"), Value: aws.String(m.Context.ClusterName)},
-				&rds.Tag{Key: aws.String("eksctl.cluster.k8s.io/v1alpha1/cluster-name"), Value: aws.String(m.Context.ClusterName)},
+				&rds.Tag{Key: aws.String("alpha.eksctl.io/cluster-name"), Value: aws.String(m.DeployConfig.ClusterName)},
+				&rds.Tag{Key: aws.String("eksctl.cluster.k8s.io/v1alpha1/cluster-name"), Value: aws.String(m.DeployConfig.ClusterName)},
 				&rds.Tag{Key: aws.String("harold-cluster-create-tool-version"), Value: aws.String("0.0.1")},
-				&rds.Tag{Key: aws.String("Name"), Value: aws.String(m.Context.RDS.DBInstanceName)},
+				&rds.Tag{Key: aws.String("Name"), Value: aws.String(m.DeployConfig.RDS.DBInstanceName)},
 			},
 			MultiAZ:            aws.Bool(false),
 			PubliclyAccessible: aws.Bool(false),
@@ -227,7 +227,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 		fmt.Println("create_instance_output:", create_instance_output)
 
 		m.RDS.WaitUntilDBInstanceAvailable(&rds.DescribeDBInstancesInput{
-			DBInstanceIdentifier: aws.String(m.Context.RDS.DBInstanceName),
+			DBInstanceIdentifier: aws.String(m.DeployConfig.RDS.DBInstanceName),
 		})
 	}
 
@@ -235,7 +235,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 
 	if *db.DBInstanceStatus == aws_util.RDS_DB_INSTANCE_STATUS_CREATING {
 		m.RDS.WaitUntilDBInstanceAvailable(&rds.DescribeDBInstancesInput{
-			DBInstanceIdentifier: aws.String(m.Context.RDS.DBInstanceName),
+			DBInstanceIdentifier: aws.String(m.DeployConfig.RDS.DBInstanceName),
 		})
 	}
 
@@ -250,7 +250,7 @@ func (m *MMDeployContext) GetAWSLoadBalancerControllerIAMPolicy() (*iam.Policy, 
 		return nil, err
 	} else {
 		for _, policy := range policies.Policies {
-			if *policy.PolicyName == m.Context.AWSLoadBalancerControllerIAMPolicyName {
+			if *policy.PolicyName == m.DeployConfig.AWSLoadBalancerControllerIAMPolicyName {
 				return policy, nil
 			}
 		}
@@ -269,7 +269,7 @@ func (m *MMDeployContext) GetOrCreateALBIAMPolicy() (*iam.Policy, error) {
 		return nil, err
 	}
 
-	err, out1, out2 := aws_util.Execute(fmt.Sprintf("eksctl utils associate-iam-oidc-provider --region %v --cluster %v --approve", m.Context.Region, m.Context.ClusterName), true, true)
+	err, out1, out2 := aws_util.Execute(fmt.Sprintf("eksctl utils associate-iam-oidc-provider --region %v --cluster %v --approve", m.DeployConfig.Region, m.DeployConfig.ClusterName), true, true)
 
 	fmt.Println("err:", err)
 	fmt.Println("out1:", out1)
@@ -289,7 +289,7 @@ func (m *MMDeployContext) GetOrCreateALBIAMPolicy() (*iam.Policy, error) {
 		}
 
 		create_policy_output, err := m.IAM.CreatePolicy(&iam.CreatePolicyInput{
-			PolicyName:     aws.String(m.Context.AWSLoadBalancerControllerIAMPolicyName),
+			PolicyName:     aws.String(m.DeployConfig.AWSLoadBalancerControllerIAMPolicyName),
 			PolicyDocument: aws.String(string(policy_document)),
 		})
 
@@ -309,7 +309,7 @@ func (m *MMDeployContext) GetOrCreateEKSServiceAccount() error {
 
 	err, out1, out2 := aws_util.Execute(
 		fmt.Sprintf("eksctl --region=%v create iamserviceaccount --cluster=%v --namespace=kube-system --name=aws-load-balancer-controller --attach-policy-arn=%v --approve",
-			m.Context.Region, m.Context.ClusterName, m.Context.AWSLoadBalancerControllerIAMPolicyARN), true, true)
+			m.DeployConfig.Region, m.DeployConfig.ClusterName, m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN), true, true)
 
 	fmt.Println("err:", err)
 	fmt.Println("out1:", out1)

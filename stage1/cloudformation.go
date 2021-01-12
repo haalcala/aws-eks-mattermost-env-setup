@@ -21,7 +21,7 @@ func (m *MMDeployContext) GetCloudFormationMainStack() (*cloudformation.Stack, e
 	}
 
 	for _, _stack := range stacks.StackSummaries {
-		if *_stack.StackName == "eksctl-"+m.Context.ClusterName+"-cluster" {
+		if *_stack.StackName == "eksctl-"+m.DeployConfig.ClusterName+"-cluster" {
 			stack, err := m.CF.DescribeStacks(&cloudformation.DescribeStacksInput{
 				StackName: _stack.StackName,
 			})

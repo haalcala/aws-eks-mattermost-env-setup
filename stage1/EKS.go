@@ -31,7 +31,7 @@ func (m *MMDeployContext) GetEKSCluster() (*eks.Cluster, error) {
 	fmt.Println("------ func (m *MMDeployContext) GetCluster() error")
 
 	cluster, err := m.EKS.DescribeCluster(&eks.DescribeClusterInput{
-		Name: &m.Context.ClusterName,
+		Name: &m.DeployConfig.ClusterName,
 	})
 
 	return cluster.Cluster, err
