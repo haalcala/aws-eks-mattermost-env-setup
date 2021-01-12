@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mm-instance-conf
+data:
+  aws-credentials: |
+    [default]
+    aws_access_key_id = __AWS_ACCESS_KEY_ID__
+    aws_secret_access_key = __AWS_SECRET_ACCESS_KEY__
+
+    [prod]
+    aws_access_key_id = __AWS_PROD_S3_ACCESS_KEY_ID__
+    aws_secret_access_key = __AWS_PROD_S3_SECRET_ACCESS_KEY__
+
+  aws-config: |
+    [default]
+    region = __AWS_REGION__
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  default.conf: |
+    server {
+        listen       80;
+        server_name  localhost;
+
+        #charset koi8-r;
+        #access_log  /var/log/nginx/host.access.log  main;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+
+        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+        #
+        #location ~ \.php$ {
+        #    proxy_pass   http://127.0.0.1;
+        #}
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        #location ~ \.php$ {
+        #    root           html;
+        #    fastcgi_pass   127.0.0.1:9000;
+        #    fastcgi_index  index.php;
+        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+        #    include        fastcgi_params;
+        #}
+
+        # deny access to .htaccess files, if Apache's document root
+        # concurs with nginx's one
+        #
+        #location ~ /\.ht {
+        #    deny  all;
+        #}
+    }
+
+  #   nginx.conf: |
+  #     user nginx;
+  #     worker_processes  3;
+  #     error_log  /var/log/nginx/error.log;
+  #     events {
+  #       worker_connections  10240;
+  #     }
+  #     http {
+  #       log_format  main
+  #               'remote_addr:$remote_addr\t'
+  #               'time_local:$time_local\t'
+  #               'method:$request_method\t'
+  #               'uri:$request_uri\t'
+  #               'host:$host\t'
+  #               'status:$status\t'
+  #               'bytes_sent:$body_bytes_sent\t'
+  #               'referer:$http_referer\t'
+  #               'useragent:$http_user_agent\t'
+  #               'forwardedfor:$http_x_forwarded_for\t'
+  #               'request_time:$request_time';
+  #       access_log	/var/log/nginx/access.log main;
+  #       server {
+  #           listen       80;
+  #           server_name  _;
+  #           location / {
+  #               root   html;
+  #               index  index.html index.htm;
+  #           }
+  #       }
+  #       include /etc/nginx/virtualhost/virtualhost.conf;
+  #     }
+
+__NGINX_MM_DOMAINS__
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        config_version: "__NGINX_CONFIG_VERSION__"
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d # mount nginx-conf volumn to /etc/nginx
+            - mountPath: /var/log/nginx
+              name: log
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+        - name: log
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 443
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: nginx
+
+
+
+
+
+

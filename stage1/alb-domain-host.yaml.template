@@ -1,0 +1,7 @@
+    - host: __MM_INSTANCE_DOMAIN__
+      http:
+        paths:
+        - path: /*
+          backend:
+            serviceName: "__MM_INSTANCE_KEY__-svc"
+            servicePort: 80

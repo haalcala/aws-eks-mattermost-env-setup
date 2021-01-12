@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcube-vid-oauth-provider-conf-files
+data:
+    ormconfig.json : |
+      {
+        "type": "mysql",
+        "host": "__MM_DB_HOST__",
+        "port": "__MM_DB_PORT__",
+        "username": "__VCUBE_VID_OAUTH_DB_USERNAME__",
+        "password": "__VCUBE_VID_OAUTH_DB_PASSWORD__",
+        "database": "__VCUBE_VID_OAUTH_DB_NAME__",
+        "synchronize": true,
+        "logging": false,
+        "entities": ["src/entity/**/*.ts"],
+        "migrations": ["src/migration/**/*.ts"],
+        "subscribers": ["src/subscriber/**/*.ts"]
+      }
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcube-vid-oauth-provider-env
+data:
+  INITIAL_ADMIN_USERNAME: __VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME__
+  INITIAL_ADMIN_PASSWORD: __VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD__
+  EXPRESS_SESSION_SECRET: __VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET__
+  VMEETING_URL: __VCUBE_VID_OAUTH_VMEETING_URL__
+  VID_CONSUMER_KEY: __VCUBE_VID_OAUTH_VID_CONSUMER_KEY__
+  VID_REST_PWD: __VCUBE_VID_OAUTH_VID_REST_PWD__
+  VID_REST_URL: __VCUBE_VID_OAUTH_VID_REST_URL__
+  VID_SECRET_AUTH_CODE: __VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcube-vid-oauth-provider
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: vcube-vid-oauth-provider
+  template:
+    metadata:
+      labels:
+        app: vcube-vid-oauth-provider
+        config_version: "__VCUBE_VID_OAUTH_CONTAINER_VERSION__"
+    spec:
+      containers:
+        - name: vcube-vid-oauth-provider
+          image: __VCUBE_VID_OAUTH_CONTAINER_REPO__
+          ports:
+            - containerPort: 4003
+          env:
+            # Define the environment variable
+            - name: INITIAL_ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: INITIAL_ADMIN_USERNAME
+            - name: INITIAL_ADMIN_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: INITIAL_ADMIN_PASSWORD
+            - name: EXPRESS_SESSION_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: EXPRESS_SESSION_SECRET
+            - name: VMEETING_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: VMEETING_URL
+            - name: VID_CONSUMER_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_CONSUMER_KEY
+            - name: VID_REST_PWD
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_REST_PWD
+            - name: VID_REST_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_REST_URL
+            - name: VID_SECRET_AUTH_CODE
+              valueFrom:
+                configMapKeyRef:
+                  name: vcube-vid-oauth-provider-env
+                  key: VID_SECRET_AUTH_CODE
+
+          volumeMounts:
+            - name: vcube-vid-oauth-provider-conf
+              mountPath: /app/ormconfig.json
+              subPath: ormconfig.json
+      volumes:
+        - name: vcube-vid-oauth-provider-conf
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: vcube-vid-oauth-provider-conf-files
+            # An array of keys from the ConfigMap to create as files
+            items:
+            - key: "ormconfig.json"
+              path: "ormconfig.json"
+        - name: vcube-vid-oauth-provider-conf
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: vcube-vid-oauth-provider-conf-files
+            # An array of keys from the ConfigMap to create as files
+            items:
+            - key: "ormconfig.json"
+              path: "ormconfig.json"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vcube-vid-oauth-provider-svc
+spec:
+  type: ClusterIP
+  ports:
+    - port: 4003
+      targetPort: 4003
+      protocol: TCP
+  selector:
+    app: vcube-vid-oauth-provider
