@@ -30,7 +30,7 @@ type Token struct {
 	Required bool
 }
 
-type GenerateDeployEnvConfig struct {
+type DeploymentEnvironment struct {
 	// the aws access to be used by the containers when communicating to AWS infra such as creating the
 	// instance-specific S3 bucket
 	AWS_ACCESS_KEY_ID string `json:"AWS_ACCESS_KEY_ID"`
@@ -148,22 +148,22 @@ type GenerateDeployEnvConfig struct {
 	VCUBE_VID_OAUTH_DB_PASSWORD string `json:"VCUBE_VID_OAUTH_DB_PASSWORD"`
 }
 
-func DeployEnvConfigFromJson(_json string) (*GenerateDeployEnvConfig, error) {
-	c := &GenerateDeployEnvConfig{}
+func DeploymentEnvironmentFromJson(_json string) (*DeploymentEnvironment, error) {
+	c := &DeploymentEnvironment{}
 
 	err := json.Unmarshal([]byte(_json), c)
 
 	return c, err
 }
 
-func DeployEnvConfigToJsonString(c *GenerateDeployEnvConfig) (string, error) {
+func DeploymentEnvironmentToJsonString(c *DeploymentEnvironment) (string, error) {
 	b, err := json.MarshalIndent(c, "", "\t")
 
 	return string(b), err
 }
 
-func ConfigWithDefaults() *GenerateDeployEnvConfig {
-	return &GenerateDeployEnvConfig{
+func ConfigWithDefaults() *DeploymentEnvironment {
+	return &DeploymentEnvironment{
 		AWS_ACCESS_KEY_ID:                      strings.Trim(os.Getenv("AWS_ACCESS_KEY_ID"), "\r"),
 		AWS_SECRET_ACCESS_KEY:                  strings.Trim(os.Getenv("AWS_SECRET_ACCESS_KEY"), "\r"),
 		AWS_PROD_S3_ACCESS_KEY_ID:              strings.Trim(os.Getenv("AWS_PROD_S3_ACCESS_KEY_ID"), "\r"),
@@ -213,7 +213,7 @@ func ConfigWithDefaults() *GenerateDeployEnvConfig {
 	}
 }
 
-var deployEnvConfig *GenerateDeployEnvConfig = ConfigWithDefaults()
+var deployEnvConfig *DeploymentEnvironment = ConfigWithDefaults()
 
 func getToken(key, def string, req bool) *Token {
 	r := reflect.ValueOf(deployEnvConfig)
@@ -221,53 +221,55 @@ func getToken(key, def string, req bool) *Token {
 	return &Token{Key: "__" + key + "__", Value: f.String(), Default: def, Required: req}
 }
 
-var tokens = []*Token{
-	getToken("AWS_ACCESS_KEY_ID", "", true),
-	getToken("AWS_SECRET_ACCESS_KEY", "", true),
-	getToken("AWS_PROD_S3_ACCESS_KEY_ID", "", true),
-	getToken("AWS_PROD_S3_SECRET_ACCESS_KEY", "", true),
-	getToken("AWS_EKS_CLUSTER_NAME", "", true),
-	getToken("AWS_VPC_ID", "", true),
-	getToken("EKS_PUBLIC_SUBNETS", "", true),
-	getToken("AWS_REGION", "", true),
-	getToken("DEPLOY_BUCKET", "", true),
-	getToken("IMPORT_EXTERNAL_BUCKET", "", true),
-	getToken("IMPORT_EXTERNAL_BUCKET_REGION", "", true),
-	getToken("AWS_ACM_CERTIFICATE_ARN", "", true),
-	getToken("MATTERMOST_PORT", "8065", true),
-	getToken("MM_DB_HOST", "", true),
-	getToken("MM_DB_PORT", "", true),
-	getToken("MM_DB_MASTER_USER", "", true),
-	getToken("MM_DB_MASTER_PASS", "", true),
-	getToken("NGINX_CONFIG_VERSION", "", true),
-	getToken("MM_DEPLOY_VERSION", "", true),
-	getToken("MM_CONF_PLUGIN_ENABLE_UPLOAD", "false", true),
-	getToken("SMTP_USER", "", true),
-	getToken("SMTP_PASS", "", true),
-	getToken("SMTP_HOST", "", true),
-	getToken("SMTP_PORT", "", true),
-	getToken("SMTP_FROM", "", true),
-	getToken("MM_PROXY_PROXY_CONFIG_VERSION", "v1", true),
-	getToken("MATTERMOST_PUSH_NOTIFICATION_URL", "https://push-test.mattermost.com", true),
-	getToken("MATTERMOST_PUSH_PROXY_DOCKER_REPO", "haalcala/mattermost-push-proxy", true),
-	getToken("MM_DOCKER_REPO", "haalcala/mattermost-prod", true),
-	getToken("MM_CLUSTER_DRIVER", "", true),
-	getToken("MM_CLUSTER_REDIS_HOST", "localhost", true),
-	getToken("MM_CLUSTER_REDIS_PORT", "6379", true),
-	getToken("MM_CLUSTER_REDIS_PASS", "", false),
-	getToken("VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME", "", true),
-	getToken("VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD", "", true),
-	getToken("VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET", "", true),
-	getToken("VCUBE_VID_OAUTH_VMEETING_URL", "", true),
-	getToken("VCUBE_VID_OAUTH_VID_CONSUMER_KEY", "", true),
-	getToken("VCUBE_VID_OAUTH_VID_REST_PWD", "", true),
-	getToken("VCUBE_VID_OAUTH_VID_REST_URL", "", true),
-	getToken("VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE", "", true),
-	getToken("VCUBE_VID_OAUTH_CONTAINER_VERSION", "", true),
-	getToken("VCUBE_VID_OAUTH_CONTAINER_REPO", "", true),
-	getToken("VCUBE_VID_OAUTH_DB_NAME", "", true),
-	getToken("VCUBE_VID_OAUTH_DB_USERNAME", "", true),
-	getToken("VCUBE_VID_OAUTH_DB_PASSWORD", "", true),
+func LoadTokenEnvironment() []*Token {
+	return []*Token{
+		getToken("AWS_ACCESS_KEY_ID", "", true),
+		getToken("AWS_SECRET_ACCESS_KEY", "", true),
+		getToken("AWS_PROD_S3_ACCESS_KEY_ID", "", true),
+		getToken("AWS_PROD_S3_SECRET_ACCESS_KEY", "", true),
+		getToken("AWS_EKS_CLUSTER_NAME", "", true),
+		getToken("AWS_VPC_ID", "", true),
+		getToken("EKS_PUBLIC_SUBNETS", "", true),
+		getToken("AWS_REGION", "", true),
+		getToken("DEPLOY_BUCKET", "", true),
+		getToken("IMPORT_EXTERNAL_BUCKET", "", true),
+		getToken("IMPORT_EXTERNAL_BUCKET_REGION", "", true),
+		getToken("AWS_ACM_CERTIFICATE_ARN", "", true),
+		getToken("MATTERMOST_PORT", "8065", true),
+		getToken("MM_DB_HOST", "", true),
+		getToken("MM_DB_PORT", "", true),
+		getToken("MM_DB_MASTER_USER", "", true),
+		getToken("MM_DB_MASTER_PASS", "", true),
+		getToken("NGINX_CONFIG_VERSION", "", true),
+		getToken("MM_DEPLOY_VERSION", "", true),
+		getToken("MM_CONF_PLUGIN_ENABLE_UPLOAD", "false", true),
+		getToken("SMTP_USER", "", true),
+		getToken("SMTP_PASS", "", true),
+		getToken("SMTP_HOST", "", true),
+		getToken("SMTP_PORT", "", true),
+		getToken("SMTP_FROM", "", true),
+		getToken("MM_PROXY_PROXY_CONFIG_VERSION", "v1", true),
+		getToken("MATTERMOST_PUSH_NOTIFICATION_URL", "https://push-test.mattermost.com", true),
+		getToken("MATTERMOST_PUSH_PROXY_DOCKER_REPO", "haalcala/mattermost-push-proxy", true),
+		getToken("MM_DOCKER_REPO", "haalcala/mattermost-prod", true),
+		getToken("MM_CLUSTER_DRIVER", "", true),
+		getToken("MM_CLUSTER_REDIS_HOST", "localhost", true),
+		getToken("MM_CLUSTER_REDIS_PORT", "6379", true),
+		getToken("MM_CLUSTER_REDIS_PASS", "", false),
+		getToken("VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME", "", true),
+		getToken("VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD", "", true),
+		getToken("VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET", "", true),
+		getToken("VCUBE_VID_OAUTH_VMEETING_URL", "", true),
+		getToken("VCUBE_VID_OAUTH_VID_CONSUMER_KEY", "", true),
+		getToken("VCUBE_VID_OAUTH_VID_REST_PWD", "", true),
+		getToken("VCUBE_VID_OAUTH_VID_REST_URL", "", true),
+		getToken("VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE", "", true),
+		getToken("VCUBE_VID_OAUTH_CONTAINER_VERSION", "", true),
+		getToken("VCUBE_VID_OAUTH_CONTAINER_REPO", "", true),
+		getToken("VCUBE_VID_OAUTH_DB_NAME", "", true),
+		getToken("VCUBE_VID_OAUTH_DB_USERNAME", "", true),
+		getToken("VCUBE_VID_OAUTH_DB_PASSWORD", "", true),
+	}
 }
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) string {
@@ -302,7 +304,7 @@ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode
 	return template
 }
 
-func LoadDomains() (string, string) {
+func LoadDomains(tokens []*Token, baseDir string) (string, string) {
 	dat, err := ioutil.ReadFile("./domains.json")
 
 	if err != nil {
@@ -323,8 +325,8 @@ func LoadDomains() (string, string) {
 	nginx_domains := []string{}
 	alb_domains := []string{}
 
-	err = os.Mkdir("./mm_domain_deploy_service", 0777)
-	err = os.Mkdir("./mm_docker_starter", 0777)
+	err = os.Mkdir(baseDir+"/mm_domain_deploy_service", 0777)
+	err = os.Mkdir(baseDir+"/mm_docker_starter", 0777)
 
 	for _, domain := range domains {
 		fmt.Println("domain:", domain)
@@ -350,9 +352,9 @@ func LoadDomains() (string, string) {
 		nginx_domains = append(nginx_domains, ProcessTemplate("./configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666))
 		alb_domains = append(alb_domains, ProcessTemplate("./alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666))
 
-		_ = ProcessTemplate("./mm_domain_deploy_service.yaml.template", fmt.Sprintf("./mm_domain_deploy_service/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
+		_ = ProcessTemplate("./mm_domain_deploy_service.yaml.template", fmt.Sprintf(baseDir+"/mm_domain_deploy_service/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
 
-		_ = ProcessTemplate("./mm_domain_docker_starter.template", fmt.Sprintf("./mm_docker_starter/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
+		_ = ProcessTemplate("./mm_domain_docker_starter.template", fmt.Sprintf(baseDir+"/mm_docker_starter/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
 	}
 
 	return strings.Join(nginx_domains, "\n"), strings.Join(alb_domains, "\n")

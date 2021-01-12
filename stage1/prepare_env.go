@@ -238,6 +238,8 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 
 	config, err := MMDeployConfigFromJson(string(dat))
 
+	m.DeployConfig = config
+
 	config.ApplyDefaults()
 
 	m.SaveDeployConfig()
@@ -259,8 +261,6 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 	if config.AWSLoadBalancerControllerIAMPolicyName == "" {
 		config.AWSLoadBalancerControllerIAMPolicyName = "AWSLoadBalancerControllerIAMPolicyName"
 	}
-
-	m.DeployConfig = config
 
 	err, AWS_ACCESS_KEY_ID, stderr := aws_util.Execute("aws configure get aws_access_key_id", true, false)
 
@@ -959,7 +959,7 @@ func (m *MMDeployContext) GenerateSaveEnvConfig() error {
 		return err
 	}
 
-	envConfig := &stage2.GenerateDeployEnvConfig{
+	envConfig := &stage2.DeploymentEnvironment{
 		AWS_ACCESS_KEY_ID:                      cred.AccessKeyID,
 		AWS_SECRET_ACCESS_KEY:                  cred.SecretAccessKey,
 		AWS_EKS_CLUSTER_NAME:                   m.DeployConfig.ClusterName,
@@ -1008,7 +1008,7 @@ func (m *MMDeployContext) GenerateSaveEnvConfig() error {
 		AWS_ACM_CERTIFICATE_ARN:                m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN,
 	}
 
-	b, err := stage2.DeployEnvConfigToJsonString(envConfig)
+	b, err := stage2.DeploymentEnvironmentToJsonString(envConfig)
 
 	fmt.Println("b:", b)
 
@@ -1016,7 +1016,7 @@ func (m *MMDeployContext) GenerateSaveEnvConfig() error {
 		return err
 	}
 
-	ioutil.WriteFile("../stage2/env.json", []byte(b), 0666)
+	ioutil.WriteFile("env.json", []byte(b), 0666)
 
 	if err != nil {
 		return err
@@ -1169,6 +1169,37 @@ func main() {
 			if err != nil {
 				aws_util.ExitErrorf("Unable to create cluster, %v", err)
 			}
+		} else if operation == "generate_deployment" {
+			dat, err := ioutil.ReadFile("env.json")
+
+			if err != nil {
+				fmt.Println("err:", err)
+				os.Exit(1)
+			}
+
+			props := &map[string]string{}
+
+			err = json.Unmarshal(dat, props)
+
+			fmt.Println("props:", props)
+
+			for key, val := range *props {
+				fmt.Println("key:", key, "val:", val)
+
+				os.Setenv("__"+key+"__", val)
+			}
+
+			baseDir := mm_eks_env.DeployConfig.OutputDir
+
+			if baseDir != "" {
+				err := os.Mkdir(baseDir, 0777)
+
+				if err != nil && !strings.Contains(err.Error(), "file exists") {
+					aws_util.ExitErrorf("Unable to create folder, %v", err)
+				}
+			}
+
+			stage2.GenerateDeploymentFiles(baseDir)
 		}
 	}
 }

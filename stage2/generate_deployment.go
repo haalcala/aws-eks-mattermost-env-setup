@@ -5,7 +5,15 @@ import (
 	"os"
 )
 
-func main() {
+func GenerateDeploymentFiles(baseDir string) {
+	tokens := LoadTokenEnvironment()
+
+	fmt.Println("123123123 tokens:", tokens)
+
+	if baseDir == "" {
+		baseDir = "."
+	}
+
 	for _, token := range tokens {
 		val := os.Getenv(token.Key)
 
@@ -17,17 +25,21 @@ func main() {
 		}
 	}
 
-	domain_conf, alb_domain_conf := LoadDomains()
+	domain_conf, alb_domain_conf := LoadDomains(tokens, baseDir)
 
 	// fmt.Println("domain_conf:", domain_conf)
 
 	_tokens := append(tokens, &Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf})
 	_tokens = append(_tokens, &Token{Key: "__ALB_DOMAIN_RULES__", Value: alb_domain_conf})
 
-	ProcessTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml", _tokens, 0666)
-	ProcessTemplate("./deploy-aws-alb.yaml.template", "./deploy-aws-alb.yaml", _tokens, 0666)
-	ProcessTemplate("./deploy-smtp.yaml.template", "./deploy-smtp.yaml", _tokens, 0666)
-	ProcessTemplate("./deploy-push-proxy.yaml.template", "./deploy-push-proxy.yaml", _tokens, 0666)
-	ProcessTemplate("./deploy-redis.yaml.template", "./deploy-redis.yaml", _tokens, 0666)
-	ProcessTemplate("./deploy-vid-oauth-wrapper.yaml.template", "./deploy-vid-oauth-wrapper.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-nginx-router.yaml.template", baseDir+"/deploy-nginx-router.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-aws-alb.yaml.template", baseDir+"/deploy-aws-alb.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-smtp.yaml.template", baseDir+"/deploy-smtp.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-push-proxy.yaml.template", baseDir+"/deploy-push-proxy.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-redis.yaml.template", baseDir+"/deploy-redis.yaml", _tokens, 0666)
+	ProcessTemplate("./deploy-vid-oauth-wrapper.yaml.template", baseDir+"/deploy-vid-oauth-wrapper.yaml", _tokens, 0666)
+}
+
+func main() {
+	GenerateDeploymentFiles(".")
 }
