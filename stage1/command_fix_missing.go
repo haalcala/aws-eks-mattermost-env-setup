@@ -17,8 +17,8 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 	fmt.Println("------ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, error)")
 
 	sg, err := m.EC2.CreateSecurityGroup(&ec2.CreateSecurityGroupInput{
-		GroupName:   aws.String(m.Context.DBSecurityGroupName),
-		Description: aws.String(m.Context.DBSecurityGroupName),
+		GroupName:   aws.String(m.Context.RDS.DBSecurityGroupName),
+		Description: aws.String(m.Context.RDS.DBSecurityGroupName),
 		VpcId:       m.EKSCluster.ResourcesVpcConfig.VpcId,
 
 		TagSpecifications: []*ec2.TagSpecification{
@@ -28,7 +28,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 					&ec2.Tag{Key: aws.String("alpha.eksctl.io/cluster-name"), Value: aws.String(m.Context.ClusterName)},
 					&ec2.Tag{Key: aws.String("eksctl.cluster.k8s.io/v1alpha1/cluster-name"), Value: aws.String(m.Context.ClusterName)},
 					&ec2.Tag{Key: aws.String("harold-cluster-create-tool-version"), Value: aws.String("0.0.1")},
-					&ec2.Tag{Key: aws.String("Name"), Value: aws.String(m.Context.DBSecurityGroupName)},
+					&ec2.Tag{Key: aws.String("Name"), Value: aws.String(m.Context.RDS.DBSecurityGroupName)},
 				},
 			},
 		},
@@ -42,7 +42,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 	if sg != nil && sg.GroupId != nil {
 		authorise_sg_output, err := m.EC2.AuthorizeSecurityGroupIngress(&ec2.AuthorizeSecurityGroupIngressInput{
 			GroupId: sg.GroupId,
-			// GroupName:  aws.String(m.Context.DBSecurityGroupName),
+			// GroupName:  aws.String(m.Context.RDS.DBSecurityGroupName),
 			// IpProtocol: aws.String("tcp"),
 			// ToPort:     aws.Int64(3306),
 			// CidrIp:     aws.String("0.0.0.0/0"),
@@ -74,7 +74,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 	fmt.Println("sg2:", sg2)
 
 	for _, _sg := range sg2.SecurityGroups {
-		if *_sg.GroupName == m.Context.DBSecurityGroupName {
+		if *_sg.GroupName == m.Context.RDS.DBSecurityGroupName {
 			return _sg, nil
 		}
 	}
@@ -136,7 +136,7 @@ func (m *MMDeployContext) GetDBInstance() (*rds.DBInstance, error) {
 	fmt.Println("dbs:", dbs)
 
 	for _, db := range dbs.DBInstances {
-		if *db.DBInstanceIdentifier == m.Context.DBInstanceName {
+		if *db.DBInstanceIdentifier == m.Context.RDS.DBInstanceName {
 			return db, nil
 		}
 	}
@@ -190,7 +190,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 			// DBClusterIdentifier:     &m.Context.ClusterName,
 			DBName:               aws.String("test"),
 			DBInstanceClass:      aws.String("db.t2.micro"),
-			DBInstanceIdentifier: aws.String(m.Context.DBInstanceName),
+			DBInstanceIdentifier: aws.String(m.Context.RDS.DBInstanceName),
 			// DBSecurityGroups:        aws.StringSlice([]string{*sg.GroupId}),
 			Engine:                  aws.String("MySQL"),
 			EngineVersion:           aws.String("8.0.21"),
@@ -210,7 +210,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 				&rds.Tag{Key: aws.String("alpha.eksctl.io/cluster-name"), Value: aws.String(m.Context.ClusterName)},
 				&rds.Tag{Key: aws.String("eksctl.cluster.k8s.io/v1alpha1/cluster-name"), Value: aws.String(m.Context.ClusterName)},
 				&rds.Tag{Key: aws.String("harold-cluster-create-tool-version"), Value: aws.String("0.0.1")},
-				&rds.Tag{Key: aws.String("Name"), Value: aws.String(m.Context.DBInstanceName)},
+				&rds.Tag{Key: aws.String("Name"), Value: aws.String(m.Context.RDS.DBInstanceName)},
 			},
 			MultiAZ:            aws.Bool(false),
 			PubliclyAccessible: aws.Bool(false),
@@ -227,7 +227,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 		fmt.Println("create_instance_output:", create_instance_output)
 
 		m.RDS.WaitUntilDBInstanceAvailable(&rds.DescribeDBInstancesInput{
-			DBInstanceIdentifier: aws.String(m.Context.DBInstanceName),
+			DBInstanceIdentifier: aws.String(m.Context.RDS.DBInstanceName),
 		})
 	}
 
@@ -235,7 +235,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 
 	if *db.DBInstanceStatus == aws_util.RDS_DB_INSTANCE_STATUS_CREATING {
 		m.RDS.WaitUntilDBInstanceAvailable(&rds.DescribeDBInstancesInput{
-			DBInstanceIdentifier: aws.String(m.Context.DBInstanceName),
+			DBInstanceIdentifier: aws.String(m.Context.RDS.DBInstanceName),
 		})
 	}
 
@@ -339,6 +339,18 @@ func (m *MMDeployContext) FixMissing() error {
 	fmt.Println("iam_policy:", iam_policy)
 
 	m.GetOrCreateEKSServiceAccount()
+
+	// err, out1, out2 := aws_util.Execute("cd ../mattermost-env-setup-stage-2 ; source .staging_env ; go run generate_deployment.go common.go", true, true)
+
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
+
+	err, out1, out2 := aws_util.Execute("go run check_env.go", true, true)
+
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
 	return nil
 }

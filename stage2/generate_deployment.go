@@ -1,4 +1,4 @@
-package main
+package stage2
 
 import (
 	"fmt"
@@ -21,8 +21,8 @@ func main() {
 
 	// fmt.Println("domain_conf:", domain_conf)
 
-	_tokens := append(tokens, Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf})
-	_tokens = append(_tokens, Token{Key: "__ALB_DOMAIN_RULES__", Value: alb_domain_conf})
+	_tokens := append(tokens, &Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf})
+	_tokens = append(_tokens, &Token{Key: "__ALB_DOMAIN_RULES__", Value: alb_domain_conf})
 
 	ProcessTemplate("./deploy-nginx-router.yaml.template", "./deploy-nginx-router.yaml", _tokens, 0666)
 	ProcessTemplate("./deploy-aws-alb.yaml.template", "./deploy-aws-alb.yaml", _tokens, 0666)
