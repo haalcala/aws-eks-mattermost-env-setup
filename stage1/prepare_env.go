@@ -166,6 +166,10 @@ func (c *MMDeployEnvironment) ApplyDefaults() {
 		c.OutputDir = "generated_config"
 	}
 
+	if c.AWSLoadBalancerControllerIAMPolicyName == "" {
+		c.AWSLoadBalancerControllerIAMPolicyName = "ALBIngressControllerIAMPolicy"
+	}
+
 	getDefaultContainerProps := func(container *MMDeployEnvironment_Container, name, repo string) {
 		if container.ImageName == "" {
 			container.ImageName = name
@@ -325,6 +329,8 @@ func (m *MMDeployContext) ProbeResources() error {
 	m.EKSCluster = eks_cluster
 
 	m.DeployConfig.KubernetesVersion = *m.EKSCluster.Version
+
+	m.DeployConfig.ApplyDefaults()
 
 	if m.DeployConfig.KubernetesContext == "" {
 		err, stdout, stderr := aws_util.Execute("kubectl config current-context", true, true)
