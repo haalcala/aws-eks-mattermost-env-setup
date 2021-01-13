@@ -250,8 +250,10 @@ func (m *MMDeployContext) GetAWSLoadBalancerControllerIAMPolicy() (*iam.Policy, 
 		return nil, err
 	} else {
 		for _, policy := range policies.Policies {
-			if *policy.PolicyName == m.DeployConfig.AWSLoadBalancerControllerIAMPolicyName {
+
+			if m.DeployConfig.AWSLoadBalancerControllerIAMPolicyName != "" && *policy.PolicyName == m.DeployConfig.AWSLoadBalancerControllerIAMPolicyName {
 				return policy, nil
+			} else if m.DeployConfig.AWSLoadBalancerControllerIAMPolicyName == "" {
 			}
 		}
 	}

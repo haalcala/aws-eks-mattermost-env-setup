@@ -43,6 +43,7 @@ type MMDeployEnvironment struct {
 	VcubeOauth                             MMDeployEnvironment_VcubeOauth         `json:"VcubeOauth"`
 	ImportBucketRegion                     string                                 `json:"ImportBucketRegion"`
 	ImportBucket                           string                                 `json:"ImportBucket"`
+	KubernetesContext                      string                                 `json:"KubernetesContext"`
 }
 
 type MMDeployEnvironment_VcubeOauth struct {
@@ -119,7 +120,7 @@ type MMDeployEnvironment_MattermostInstance_SMTP struct {
 
 // MMDeployContext bla bla bla
 type MMDeployContext struct {
-	DeployConfig   *MMDeployEnvironment
+	DeployConfig   MMDeployEnvironment
 	Session        *session.Session
 	EKSCluster     *eks.Cluster
 	EC2            *ec2.EC2
@@ -232,13 +233,27 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 	dat, err := ioutil.ReadFile(conf)
 
 	if err != nil {
-		fmt.Println("err:", err)
+		if strings.Contains(err.Error(), "no such file or directory") {
+			fmt.Printf("Configuration file %v cannot be found. Generating configuration structure...\n", conf)
+
+			m.DeployConfig.ApplyDefaults()
+
+			err := m.SaveDeployConfig()
+
+			if err != nil {
+				fmt.Println("err:", err)
+			}
+
+			fmt.Println("Please try again.")
+		} else {
+			fmt.Println("err:", err)
+		}
 		os.Exit(1)
 	}
 
 	config, err := MMDeployConfigFromJson(string(dat))
 
-	m.DeployConfig = config
+	m.DeployConfig = *config
 
 	config.ApplyDefaults()
 
@@ -299,6 +314,7 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 // this is just a comment
 func (m *MMDeployContext) ProbeResources() error {
 	fmt.Println("------ func (m *MMDeployContext) ProbeResources() error")
+	fmt.Println("------ func (m *MMDeployContext) ProbeResources() error")
 
 	eks_cluster, err := m.GetEKSCluster()
 
@@ -307,6 +323,21 @@ func (m *MMDeployContext) ProbeResources() error {
 	}
 
 	m.EKSCluster = eks_cluster
+
+	m.DeployConfig.KubernetesVersion = *m.EKSCluster.Version
+
+	if m.DeployConfig.KubernetesContext == "" {
+		err, stdout, stderr := aws_util.Execute("kubectl config current-context", true, true)
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("stdout:", stdout)
+		fmt.Println("stderr:", stderr)
+
+		m.DeployConfig.KubernetesContext = strings.Trim(stdout, "\r")
+	}
 
 	subnets, err := m.EC2.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		SubnetIds: m.EKSCluster.ResourcesVpcConfig.SubnetIds,
@@ -342,6 +373,13 @@ func (m *MMDeployContext) ProbeResources() error {
 		m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN = *iam_policy.Arn
 	}
 
+	DBInstanceName_assumed := false
+
+	if m.DeployConfig.RDS.DBInstanceName == "" {
+		m.DeployConfig.RDS.DBInstanceName = m.DeployConfig.ClusterName
+		DBInstanceName_assumed = true
+	}
+
 	dbs, err := m.RDS.DescribeDBInstances(&rds.DescribeDBInstancesInput{
 		DBInstanceIdentifier: &m.DeployConfig.RDS.DBInstanceName,
 	})
@@ -350,11 +388,15 @@ func (m *MMDeployContext) ProbeResources() error {
 		return err
 	}
 
-	db := dbs.DBInstances[0]
+	if len(dbs.DBInstances) > 0 {
+		db := dbs.DBInstances[0]
 
-	m.DeployConfig.MattermostInstance.DBHost = *db.Endpoint.Address
-	m.DeployConfig.MattermostInstance.DBPort = fmt.Sprintf("%v", *db.Endpoint.Port)
-	m.DeployConfig.MattermostInstance.DBUser = *db.MasterUsername
+		m.DeployConfig.MattermostInstance.DBHost = *db.Endpoint.Address
+		m.DeployConfig.MattermostInstance.DBPort = fmt.Sprintf("%v", *db.Endpoint.Port)
+		m.DeployConfig.MattermostInstance.DBUser = *db.MasterUsername
+	} else if DBInstanceName_assumed {
+		m.DeployConfig.RDS.DBInstanceName = ""
+	}
 
 	return nil
 }
@@ -1139,7 +1181,15 @@ func main() {
 
 		fmt.Println("domains:", mm_eks_env, "operation:", operation)
 
-		fmt.Println("mm_eks_env.DeployConfig.VpcId:", mm_eks_env.DeployConfig.VpcId)
+		if mm_eks_env.DeployConfig.ClusterName == "" {
+			fmt.Println("Please supply 'ClusterName' in the config file.")
+			os.Exit(1)
+		}
+
+		if mm_eks_env.DeployConfig.Region == "" {
+			fmt.Println("Please supply 'Region' in the config file.")
+			os.Exit(1)
+		}
 
 		mm_eks_env.ProbeResources()
 		mm_eks_env.PatchDeployConfig()
