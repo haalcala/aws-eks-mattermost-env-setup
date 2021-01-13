@@ -411,9 +411,11 @@ func (m *MMDeployContext) ProbeResources() error {
 func (m *MMDeployContext) PatchDeployConfig() error {
 	fmt.Println("------ func (m *MMDeployContext) PatchDeployConfig() error")
 
-	m.DeployConfig.VpcId = *m.EKSCluster.ResourcesVpcConfig.VpcId
+	if m.EKSCluster != nil {
+		m.DeployConfig.VpcId = *m.EKSCluster.ResourcesVpcConfig.VpcId
 
-	m.DeployConfig.Subnets = aws.StringValueSlice(m.EKSCluster.ResourcesVpcConfig.SubnetIds)
+		m.DeployConfig.Subnets = aws.StringValueSlice(m.EKSCluster.ResourcesVpcConfig.SubnetIds)
+	}
 
 	m.DeployConfig.PublicSubnets = []string{}
 	m.DeployConfig.PrivateSubnets = []string{}
