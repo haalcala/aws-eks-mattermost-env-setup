@@ -1,0 +1,12 @@
+[
+    { 
+        "key": "mattermost-test-local", 
+        "domain": "mattermost-test-local.localhost", 
+        "replicas": "1", 
+        "companyId": "",
+        "site-name":"My Local Mattermost",
+        "admin-email":"harold.alcala+local-admin@localhost.localdomain", 
+        "admin-email-name":"My Local MM Admin", 
+        "company-name":"My" 
+    }
+]
