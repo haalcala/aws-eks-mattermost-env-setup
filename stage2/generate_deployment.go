@@ -6,9 +6,9 @@ import (
 )
 
 func GenerateDeploymentFiles(baseDir string) {
-	tokens := LoadTokenEnvironment()
+	envConfig := ConfigWithDefaults()
 
-	fmt.Println("123123123 tokens:", tokens)
+	tokens := envConfig.LoadTokenEnvironment()
 
 	if baseDir == "" {
 		baseDir = "."
@@ -16,8 +16,6 @@ func GenerateDeploymentFiles(baseDir string) {
 
 	for _, token := range tokens {
 		val := os.Getenv(token.Key)
-
-		fmt.Println("Key:", token.Key, "val:", val)
 
 		if val == "" && token.Default == "" && token.Required {
 			fmt.Println("Missing required environment variable:", token)

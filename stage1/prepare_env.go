@@ -1181,10 +1181,10 @@ func main() {
 
 			err = json.Unmarshal(dat, props)
 
-			fmt.Println("props:", props)
+			// fmt.Println("props:", props)
 
 			for key, val := range *props {
-				fmt.Println("key:", key, "val:", val)
+				// fmt.Println("key:", key, "val:", val)
 
 				os.Setenv("__"+key+"__", val)
 			}
