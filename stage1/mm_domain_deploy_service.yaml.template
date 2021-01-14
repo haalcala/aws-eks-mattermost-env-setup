@@ -47,6 +47,10 @@ spec:
 
               [[ `hostname` =~ -([0-9]+)$ ]]
 
+              apt-get install -y wget
+
+              service metricbeat restart
+
               ordinal=${BASH_REMATCH[1]}
 
               if [[ $ordinal -eq 0 ]]; then
@@ -61,15 +65,19 @@ spec:
 
               ./bin/mattermost plugin add ./plugins/*.tar.gz  --config=$CONFIG
 
+              envoy -c /etc/service-envoy.yaml --service-cluster __MM_INSTANCE_KEY__ &                                                  
+
               ./bin/mattermost --config=$CONFIG
           ports:
             - name: liveness-port
               containerPort: 8065
           volumeMounts:
-            - name: import-data
-              mountPath: /import-data 
-            - name: mattermost-conf
-              mountPath: /app/config 
+            - name: service-envoy
+              mountPath: /etc/service-envoy.yaml
+              subPath: service-envoy.yaml
+            - name: mm-beats-conf
+              mountPath: /etc/metricbeat/metricbeat.yml
+              subPath: metricbeat.yml
           #readinessProbe:
           #  exec:
           #    # Check we can execute queries over TCP (skip-networking is off).
@@ -101,8 +109,16 @@ spec:
                 path: credentials # dig directory
               - key: aws-config
                 path: config # dig directory
-        - name: import-data
-          emptyDir: {}
-        - name: mattermost-conf
-          emptyDir: {}
+        - name: service-envoy
+          configMap:
+            name: service-envoy
+            items:
+              - key: service-envoy.yaml
+                path: service-envoy.yaml # dig directory
+        - name: mm-beats-conf
+          configMap:
+            name: mm-beats-conf
+            items:
+              - key: metricbeat-harold-test.yml
+                path: metricbeat.yml # dig directory
 
