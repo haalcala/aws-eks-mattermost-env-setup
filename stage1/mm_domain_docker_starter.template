@@ -518,6 +518,8 @@ EOF
 cat > ./mm_domain_docker_starter-config-merge-__MM_INSTANCE_KEY__-entrypoint.sh <<EOF
 #!/bin/bash -x
 
+cat package.json
+
 npm install
 
 node merge-config.js -b config.json -h __MM_DB_HOST__ -P __MM_DB_PORT__ -u __MM_DB_USER__ -p __MM_DB_PASS__ -n __MM_DB_NAME__ -m merged-config.json
@@ -540,8 +542,8 @@ docker run --rm \
 	-v $DIR/mm_domain_docker_starter-config-merge-__MM_INSTANCE_KEY__-entrypoint.sh:/app/entrypoint.sh \
 	-v $DIR/__MM_INSTANCE_KEY__-config.json:/app/config.json \
 	-v $DIR/__MM_INSTANCE_KEY__-merged-config.json:/app/merged-config.json \
-	-v $DIR/../merge-config.js:/app/merge-config.js \
-	-v $DIR/../package.json:/app/package.json \
+	-v $DIR/../../../../stage2/merge-config.js:/app/merge-config.js \
+	-v $DIR/../../../../stage2/package.json:/app/package.json \
 	mm_domain_docker_starter-config-merge \
 	bash -x /app/entrypoint.sh
 
