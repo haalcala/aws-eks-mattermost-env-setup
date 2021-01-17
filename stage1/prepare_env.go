@@ -1000,7 +1000,7 @@ func (m *MMDeployContext) DeleteDBSecurityGroup() error {
 }
 
 // this is just a comment
-func (m *MMDeployContext) GenerateSaveEnvConfig() error {
+func (m *MMDeployContext) GenerateSaveEnvConfig(baseDir string) error {
 	fmt.Println("------ func (m *MMDeployContext) GenerateSaveEnvConfig() error")
 
 	cred, err := credentials.NewSharedCredentials("", m.DeployConfig.AWSCredentialProfile).Get()
@@ -1066,7 +1066,34 @@ func (m *MMDeployContext) GenerateSaveEnvConfig() error {
 		return err
 	}
 
-	ioutil.WriteFile("env.json", []byte(b), 0666)
+	fmt.Println("Writing environment settings to", baseDir+"/env.json")
+
+	err = ioutil.WriteFile(baseDir+"/env.json", []byte(b), 0666)
+
+	if err != nil {
+		return err
+	}
+
+	dat, err := ioutil.ReadFile(baseDir + "/env.json")
+
+	if err != nil {
+		fmt.Println("err:", err)
+		os.Exit(1)
+	}
+
+	props := &map[string]string{}
+
+	err = json.Unmarshal(dat, props)
+
+	env := []string{}
+
+	for key, val := range *props {
+		env = append(env, "export __"+key+"__=\""+val+"\"")
+	}
+
+	fmt.Println("Writing environment variables to", baseDir+"/env.sh")
+
+	err = ioutil.WriteFile(baseDir+"/env.sh", []byte(strings.Join(env, "\n")), 0666)
 
 	if err != nil {
 		return err
@@ -1187,6 +1214,16 @@ func main() {
 
 		mm_eks_env.LoadDeployConfig(config_file)
 
+		baseDir := "generated_deployments/" + mm_eks_env.DeployConfig.OutputDir
+
+		if baseDir != "" {
+			err := os.MkdirAll(baseDir, 0777)
+
+			if err != nil && !strings.Contains(err.Error(), "file exists") {
+				aws_util.ExitErrorf("Unable to create folder, %v", err)
+			}
+		}
+
 		fmt.Println("domains:", mm_eks_env, "operation:", operation)
 
 		if mm_eks_env.DeployConfig.ClusterName == "" {
@@ -1222,13 +1259,14 @@ func main() {
 				aws_util.ExitErrorf("Unable to create cluster, %v", err)
 			}
 		} else if operation == "generate_config_env" {
-			err := mm_eks_env.GenerateSaveEnvConfig()
+
+			err := mm_eks_env.GenerateSaveEnvConfig(baseDir)
 
 			if err != nil {
 				aws_util.ExitErrorf("Unable to create cluster, %v", err)
 			}
 		} else if operation == "generate_deployment" {
-			dat, err := ioutil.ReadFile("env.json")
+			dat, err := ioutil.ReadFile(baseDir + "/env.json")
 
 			if err != nil {
 				fmt.Println("err:", err)
@@ -1247,17 +1285,15 @@ func main() {
 				os.Setenv("__"+key+"__", val)
 			}
 
-			baseDir := mm_eks_env.DeployConfig.OutputDir
-
-			if baseDir != "" {
-				err := os.Mkdir(baseDir, 0777)
-
-				if err != nil && !strings.Contains(err.Error(), "file exists") {
-					aws_util.ExitErrorf("Unable to create folder, %v", err)
-				}
-			}
-
 			stage2.GenerateDeploymentFiles(baseDir)
+		} else {
+			fmt.Println("Unrecognised operation:", operation, "\n")
+			fmt.Println("Available operations are:\n")
+			fmt.Println("\tcreate_cluster")
+			fmt.Println("\tdelete_cluster")
+			fmt.Println("\tfix_missing")
+			fmt.Println("\tgenerate_config_env")
+			fmt.Println("\tgenerate_deployment")
 		}
 	}
 }

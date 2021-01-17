@@ -6,6 +6,85 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd $DIR
 
+
+cat > init-instance.yaml <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: init-container
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: init-container
+  template:
+    metadata:
+      labels:
+        app: init-container
+        config_version: "v1"
+    spec:
+      initContainers:
+      - name: init-container-1
+        image: haalcala/mm-init-container
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: aws-config
+          mountPath: aws-config
+        - mountPath: /var/log/mattermost-1
+          name: log
+        command:
+          - bash
+          - "-c"
+          - |
+        
+            set -x
+            
+            exit 0
+      containers:
+      - name: init-container-2
+        image: haalcala/mm-init-container
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: aws-config
+          mountPath: /root/.aws
+        - mountPath: /var/log/mattermost-2
+          name: log
+        command:
+          - bash
+          - "-c"
+          - |
+        
+            set -x
+  
+            mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE DATABASE IF NOT EXISTS __MM_DB_NAME__"
+  
+            mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "CREATE USER '__MM_DB_USER__'@'%' IDENTIFIED WITH mysql_native_password   BY '__MM_DB_PASS__';"
+  
+            mysql -h __MM_DB_HOST__ -u__MM_DB_MASTER_USER__ -p__MM_DB_MASTER_PASS__ -e "GRANT ALL PRIVILEGES ON __MM_DB_NAME__.* TO '__MM_DB_USER__'@'%';"
+  
+            aws --version
+  
+            aws s3 mb s3://mm-__MM_INSTANCE_KEY__
+  
+            sleep infinity
+      volumes:
+        - name: aws-config
+          configMap:
+            name: aws-config
+        - name: log
+          emptyDir: {}
+EOF
+
+exit 0
+
+
 cat > ./mm_domain_docker_starter-__MM_INSTANCE_KEY__-mysql.sh <<EOF
 #!/bin/bash -x
 
@@ -526,9 +605,8 @@ node merge-config.js -b config.json -h __MM_DB_HOST__ -P __MM_DB_PORT__ -u __MM_
 EOF
 
 cat > ./mm_domain_docker_starter-config-merge-Dockerfile <<EOF
-FROM node:12.16.1
+FROM ubuntu:18
 
-WORKDIR /app
 EOF
 
 mkdir tmp
@@ -603,4 +681,6 @@ docker run --rm -it \
 
 cd $_PWD
 
+
+kubectl create configmap aws-config --from-file=aws-config
 
