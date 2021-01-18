@@ -44,6 +44,7 @@ type MMDeployEnvironment struct {
 	ImportBucketRegion                     string                                 `json:"ImportBucketRegion"`
 	ImportBucket                           string                                 `json:"ImportBucket"`
 	KubernetesContext                      string                                 `json:"KubernetesContext"`
+	KubernetesEnvironment                  string                                 `json:"KubernetesEnvironment"`
 }
 
 type MMDeployEnvironment_VcubeOauth struct {
@@ -141,6 +142,10 @@ func (c *MMDeployEnvironment) MMDeployConfigToJsonString() (string, error) {
 }
 
 func (c *MMDeployEnvironment) ApplyDefaults() {
+	if c.KubernetesEnvironment == "" {
+		c.KubernetesEnvironment = "eks"
+	}
+
 	if c.MattermostInstance.DBPort == "" {
 		c.MattermostInstance.DBPort = "3306"
 	}
@@ -1259,7 +1264,6 @@ func main() {
 				aws_util.ExitErrorf("Unable to create cluster, %v", err)
 			}
 		} else if operation == "generate_config_env" {
-
 			err := mm_eks_env.GenerateSaveEnvConfig(baseDir)
 
 			if err != nil {
