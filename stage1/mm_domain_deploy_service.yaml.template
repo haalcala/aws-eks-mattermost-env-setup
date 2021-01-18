@@ -43,7 +43,7 @@ spec:
             - bash
             - "-c"
             - |
-              set x
+              set -x
 
               [[ `hostname` =~ -([0-9]+)$ ]]
 
