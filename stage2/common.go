@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type MattermostDeployment struct {
+type MattermostDomainDeployment struct {
 	Key            string `json:"key"`
 	Domain         string `json:"domain"`
 	Replicas       string `json:"replicas"`
@@ -21,6 +21,7 @@ type MattermostDeployment struct {
 	DockerRepoTag  string `json:"docker-repo-tag"`
 	DeployEnv      string `json:"deploy-env"`
 	ClientLocale   string `json:"client-locale"`
+	OverrideDBUser string `json:"OverrideDBUser"`
 }
 
 type Token struct {
@@ -273,6 +274,8 @@ func (d *DeploymentEnvironment) LoadTokenEnvironment() []*Token {
 func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) string {
 	fmt.Println("------ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) string")
 
+	fmt.Println("Processing template:", templateFile)
+
 	dat, err := ioutil.ReadFile(templateFile)
 
 	if err != nil {
@@ -307,22 +310,42 @@ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode
 }
 
 func LoadDomains(tokens []*Token, baseDir string) (string, string) {
-	dat, err := ioutil.ReadFile("./domains.json")
+	dat, err := ioutil.ReadFile("domains.json")
 
 	if err != nil {
 		fmt.Println("err:", err)
 		os.Exit(1)
 	}
 
-	var domains []MattermostDeployment
+	var domains []*MattermostDomainDeployment
 
-	d := json.NewDecoder(strings.NewReader(string(dat)))
+	// d := json.NewDecoder(strings.NewReader(string(dat)))
 
-	d.UseNumber()
+	// d.UseNumber()
 
-	d.Decode(&domains)
+	// d.Decode(&domains)
+
+	err = json.Unmarshal(dat, &domains)
+
+	if err != nil {
+		fmt.Println("err:", err)
+		os.Exit(1)
+	}
+
+	for _, domain := range domains {
+		if domain.DockerRepoTag == "" {
+			domain.DockerRepoTag = "change-in-domains.json"
+		}
+		if domain.DeployEnv == "" {
+			domain.DeployEnv = "env"
+		}
+	}
 
 	fmt.Println("domains:", domains)
+
+	b, err := json.MarshalIndent(domains, "", "\t")
+
+	ioutil.WriteFile("domains.json", b, 0666)
 
 	nginx_domains := []string{}
 	alb_domains := []string{}
@@ -342,24 +365,32 @@ func LoadDomains(tokens []*Token, baseDir string) (string, string) {
 			&Token{Key: "__MM_INSTANCE_REPLICAS__", Value: domain.Replicas},
 			&Token{Key: "__MM_COMPANY_ID__", Value: domain.CompanyId},
 			&Token{Key: "__MM_DB_NAME__", Value: "mm_" + strings.ReplaceAll(domain.Key, "-", "_")},
-			&Token{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key + "-mmuser"},
 			&Token{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"},
-			&Token{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag, Default: "test"},
+			&Token{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag},
 			&Token{Key: "__MM_DEPLOY_ENV__", Value: domain.DeployEnv, Default: "dev"},
 		}
 
-		fmt.Println("domain_tokens:", domain_tokens)
+		dbUserToken := &Token{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key}
+		if domain.OverrideDBUser != "" {
+			dbUserToken.Value = domain.OverrideDBUser
+		}
 
-		nginx_domains = append(nginx_domains, ProcessTemplate("./configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666))
-		alb_domains = append(alb_domains, ProcessTemplate("./alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666))
+		domain_tokens = append(domain_tokens, dbUserToken)
+
+		for _, domain_token := range domain_tokens {
+			fmt.Println("domain_token:", *domain_token)
+		}
+
+		nginx_domains = append(nginx_domains, ProcessTemplate("configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666))
+		alb_domains = append(alb_domains, ProcessTemplate("alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666))
 
 		domainBaseDir := baseDir + "/domains/" + domain.Key
 
 		os.Mkdir(domainBaseDir, 0777)
 
-		ProcessTemplate("./mm_domain_deploy_service.yaml.template", fmt.Sprintf(domainBaseDir+"/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
+		ProcessTemplate("mm_domain_deploy_service.yaml.template", fmt.Sprintf(domainBaseDir+"/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
 
-		ProcessTemplate("./mm_domain_docker_starter.template", fmt.Sprintf(domainBaseDir+"/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
+		ProcessTemplate("mm_domain_docker_starter.template", fmt.Sprintf(domainBaseDir+"/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
 	}
 
 	return strings.Join(nginx_domains, "\n"), strings.Join(alb_domains, "\n")
