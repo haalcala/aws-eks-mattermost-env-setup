@@ -65,17 +65,17 @@ spec:
 
               ./bin/mattermost plugin add ./plugins/*.tar.gz  --config=$CONFIG
 
-              envoy -c /etc/service-envoy.yaml --service-cluster __MM_INSTANCE_KEY__ &                                                  
+              #envoy -c /etc/service-envoy.yaml --service-cluster __MM_INSTANCE_KEY__ &                                                  
 
               ./bin/mattermost --config=$CONFIG
           ports:
             - name: liveness-port
               containerPort: 8065
           volumeMounts:
-            - name: service-envoy
-              mountPath: /etc/service-envoy.yaml
-              subPath: service-envoy.yaml
-            - name: mm-beats-conf
+            # - name: service-envoy
+            #   mountPath: /etc/service-envoy.yaml
+            #   subPath: service-envoy.yaml
+            - name: metricbeat-conf
               mountPath: /etc/metricbeat/metricbeat.yml
               subPath: metricbeat.yml
           #readinessProbe:
@@ -106,19 +106,19 @@ spec:
             name: mm-instance-conf
             items:
               - key: aws-credentials
-                path: credentials # dig directory
+                path: credentials
               - key: aws-config
-                path: config # dig directory
-        - name: service-envoy
+                path: config
+        # - name: service-envoy
+        #   configMap:
+        #     name: service-envoy
+        #     items:
+        #       - key: service-envoy.yaml
+        #         path: service-envoy.yaml
+        - name: metricbeat-conf
           configMap:
-            name: service-envoy
+            name: metricbeat-conf
             items:
-              - key: service-envoy.yaml
-                path: service-envoy.yaml # dig directory
-        - name: mm-beats-conf
-          configMap:
-            name: mm-beats-conf
-            items:
-              - key: metricbeat-harold-test.yml
-                path: metricbeat.yml # dig directory
+              - key: metricbeat.yml
+                path: metricbeat.yml
 
