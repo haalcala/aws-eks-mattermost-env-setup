@@ -33,6 +33,7 @@ type MMDeployEnvironment struct {
 	KubernetesVersion                      string                                 `json:"KubernetesVersion"`
 	AWSLoadBalancerControllerIAMPolicyName string                                 `json:"AWSLoadBalancerControllerIAMPolicyName"`
 	AWSLoadBalancerControllerIAMPolicyARN  string                                 `json:"AWSLoadBalancerControllerIAMPolicyARN"`
+	AWSCertificateARN                      string                                 `json:"AWSCertificateARN"`
 	RDS                                    MMDeployEnvironment_RDS                `json:"RDS"`
 	MattermostInstance                     MMDeployEnvironment_MattermostInstance `json:"MattermostInstance"`
 	InfraComponents                        MMDeployEnvironment_InfraComponents    `json:"InfraComponents"`
@@ -321,8 +322,26 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 }
 
 // this is just a comment
+func (m *MMDeployContext) ValidateManualParameters() error {
+	fmt.Println("------ func (m *MMDeployContext) ValidateManualParameters() error")
+
+	if m.DeployConfig.AWSCertificateARN == "" {
+		return errors.New("Please supply 'AWSCertificateARN' in the config file.")
+	}
+
+	if m.DeployConfig.ClusterName == "" {
+		return errors.New("Please supply 'ClusterName' in the config file.")
+	}
+
+	if m.DeployConfig.Region == "" {
+		return errors.New("Please supply 'Region' in the config file.")
+	}
+
+	return nil
+}
+
+// this is just a comment
 func (m *MMDeployContext) ProbeResources() error {
-	fmt.Println("------ func (m *MMDeployContext) ProbeResources() error")
 	fmt.Println("------ func (m *MMDeployContext) ProbeResources() error")
 
 	eks_cluster, err := m.GetEKSCluster()
@@ -1219,6 +1238,11 @@ func main() {
 
 		mm_eks_env.LoadDeployConfig(config_file)
 
+		err := mm_eks_env.ValidateManualParameters()
+		if err != nil {
+			aws_util.ExitErrorf("Invalid configration, %v", err)
+		}
+
 		baseDir := "generated_deployments/" + mm_eks_env.DeployConfig.OutputDir
 
 		if baseDir != "" {
@@ -1227,18 +1251,6 @@ func main() {
 			if err != nil && !strings.Contains(err.Error(), "file exists") {
 				aws_util.ExitErrorf("Unable to create folder, %v", err)
 			}
-		}
-
-		fmt.Println("domains:", mm_eks_env, "operation:", operation)
-
-		if mm_eks_env.DeployConfig.ClusterName == "" {
-			fmt.Println("Please supply 'ClusterName' in the config file.")
-			os.Exit(1)
-		}
-
-		if mm_eks_env.DeployConfig.Region == "" {
-			fmt.Println("Please supply 'Region' in the config file.")
-			os.Exit(1)
 		}
 
 		mm_eks_env.ProbeResources()
