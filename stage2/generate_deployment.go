@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func GenerateDeploymentFiles(baseDir string) {
+func GenerateDeploymentFiles(baseDir string) error {
 	envConfig := ConfigWithDefaults()
 
 	tokens := envConfig.LoadTokenEnvironment()
@@ -23,8 +23,10 @@ func GenerateDeploymentFiles(baseDir string) {
 		}
 	}
 
-	domain_conf, alb_domain_conf := LoadDomains(tokens, baseDir)
-
+	domain_conf, alb_domain_conf, err := LoadDomains(tokens, baseDir)
+	if err != nil {
+		return err
+	}
 	// fmt.Println("domain_conf:", domain_conf)
 
 	_tokens := append(tokens, &Token{Key: "__NGINX_MM_DOMAINS__", Value: domain_conf})
@@ -37,6 +39,8 @@ func GenerateDeploymentFiles(baseDir string) {
 	ProcessTemplate("deploy-redis.yaml.template", baseDir+"/deploy-redis.yaml", _tokens, 0666)
 	ProcessTemplate("deploy-vid-oauth-wrapper.yaml.template", baseDir+"/deploy-vid-oauth-wrapper.yaml", _tokens, 0666)
 	ProcessTemplate("configmap-metricbeat.yaml.template", baseDir+"/configmap-metricbeat.yaml", _tokens, 0666)
+
+	return nil
 }
 
 func main() {

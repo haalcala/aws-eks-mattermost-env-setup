@@ -271,16 +271,15 @@ func (d *DeploymentEnvironment) LoadTokenEnvironment() []*Token {
 	}
 }
 
-func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) string {
-	fmt.Println("------ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) string")
+func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) (string, error) {
+	fmt.Println("------ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) (string,error)")
 
 	fmt.Println("Processing template:", templateFile)
 
 	dat, err := ioutil.ReadFile(templateFile)
 
 	if err != nil {
-		fmt.Println("err:", err)
-		os.Exit(1)
+		return "", err
 	}
 
 	template := string(dat)
@@ -303,18 +302,21 @@ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode
 	fmt.Println("template:", template)
 
 	if destinationFile != "" {
-		ioutil.WriteFile(destinationFile, []byte(template), mode)
+		err := ioutil.WriteFile(destinationFile, []byte(template), mode)
+
+		if err != nil {
+			return "", err
+		}
 	}
 
-	return template
+	return template, nil
 }
 
-func LoadDomains(tokens []*Token, baseDir string) (string, string) {
+func LoadDomains(tokens []*Token, baseDir string) (string, string, error) {
 	dat, err := ioutil.ReadFile("domains.json")
 
 	if err != nil {
-		fmt.Println("err:", err)
-		os.Exit(1)
+		return "", "", err
 	}
 
 	var domains []*MattermostDomainDeployment
@@ -328,8 +330,7 @@ func LoadDomains(tokens []*Token, baseDir string) (string, string) {
 	err = json.Unmarshal(dat, &domains)
 
 	if err != nil {
-		fmt.Println("err:", err)
-		os.Exit(1)
+		return "", "", err
 	}
 
 	for _, domain := range domains {
@@ -345,7 +346,10 @@ func LoadDomains(tokens []*Token, baseDir string) (string, string) {
 
 	b, err := json.MarshalIndent(domains, "", "\t")
 
-	ioutil.WriteFile("domains.json", b, 0666)
+	err = ioutil.WriteFile("domains.json", b, 0666)
+	if err != nil {
+		return "", "", err
+	}
 
 	nginx_domains := []string{}
 	alb_domains := []string{}
@@ -381,17 +385,32 @@ func LoadDomains(tokens []*Token, baseDir string) (string, string) {
 			fmt.Println("domain_token:", *domain_token)
 		}
 
-		nginx_domains = append(nginx_domains, ProcessTemplate("configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666))
-		alb_domains = append(alb_domains, ProcessTemplate("alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666))
+		nginx_domains_dat, err := ProcessTemplate("configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666)
+		if err != nil {
+			return "", "", err
+		}
+		nginx_domains = append(nginx_domains, nginx_domains_dat)
+
+		alb_domains_dat, err := ProcessTemplate("alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666)
+		if err != nil {
+			return "", "", err
+		}
+		alb_domains = append(alb_domains, alb_domains_dat)
 
 		domainBaseDir := baseDir + "/domains/" + domain.Key
 
 		os.Mkdir(domainBaseDir, 0777)
 
-		ProcessTemplate("mm_domain_deploy_service.yaml.template", fmt.Sprintf(domainBaseDir+"/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
+		_, err = ProcessTemplate("mm_domain_deploy_service.yaml.template", fmt.Sprintf(domainBaseDir+"/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
+		if err != nil {
+			return "", "", err
+		}
 
-		ProcessTemplate("mm_domain_docker_starter.template", fmt.Sprintf(domainBaseDir+"/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
+		_, err = ProcessTemplate("mm_domain_docker_starter.template", fmt.Sprintf(domainBaseDir+"/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
+		if err != nil {
+			return "", "", err
+		}
 	}
 
-	return strings.Join(nginx_domains, "\n"), strings.Join(alb_domains, "\n")
+	return strings.Join(nginx_domains, "\n"), strings.Join(alb_domains, "\n"), nil
 }
