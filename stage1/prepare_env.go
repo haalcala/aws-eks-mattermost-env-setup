@@ -1223,19 +1223,61 @@ func main() {
 		os.Exit(1)
 	}
 
-	if operation == "" {
-		os.Setenv("THIS_ENV_SET_BY_GO", "The quick brown fox jumps over the lazy dog")
+	mm_eks_env := &MMDeployContext{ConfigFile: config_file}
 
-		err, out1, out2 := aws_util.Execute(fmt.Sprintf("./stage1 %v check_env", config_file), true, true)
+	var baseDir string
 
-		fmt.Println("err:", err)
-		fmt.Println("out1:", out1)
-		fmt.Println("out2:", out2)
-	} else if operation == "check_env" {
-		fmt.Println("THIS_ENV_SET_BY_GO:", os.Getenv("THIS_ENV_SET_BY_GO"))
+	apis := map[string]func() error{
+		"create_cluster": func() error {
+			return mm_eks_env.EKSCreateCluster()
+		},
+		"delete_cluster": func() error {
+			mm_eks_env.DeleteCluster()
+			mm_eks_env.DeleteClusterVPC()
+			mm_eks_env.DeleteOtherStacks()
+
+			return nil
+		},
+		"fix_missing": func() error {
+			return mm_eks_env.FixMissing()
+		},
+		"generate_config_env": func() error {
+			return mm_eks_env.GenerateSaveEnvConfig(baseDir)
+		},
+		"generate_deployment": func() error {
+			dat, err := ioutil.ReadFile(baseDir + "/env.json")
+
+			if err != nil {
+				return err
+			}
+
+			props := &map[string]string{}
+
+			err = json.Unmarshal(dat, props)
+
+			// fmt.Println("props:", props)
+
+			for key, val := range *props {
+				// fmt.Println("key:", key, "val:", val)
+
+				os.Setenv("__"+key+"__", val)
+			}
+
+			return stage2.GenerateDeploymentFiles(baseDir)
+		},
+	}
+
+	handler := apis[operation]
+
+	if handler == nil {
+		fmt.Println("Unrecognised operation:", operation, "\n")
+		fmt.Println("Available operations are:\n")
+		fmt.Println("\tcreate_cluster")
+		fmt.Println("\tdelete_cluster")
+		fmt.Println("\tfix_missing")
+		fmt.Println("\tgenerate_config_env")
+		fmt.Println("\tgenerate_deployment")
 	} else {
-		mm_eks_env := &MMDeployContext{ConfigFile: config_file}
-
 		mm_eks_env.LoadDeployConfig(config_file)
 
 		err := mm_eks_env.ValidateManualParameters()
@@ -1243,7 +1285,7 @@ func main() {
 			aws_util.ExitErrorf("Invalid configration, %v", err)
 		}
 
-		baseDir := "generated_deployments/" + mm_eks_env.DeployConfig.OutputDir
+		baseDir = "generated_deployments/" + mm_eks_env.DeployConfig.OutputDir
 
 		if baseDir != "" {
 			err := os.MkdirAll(baseDir, 0777)
@@ -1259,57 +1301,10 @@ func main() {
 
 		fmt.Println("mm_eks_env.DeployConfig.VpcId:", mm_eks_env.DeployConfig.VpcId)
 
-		if operation == "delete_cluster" {
-			mm_eks_env.DeleteCluster()
-			mm_eks_env.DeleteClusterVPC()
-			mm_eks_env.DeleteOtherStacks()
-		} else if operation == "create_cluster" {
-			err := mm_eks_env.EKSCreateCluster()
+		err = handler()
 
-			if err != nil {
-				aws_util.ExitErrorf("Unable to create cluster, %v", err)
-			}
-		} else if operation == "fix_missing" {
-			err := mm_eks_env.FixMissing()
-
-			if err != nil {
-				aws_util.ExitErrorf("Unable to create cluster, %v", err)
-			}
-		} else if operation == "generate_config_env" {
-			err := mm_eks_env.GenerateSaveEnvConfig(baseDir)
-
-			if err != nil {
-				aws_util.ExitErrorf("Unable to create cluster, %v", err)
-			}
-		} else if operation == "generate_deployment" {
-			dat, err := ioutil.ReadFile(baseDir + "/env.json")
-
-			if err != nil {
-				fmt.Println("err:", err)
-				os.Exit(1)
-			}
-
-			props := &map[string]string{}
-
-			err = json.Unmarshal(dat, props)
-
-			// fmt.Println("props:", props)
-
-			for key, val := range *props {
-				// fmt.Println("key:", key, "val:", val)
-
-				os.Setenv("__"+key+"__", val)
-			}
-
-			stage2.GenerateDeploymentFiles(baseDir)
-		} else {
-			fmt.Println("Unrecognised operation:", operation, "\n")
-			fmt.Println("Available operations are:\n")
-			fmt.Println("\tcreate_cluster")
-			fmt.Println("\tdelete_cluster")
-			fmt.Println("\tfix_missing")
-			fmt.Println("\tgenerate_config_env")
-			fmt.Println("\tgenerate_deployment")
+		if err != nil {
+			aws_util.ExitErrorf("Unable to create cluster, %v", err)
 		}
 	}
 }
