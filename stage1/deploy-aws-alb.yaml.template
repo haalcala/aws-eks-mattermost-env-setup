@@ -26,13 +26,13 @@ spec:
           backend:
             serviceName: "mattermost-push-proxy-svc"
             servicePort: 8066
-    - host: vcube-vid-oauth-provider.vcube.sg
-      http:
-        paths:
-        - path: /*
-          backend:
-            serviceName: "vcube-vid-oauth-provider-svc"
-            servicePort: 4003
+    # - host: vcube-vid-oauth-provider.vcube.sg
+    #   http:
+    #     paths:
+    #     - path: /*
+    #       backend:
+    #         serviceName: "vcube-vid-oauth-provider-svc"
+    #         servicePort: 4003
 __ALB_DOMAIN_RULES__
 #    - http:
 #        paths:
@@ -111,6 +111,6 @@ spec:
             - name: AWS_SECRET_ACCESS_KEY
               value: __AWS_SECRET_ACCESS_KEY__
           # Repository location of the ALB Ingress Controller.
-          image: docker.io/amazon/aws-alb-ingress-controller:v1.1.4
+          image: docker.io/amazon/aws-alb-ingress-controller:v1.1.9
       serviceAccountName: alb-ingress-controller
 

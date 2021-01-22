@@ -10,7 +10,6 @@ import (
 	"time"
 
 	aws_util "../aws"
-	stage2 "../stage2"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -18,34 +17,60 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go/service/route53"
+)
+
+const (
+	GENERATED_DEPLOYMENT_BASE = "generated_deployments"
 )
 
 type MMDeployEnvironment struct {
-	ClusterName                            string                                 `json:"ClusterName"`
-	AvailabilityZones                      []string                               `json:"AvailabilityZones"`
-	Subnets                                []string                               `json:"Subnets"`
-	PrivateSubnets                         []string                               `json:"PrivateSubnets"`
-	PublicSubnets                          []string                               `json:"PublicSubnets"`
-	VpcId                                  string                                 `json:"VpcId"`
-	Region                                 string                                 `json:"Region"`
-	KubernetesVersion                      string                                 `json:"KubernetesVersion"`
-	AWSLoadBalancerControllerIAMPolicyName string                                 `json:"AWSLoadBalancerControllerIAMPolicyName"`
-	AWSLoadBalancerControllerIAMPolicyARN  string                                 `json:"AWSLoadBalancerControllerIAMPolicyARN"`
-	AWSCertificateARN                      string                                 `json:"AWSCertificateARN"`
-	RDS                                    MMDeployEnvironment_RDS                `json:"RDS"`
-	MattermostInstance                     MMDeployEnvironment_MattermostInstance `json:"MattermostInstance"`
-	InfraComponents                        MMDeployEnvironment_InfraComponents    `json:"InfraComponents"`
-	OutputDir                              string                                 `json:"OutputDir"`
-	AWSCredentialProfile                   string                                 `json:"AWSCredentialProfile"`
-	DeployBucket                           string                                 `json:"DeployBucket"`
-	Containers                             MMDeployEnvironment_Containers         `json:"Containers"`
-	VcubeOauth                             MMDeployEnvironment_VcubeOauth         `json:"VcubeOauth"`
-	ImportBucketRegion                     string                                 `json:"ImportBucketRegion"`
-	ImportBucket                           string                                 `json:"ImportBucket"`
-	KubernetesContext                      string                                 `json:"KubernetesContext"`
-	KubernetesEnvironment                  string                                 `json:"KubernetesEnvironment"`
+	// The EKS cluster name
+	ClusterName string `json:"ClusterName"`
+
+	// The availability zone to which the cluster is going to be available when it is created.
+	AvailabilityZones []string `json:"AvailabilityZones"`
+
+	// The subnets to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
+	Subnets []string `json:"Subnets"`
+
+	// This is for convenience access only.  This is probed from existing cluster if existing.
+	PrivateSubnets []string `json:"PrivateSubnets"`
+	// This is for convenience access only.  This is probed from existing cluster if existing.
+	PublicSubnets []string `json:"PublicSubnets"`
+
+	// The VPC to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
+	VpcId string `json:"VpcId"`
+
+	// The AWS region to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
+	Region string `json:"Region"`
+
+	// The Kubernetes version to be used when it is created.  This is probed from existing cluster if existing.
+	KubernetesVersion string `json:"KubernetesVersion"`
+
+	AWSLoadBalancerControllerName          string `json:"AWSLoadBalancerControllerName"`
+	AWSLoadBalancerControllerIAMPolicyName string `json:"AWSLoadBalancerControllerIAMPolicyName"`
+	AWSLoadBalancerControllerIAMPolicyARN  string `json:"AWSLoadBalancerControllerIAMPolicyARN"`
+
+	Route53ZoneId string `json:"Route53ZoneId"`
+
+	// the certificate that is going to be used for SSL (https)
+	AWSCertificateARN     string                                 `json:"AWSCertificateARN"`
+	RDS                   MMDeployEnvironment_RDS                `json:"RDS"`
+	MattermostInstance    MMDeployEnvironment_MattermostInstance `json:"MattermostInstance"`
+	InfraComponents       MMDeployEnvironment_InfraComponents    `json:"InfraComponents"`
+	OutputDir             string                                 `json:"OutputDir"`
+	AWSCredentialProfile  string                                 `json:"AWSCredentialProfile"`
+	DeployBucket          string                                 `json:"DeployBucket"`
+	Containers            MMDeployEnvironment_Containers         `json:"Containers"`
+	VcubeOauth            MMDeployEnvironment_VcubeOauth         `json:"VcubeOauth"`
+	ImportBucketRegion    string                                 `json:"ImportBucketRegion"`
+	ImportBucket          string                                 `json:"ImportBucket"`
+	KubernetesContext     string                                 `json:"KubernetesContext"`
+	KubernetesEnvironment string                                 `json:"KubernetesEnvironment"`
 }
 
 type MMDeployEnvironment_VcubeOauth struct {
@@ -127,13 +152,16 @@ type MMDeployContext struct {
 	EKSCluster     *eks.Cluster
 	EC2            *ec2.EC2
 	EKS            *eks.EKS
+	ELB            *elbv2.ELBV2
 	CF             *cloudformation.CloudFormation
 	IAM            *iam.IAM
 	RDS            *rds.RDS
+	R53            *route53.Route53
 	ConfigFile     string
 	Subnets        []*ec2.Subnet
 	PrivateSubnets []*ec2.Subnet
 	PublicSubnets  []*ec2.Subnet
+	Domains        []*MattermostDomainDeployment
 }
 
 func (c *MMDeployEnvironment) MMDeployConfigToJsonString() (string, error) {
@@ -172,8 +200,20 @@ func (c *MMDeployEnvironment) ApplyDefaults() {
 		c.OutputDir = "generated_config"
 	}
 
+	if c.AWSLoadBalancerControllerName == "" {
+		c.AWSLoadBalancerControllerName = "alb-ingress-controller"
+	}
+
 	if c.AWSLoadBalancerControllerIAMPolicyName == "" {
 		c.AWSLoadBalancerControllerIAMPolicyName = "ALBIngressControllerIAMPolicy"
+	}
+
+	if c.RDS.DBSecurityGroupName == "" {
+		c.RDS.DBSecurityGroupName = c.ClusterName + "-dbaccess"
+	}
+
+	if c.RDS.DBInstanceName == "" {
+		c.RDS.DBInstanceName = c.ClusterName
 	}
 
 	getDefaultContainerProps := func(container *MMDeployEnvironment_Container, name, repo string) {
@@ -251,56 +291,18 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 			err := m.SaveDeployConfig()
 
 			if err != nil {
-				fmt.Println("err:", err)
+				return err
 			}
 
 			fmt.Println("Please try again.")
-		} else {
-			fmt.Println("err:", err)
 		}
-		os.Exit(1)
+
+		return err
 	}
 
 	config, err := MMDeployConfigFromJson(string(dat))
 
 	m.DeployConfig = *config
-
-	config.ApplyDefaults()
-
-	m.SaveDeployConfig()
-
-	// d := json.NewDecoder(strings.NewReader(string(dat)))
-
-	// d.UseNumber()
-
-	// d.Decode(&config)
-
-	if config.RDS.DBSecurityGroupName == "" {
-		config.RDS.DBSecurityGroupName = config.ClusterName + "-dbaccess"
-	}
-
-	if config.RDS.DBInstanceName == "" {
-		config.RDS.DBInstanceName = config.ClusterName
-	}
-
-	if config.AWSLoadBalancerControllerIAMPolicyName == "" {
-		config.AWSLoadBalancerControllerIAMPolicyName = "AWSLoadBalancerControllerIAMPolicyName"
-	}
-
-	err, AWS_ACCESS_KEY_ID, stderr := aws_util.Execute("aws configure get aws_access_key_id", true, false)
-
-	if err != nil {
-		fmt.Println("stderr:", stderr)
-		os.Exit(1)
-	}
-
-	err, AWS_ACCESS_SECRET, stderr := aws_util.Execute("aws configure get aws_secret_access_key", true, false)
-
-	// err, stdout, stderr = aws.Execute("aws rds help", true, false)
-	// log.Printf("%v %s %s", err, out, _err)
-
-	fmt.Println("AWS_ACCESS_KEY_ID:", AWS_ACCESS_KEY_ID)
-	fmt.Println("AWS_ACCESS_SECRET:", AWS_ACCESS_SECRET)
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(m.DeployConfig.Region),
@@ -311,12 +313,51 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 		return err
 	}
 
+	fmt.Println("sess:", sess)
+
 	m.Session = sess
 	m.EC2 = ec2.New(sess)
 	m.EKS = eks.New(sess)
 	m.CF = cloudformation.New(sess)
 	m.RDS = rds.New(sess)
 	m.IAM = iam.New(sess)
+	m.ELB = elbv2.New(sess)
+	m.R53 = route53.New(sess)
+
+	err = m.LoadDomains()
+	if err != nil {
+		return err
+	}
+
+	config.ApplyDefaults()
+
+	err = m.SaveDeployConfig()
+	if err != nil {
+		return err
+	}
+	// d := json.NewDecoder(strings.NewReader(string(dat)))
+
+	// d.UseNumber()
+
+	// d.Decode(&config)
+
+	err, AWS_ACCESS_KEY_ID, _ := aws_util.Execute("aws configure get aws_access_key_id", true, false)
+
+	if err != nil {
+		return err
+	}
+
+	err, AWS_ACCESS_SECRET, _ := aws_util.Execute("aws configure get aws_secret_access_key", true, false)
+
+	if err != nil {
+		return err
+	}
+
+	// err, stdout, stderr = aws.Execute("aws rds help", true, false)
+	// log.Printf("%v %s %s", err, out, _err)
+
+	fmt.Println("AWS_ACCESS_KEY_ID:", AWS_ACCESS_KEY_ID)
+	fmt.Println("AWS_ACCESS_SECRET:", AWS_ACCESS_SECRET)
 
 	return nil
 }
@@ -1033,7 +1074,7 @@ func (m *MMDeployContext) GenerateSaveEnvConfig(baseDir string) error {
 		return err
 	}
 
-	envConfig := &stage2.DeploymentEnvironment{
+	envConfig := &DeploymentEnvironment{
 		AWS_ACCESS_KEY_ID:                      cred.AccessKeyID,
 		AWS_SECRET_ACCESS_KEY:                  cred.SecretAccessKey,
 		AWS_EKS_CLUSTER_NAME:                   m.DeployConfig.ClusterName,
@@ -1079,10 +1120,13 @@ func (m *MMDeployContext) GenerateSaveEnvConfig(baseDir string) error {
 		AWS_PROD_S3_SECRET_ACCESS_KEY:          cred.SecretAccessKey,
 		IMPORT_EXTERNAL_BUCKET_REGION:          m.DeployConfig.ImportBucketRegion,
 		IMPORT_EXTERNAL_BUCKET:                 m.DeployConfig.ImportBucket,
-		AWS_ACM_CERTIFICATE_ARN:                m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN,
+		AWS_ACM_CERTIFICATE_ARN:                m.DeployConfig.AWSCertificateARN,
+		ALB_INGRESS_CONTROLLER_NAME:            m.DeployConfig.AWSLoadBalancerControllerName,
+		ALB_INGRESS_CONTROLLER_IAM_POLICY:      m.DeployConfig.AWSLoadBalancerControllerIAMPolicyName,
+		ALB_INGRESS_CONTROLLER_IAM_POLICY_ARN:  m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN,
 	}
 
-	b, err := stage2.DeploymentEnvironmentToJsonString(envConfig)
+	b, err := DeploymentEnvironmentToJsonString(envConfig)
 
 	fmt.Println("b:", b)
 
@@ -1223,26 +1267,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	mm_eks_env := &MMDeployContext{ConfigFile: config_file}
+	deploy_context := &MMDeployContext{ConfigFile: config_file}
 
 	var baseDir string
 
 	apis := map[string]func() error{
 		"create_cluster": func() error {
-			return mm_eks_env.EKSCreateCluster()
+			return deploy_context.EKSCreateCluster()
 		},
 		"delete_cluster": func() error {
-			mm_eks_env.DeleteCluster()
-			mm_eks_env.DeleteClusterVPC()
-			mm_eks_env.DeleteOtherStacks()
+			deploy_context.DeleteCluster()
+			deploy_context.DeleteClusterVPC()
+			deploy_context.DeleteOtherStacks()
 
 			return nil
 		},
 		"fix_missing": func() error {
-			return mm_eks_env.FixMissing()
+			return deploy_context.FixMissing()
 		},
 		"generate_config_env": func() error {
-			return mm_eks_env.GenerateSaveEnvConfig(baseDir)
+			return deploy_context.GenerateSaveEnvConfig(baseDir)
 		},
 		"generate_deployment": func() error {
 			dat, err := ioutil.ReadFile(baseDir + "/env.json")
@@ -1263,7 +1307,7 @@ func main() {
 				os.Setenv("__"+key+"__", val)
 			}
 
-			return stage2.GenerateDeploymentFiles(baseDir)
+			return deploy_context.GenerateDeploymentFiles(baseDir)
 		},
 	}
 
@@ -1278,14 +1322,17 @@ func main() {
 		fmt.Println("\tgenerate_config_env")
 		fmt.Println("\tgenerate_deployment")
 	} else {
-		mm_eks_env.LoadDeployConfig(config_file)
-
-		err := mm_eks_env.ValidateManualParameters()
+		err := deploy_context.LoadDeployConfig(config_file)
 		if err != nil {
 			aws_util.ExitErrorf("Invalid configration, %v", err)
 		}
 
-		baseDir = "generated_deployments/" + mm_eks_env.DeployConfig.OutputDir
+		err = deploy_context.ValidateManualParameters()
+		if err != nil {
+			aws_util.ExitErrorf("Invalid configration, %v", err)
+		}
+
+		baseDir = "generated_deployments/" + deploy_context.DeployConfig.OutputDir
 
 		if baseDir != "" {
 			err := os.MkdirAll(baseDir, 0777)
@@ -1295,11 +1342,11 @@ func main() {
 			}
 		}
 
-		mm_eks_env.ProbeResources()
-		mm_eks_env.PatchDeployConfig()
-		mm_eks_env.SaveDeployConfig()
+		deploy_context.ProbeResources()
+		deploy_context.PatchDeployConfig()
+		deploy_context.SaveDeployConfig()
 
-		fmt.Println("mm_eks_env.DeployConfig.VpcId:", mm_eks_env.DeployConfig.VpcId)
+		fmt.Println("deploy_context.DeployConfig.VpcId:", deploy_context.DeployConfig.VpcId)
 
 		err = handler()
 

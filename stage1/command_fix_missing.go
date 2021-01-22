@@ -3,13 +3,17 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"strings"
 
 	aws_util "../aws"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go/service/route53"
 )
 
 // this is just a comment
@@ -130,7 +134,7 @@ func (m *MMDeployContext) GetDBInstance() (*rds.DBInstance, error) {
 	dbs, err := m.RDS.DescribeDBInstances(nil)
 
 	if err != nil {
-		aws_util.ExitErrorf("Unable to create cluster, %v", err)
+		aws_util.ExitErrorf("Unable to DescribeDBInstances, %v", err)
 	}
 
 	fmt.Println("dbs:", dbs)
@@ -324,23 +328,27 @@ func (m *MMDeployContext) GetOrCreateEKSServiceAccount() error {
 func (m *MMDeployContext) FixMissing() error {
 	fmt.Println("------ func (m *MMDeployContext) FixMissing() error")
 
-	db, err := m.GetOrCreateDB()
+	// db, err := m.GetOrCreateDB()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	fmt.Println("db:", db)
+	// fmt.Println("db:", db)
 
-	iam_policy, err := m.GetOrCreateALBIAMPolicy()
+	// iam_policy, err := m.GetOrCreateALBIAMPolicy()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	fmt.Println("iam_policy:", iam_policy)
+	// fmt.Println("iam_policy:", iam_policy)
 
-	m.GetOrCreateEKSServiceAccount()
+	// m.GetOrCreateEKSServiceAccount()
+
+	os.Chdir(path.Join(GENERATED_DEPLOYMENT_BASE, m.DeployConfig.ClusterName))
+
+	defer os.Chdir("..")
 
 	// err, out1, out2 := aws_util.Execute("cd ../mattermost-env-setup-stage-2 ; source .staging_env ; go run generate_deployment.go common.go", true, true)
 
@@ -348,11 +356,203 @@ func (m *MMDeployContext) FixMissing() error {
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	err, out1, out2 := aws_util.Execute("go run check_env.go", true, true)
+	// err, out1, out2 := aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f rbac-role.yaml",
+	// 	m.DeployConfig.KubernetesContext),
+	// 	true, true)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
 
+	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("eksctl --region %v utils associate-iam-oidc-provider --cluster %v --approve",
+	// 	m.DeployConfig.Region,
+	// 	m.DeployConfig.ClusterName),
+	// 	true, true)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
+
+	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("eksctl --region %v create iamserviceaccount --cluster %v --name %v --namespace kube-system --attach-policy-arn %v --approve --override-existing-serviceaccounts",
+	// 	m.DeployConfig.Region,
+	// 	m.DeployConfig.ClusterName,
+	// 	m.DeployConfig.AWSLoadBalancerControllerName,
+	// 	m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN),
+	// 	true, true)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
+
+	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-nginx-router.yaml",
+	// 	m.DeployConfig.KubernetesContext),
+	// 	true, true)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
+
+	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-aws-alb.yaml",
+	// 	m.DeployConfig.KubernetesContext),
+	// 	true, true)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
+
+	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-push-proxy.yaml",
+	// 	m.DeployConfig.KubernetesContext),
+	// 	true, true)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
+
+	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-redis.yaml",
+	// 	m.DeployConfig.KubernetesContext),
+	// 	true, true)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("err:", err)
+	// fmt.Println("out1:", out1)
+	// fmt.Println("out2:", out2)
+
+	elbs, err := m.ELB.DescribeLoadBalancers(nil)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("elbs:", elbs)
+
+	var cluster_elb *elbv2.LoadBalancer
+
+	for _, _elb := range elbs.LoadBalancers {
+		tags, err := m.ELB.DescribeTags(&elbv2.DescribeTagsInput{
+			ResourceArns: []*string{_elb.LoadBalancerArn},
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Println("tags:", tags)
+
+		is_in_cluster := false
+		ingress_name := ""
+
+		for _, _tag := range tags.TagDescriptions[0].Tags {
+			fmt.Println("Key:", *_tag.Key, "Value:", *_tag.Value)
+			if *_tag.Key == "ingress.k8s.aws/cluster" && *_tag.Value == m.DeployConfig.ClusterName {
+				is_in_cluster = true
+			}
+			if *_tag.Key == "kubernetes.io/ingress-name" {
+				ingress_name = *_tag.Value
+			}
+			fmt.Println("is_in_cluster:", is_in_cluster, "ingress_name:", ingress_name)
+		}
+
+		fmt.Println("--->>> is_in_cluster:", is_in_cluster, "ingress_name:", ingress_name, m.DeployConfig.ClusterName+"-alb-ingress", ingress_name == m.DeployConfig.ClusterName+"-alb-ingress")
+
+		if is_in_cluster && (ingress_name == m.DeployConfig.ClusterName+"-alb-ingress") {
+			cluster_elb = _elb
+		}
+	}
+
+	fmt.Println("cluster_elb:", cluster_elb)
+
+	hosted_zones, err := m.R53.ListHostedZones(nil)
+	if err != nil {
+		return err
+	}
+	fmt.Println("hosted_zones:", hosted_zones)
+
+	var hosted_zone *route53.HostedZone
+
+	for _, _hosted_zone := range hosted_zones.HostedZones {
+		if *_hosted_zone.Name == m.DeployConfig.Route53ZoneId {
+			hosted_zone = _hosted_zone
+		}
+	}
+
+	if hosted_zone != nil {
+		recordsets, err := m.R53.ListResourceRecordSets(&route53.ListResourceRecordSetsInput{
+			HostedZoneId: hosted_zone.Id,
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Println("recordsets:", recordsets)
+		fmt.Println("m.Domains :", m.Domains)
+
+		for _, domain_entry := range m.Domains {
+			recordset_found := false
+			// fmt.Println("domain_entry:", domain_entry)
+			for _, recordset := range recordsets.ResourceRecordSets {
+				if len(recordset.ResourceRecords) == 0 {
+					continue
+				}
+				// fmt.Println("recordset:", recordset, "*recordset.Name:", *recordset.Name, "domain_entry.Domain == *recordset.Name:", domain_entry.Domain+"." == *recordset.Name, "*cluster_elb.DNSName:", *cluster_elb.DNSName, "*recordset.ResourceRecords[0].Value:", *recordset.ResourceRecords[0].Value, "*recordset.Type == \"CNAME\":", *recordset.Type == "CNAME")
+				if domain_entry.Domain+"." == *recordset.Name {
+					if *recordset.Type == "CNAME" && *recordset.ResourceRecords[0].Value == *cluster_elb.DNSName {
+						fmt.Println("Recordset already created. Skipping.")
+					}
+					recordset_found = true
+				}
+			}
+			if !recordset_found {
+				params := &route53.ChangeResourceRecordSetsInput{
+					ChangeBatch: &route53.ChangeBatch{ // Required
+						Changes: []*route53.Change{ // Required
+							{ // Required
+								Action: aws.String("UPSERT"), // Required
+								ResourceRecordSet: &route53.ResourceRecordSet{ // Required
+									Name: aws.String(domain_entry.Domain), // Required
+									Type: aws.String("CNAME"),             // Required
+									ResourceRecords: []*route53.ResourceRecord{
+										{ // Required
+											Value: aws.String(*cluster_elb.DNSName), // Required
+										},
+									},
+									TTL: aws.Int64(300),
+									// Weight:        aws.Int64(weight),
+									// SetIdentifier: aws.String("Arbitrary Id describing this change set"),
+								},
+							},
+						},
+						Comment: aws.String("Sample update."),
+					},
+					HostedZoneId: aws.String(*hosted_zone.Id), // Required
+				}
+				resp, err := m.R53.ChangeResourceRecordSets(params)
+				if err != nil {
+					return err
+				}
+				fmt.Println("resp:", resp)
+			}
+		}
+	}
+
+	err, out1, out2 := aws_util.Execute(fmt.Sprintf("kubectl --context %v get pods -o json",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
 	fmt.Println("err:", err)
 	fmt.Println("out1:", out1)
 	fmt.Println("out2:", out2)
 
-	return nil
+	return err
 }

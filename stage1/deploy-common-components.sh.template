@@ -1,0 +1,6 @@
+#!/bin/bash
+
+eksctl utils associate-iam-oidc-provider --cluster __AWS_EKS_CLUSTER_NAME__ --approve
+
+eksctl create iamserviceaccount --name __ALB_INGRESS_CONTROLLER_NAME__ --namespace kube-system --cluster __AWS_EKS_CLUSTER_NAME__ --attach-policy-arn __ALB_INGRESS_CONTROLLER_IAM_POLICY__ --approve --override-existing-serviceaccounts
+

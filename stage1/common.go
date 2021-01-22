@@ -1,4 +1,4 @@
-package stage2
+package main
 
 import (
 	"encoding/json"
@@ -117,6 +117,11 @@ type DeploymentEnvironment struct {
 	// the mattermost custom cluster redis details
 	MM_CLUSTER_REDIS_PASS string `json:"MM_CLUSTER_REDIS_PASS"`
 
+	// ALB Ingress Controller Name
+	ALB_INGRESS_CONTROLLER_NAME           string `json:"ALB_INGRESS_CONTROLLER_NAME"`
+	ALB_INGRESS_CONTROLLER_IAM_POLICY     string `json:"ALB_INGRESS_CONTROLLER_IAM_POLICY"`
+	ALB_INGRESS_CONTROLLER_IAM_POLICY_ARN string `json:"ALB_INGRESS_CONTROLLER_IAM_POLICY_ARN"`
+
 	// VID OAuth Provider initial admin user
 	VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME string `json:"VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME"`
 	// VID OAuth Provider initial admin password
@@ -163,112 +168,33 @@ func DeploymentEnvironmentToJsonString(c *DeploymentEnvironment) (string, error)
 	return string(b), err
 }
 
-func ConfigWithDefaults() *DeploymentEnvironment {
-	return &DeploymentEnvironment{
-		AWS_ACCESS_KEY_ID:                      strings.Trim(os.Getenv("__AWS_ACCESS_KEY_ID__"), "\r"),
-		AWS_SECRET_ACCESS_KEY:                  strings.Trim(os.Getenv("__AWS_SECRET_ACCESS_KEY__"), "\r"),
-		AWS_PROD_S3_ACCESS_KEY_ID:              strings.Trim(os.Getenv("__AWS_PROD_S3_ACCESS_KEY_ID__"), "\r"),
-		AWS_PROD_S3_SECRET_ACCESS_KEY:          strings.Trim(os.Getenv("__AWS_PROD_S3_SECRET_ACCESS_KEY__"), "\r"),
-		AWS_EKS_CLUSTER_NAME:                   strings.Trim(os.Getenv("__AWS_EKS_CLUSTER_NAME__"), "\r"),
-		AWS_VPC_ID:                             strings.Trim(os.Getenv("__AWS_VPC_ID__"), "\r"),
-		EKS_PUBLIC_SUBNETS:                     strings.Trim(os.Getenv("__EKS_PUBLIC_SUBNETS__"), "\r"),
-		AWS_REGION:                             strings.Trim(os.Getenv("__AWS_REGION__"), "\r"),
-		DEPLOY_BUCKET:                          strings.Trim(os.Getenv("__DEPLOY_BUCKET__"), "\r"),
-		IMPORT_EXTERNAL_BUCKET:                 strings.Trim(os.Getenv("__IMPORT_EXTERNAL_BUCKET__"), "\r"),
-		IMPORT_EXTERNAL_BUCKET_REGION:          strings.Trim(os.Getenv("__IMPORT_EXTERNAL_BUCKET_REGION__"), "\r"),
-		AWS_ACM_CERTIFICATE_ARN:                strings.Trim(os.Getenv("__AWS_ACM_CERTIFICATE_ARN__"), "\r"),
-		MATTERMOST_PORT:                        strings.Trim(os.Getenv("__MATTERMOST_PORT__"), "\r"),
-		MM_DB_HOST:                             strings.Trim(os.Getenv("__MM_DB_HOST__"), "\r"),
-		MM_DB_PORT:                             strings.Trim(os.Getenv("__MM_DB_PORT__"), "\r"),
-		MM_DB_MASTER_USER:                      strings.Trim(os.Getenv("__MM_DB_MASTER_USER__"), "\r"),
-		MM_DB_MASTER_PASS:                      strings.Trim(os.Getenv("__MM_DB_MASTER_PASS__"), "\r"),
-		NGINX_CONFIG_VERSION:                   strings.Trim(os.Getenv("__NGINX_CONFIG_VERSION__"), "\r"),
-		MM_DEPLOY_VERSION:                      strings.Trim(os.Getenv("__MM_DEPLOY_VERSION__"), "\r"),
-		MM_CONF_PLUGIN_ENABLE_UPLOAD:           strings.Trim(os.Getenv("__MM_CONF_PLUGIN_ENABLE_UPLOAD__"), "\r"),
-		SMTP_USER:                              strings.Trim(os.Getenv("__SMTP_USER__"), "\r"),
-		SMTP_PASS:                              strings.Trim(os.Getenv("__SMTP_PASS__"), "\r"),
-		SMTP_HOST:                              strings.Trim(os.Getenv("__SMTP_HOST__"), "\r"),
-		SMTP_PORT:                              strings.Trim(os.Getenv("__SMTP_PORT__"), "\r"),
-		SMTP_FROM:                              strings.Trim(os.Getenv("__SMTP_FROM__"), "\r"),
-		MM_PROXY_PROXY_CONFIG_VERSION:          strings.Trim(os.Getenv("__MM_PROXY_PROXY_CONFIG_VERSION__"), "\r"),
-		MATTERMOST_PUSH_NOTIFICATION_URL:       strings.Trim(os.Getenv("__MATTERMOST_PUSH_NOTIFICATION_URL__"), "\r"),
-		MATTERMOST_PUSH_PROXY_DOCKER_REPO:      strings.Trim(os.Getenv("__MATTERMOST_PUSH_PROXY_DOCKER_REPO__"), "\r"),
-		MM_DOCKER_REPO:                         strings.Trim(os.Getenv("__MM_DOCKER_REPO__"), "\r"),
-		MM_CLUSTER_DRIVER:                      strings.Trim(os.Getenv("__MM_CLUSTER_DRIVER__"), "\r"),
-		MM_CLUSTER_REDIS_HOST:                  strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_HOST__"), "\r"),
-		MM_CLUSTER_REDIS_PORT:                  strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_PORT__"), "\r"),
-		MM_CLUSTER_REDIS_PASS:                  strings.Trim(os.Getenv("__MM_CLUSTER_REDIS_PASS__"), "\r"),
-		VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME__"), "\r"),
-		VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD__"), "\r"),
-		VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET: strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET__"), "\r"),
-		VCUBE_VID_OAUTH_VMEETING_URL:           strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VMEETING_URL__"), "\r"),
-		VCUBE_VID_OAUTH_VID_CONSUMER_KEY:       strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_CONSUMER_KEY__"), "\r"),
-		VCUBE_VID_OAUTH_VID_REST_PWD:           strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_REST_PWD__"), "\r"),
-		VCUBE_VID_OAUTH_VID_REST_URL:           strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_REST_URL__"), "\r"),
-		VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE:   strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE__"), "\r"),
-		VCUBE_VID_OAUTH_CONTAINER_VERSION:      strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_CONTAINER_VERSION__"), "\r"),
-		VCUBE_VID_OAUTH_CONTAINER_REPO:         strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_CONTAINER_REPO__"), "\r"),
-		VCUBE_VID_OAUTH_DB_NAME:                strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_DB_NAME__"), "\r"),
-		VCUBE_VID_OAUTH_DB_USERNAME:            strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_DB_USERNAME__"), "\r"),
-		VCUBE_VID_OAUTH_DB_PASSWORD:            strings.Trim(os.Getenv("__VCUBE_VID_OAUTH_DB_PASSWORD__"), "\r"),
-	}
-}
-
 func (d *DeploymentEnvironment) getToken(key, def string, req bool) *Token {
 	r := reflect.ValueOf(d)
 	f := reflect.Indirect(r).FieldByName(key)
 	return &Token{Key: "__" + key + "__", Value: f.String(), Default: def, Required: req}
 }
 
-func (d *DeploymentEnvironment) LoadTokenEnvironment() []*Token {
-	return []*Token{
-		d.getToken("AWS_ACCESS_KEY_ID", "", true),
-		d.getToken("AWS_SECRET_ACCESS_KEY", "", true),
-		d.getToken("AWS_PROD_S3_ACCESS_KEY_ID", "", true),
-		d.getToken("AWS_PROD_S3_SECRET_ACCESS_KEY", "", true),
-		d.getToken("AWS_EKS_CLUSTER_NAME", "", true),
-		d.getToken("AWS_VPC_ID", "", true),
-		d.getToken("EKS_PUBLIC_SUBNETS", "", true),
-		d.getToken("AWS_REGION", "", true),
-		d.getToken("DEPLOY_BUCKET", "", true),
-		d.getToken("IMPORT_EXTERNAL_BUCKET", "", true),
-		d.getToken("IMPORT_EXTERNAL_BUCKET_REGION", "", true),
-		d.getToken("AWS_ACM_CERTIFICATE_ARN", "", true),
-		d.getToken("MATTERMOST_PORT", "8065", true),
-		d.getToken("MM_DB_HOST", "", true),
-		d.getToken("MM_DB_PORT", "", true),
-		d.getToken("MM_DB_MASTER_USER", "", true),
-		d.getToken("MM_DB_MASTER_PASS", "", true),
-		d.getToken("NGINX_CONFIG_VERSION", "", true),
-		d.getToken("MM_DEPLOY_VERSION", "", true),
-		d.getToken("MM_CONF_PLUGIN_ENABLE_UPLOAD", "false", true),
-		d.getToken("SMTP_USER", "", true),
-		d.getToken("SMTP_PASS", "", true),
-		d.getToken("SMTP_HOST", "", true),
-		d.getToken("SMTP_PORT", "", true),
-		d.getToken("SMTP_FROM", "", true),
-		d.getToken("MM_PROXY_PROXY_CONFIG_VERSION", "v1", true),
-		d.getToken("MATTERMOST_PUSH_NOTIFICATION_URL", "https://push-test.mattermost.com", true),
-		d.getToken("MATTERMOST_PUSH_PROXY_DOCKER_REPO", "haalcala/mattermost-push-proxy", true),
-		d.getToken("MM_DOCKER_REPO", "haalcala/mattermost-prod", true),
-		d.getToken("MM_CLUSTER_DRIVER", "", true),
-		d.getToken("MM_CLUSTER_REDIS_HOST", "localhost", true),
-		d.getToken("MM_CLUSTER_REDIS_PORT", "6379", true),
-		d.getToken("MM_CLUSTER_REDIS_PASS", "", false),
-		d.getToken("VCUBE_VID_OAUTH_INITIAL_ADMIN_USERNAME", "", true),
-		d.getToken("VCUBE_VID_OAUTH_INITIAL_ADMIN_PASSWORD", "", true),
-		d.getToken("VCUBE_VID_OAUTH_EXPRESS_SESSION_SECRET", "", true),
-		d.getToken("VCUBE_VID_OAUTH_VMEETING_URL", "", true),
-		d.getToken("VCUBE_VID_OAUTH_VID_CONSUMER_KEY", "", true),
-		d.getToken("VCUBE_VID_OAUTH_VID_REST_PWD", "", true),
-		d.getToken("VCUBE_VID_OAUTH_VID_REST_URL", "", true),
-		d.getToken("VCUBE_VID_OAUTH_VID_SECRET_AUTH_CODE", "", true),
-		d.getToken("VCUBE_VID_OAUTH_CONTAINER_VERSION", "", true),
-		d.getToken("VCUBE_VID_OAUTH_CONTAINER_REPO", "", true),
-		d.getToken("VCUBE_VID_OAUTH_DB_NAME", "", true),
-		d.getToken("VCUBE_VID_OAUTH_DB_USERNAME", "", true),
-		d.getToken("VCUBE_VID_OAUTH_DB_PASSWORD", "", true),
+func LoadTokenFromJson(json_file string) ([]*Token, error) {
+	b, err := ioutil.ReadFile(json_file)
+
+	if err != nil {
+		return nil, err
 	}
+
+	_env := &map[string]string{}
+
+	err = json.Unmarshal(b, _env)
+	if err != nil {
+		return nil, err
+	}
+
+	tokens := []*Token{}
+
+	for key, val := range *_env {
+		tokens = append(tokens, &Token{Key: "__" + key + "__", Value: val})
+	}
+
+	return tokens, nil
 }
 
 func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode os.FileMode) (string, error) {
@@ -312,14 +238,12 @@ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode
 	return template, nil
 }
 
-func LoadDomains(tokens []*Token, baseDir string) (string, string, error) {
+func (m *MMDeployContext) LoadDomains() error {
 	dat, err := ioutil.ReadFile("domains.json")
 
 	if err != nil {
-		return "", "", err
+		return err
 	}
-
-	var domains []*MattermostDomainDeployment
 
 	// d := json.NewDecoder(strings.NewReader(string(dat)))
 
@@ -327,10 +251,12 @@ func LoadDomains(tokens []*Token, baseDir string) (string, string, error) {
 
 	// d.Decode(&domains)
 
+	domains := []*MattermostDomainDeployment{}
+
 	err = json.Unmarshal(dat, &domains)
 
 	if err != nil {
-		return "", "", err
+		return err
 	}
 
 	for _, domain := range domains {
@@ -345,18 +271,31 @@ func LoadDomains(tokens []*Token, baseDir string) (string, string, error) {
 	fmt.Println("domains:", domains)
 
 	b, err := json.MarshalIndent(domains, "", "\t")
+	if err != nil {
+		return err
+	}
 
 	err = ioutil.WriteFile("domains.json", b, 0666)
+	if err != nil {
+		return err
+	}
+
+	m.Domains = domains
+
+	return nil
+}
+
+func (m *MMDeployContext) ProcessDomains(tokens []*Token, baseDir string) (string, string, error) {
+	nginx_domains := []string{}
+	alb_domains := []string{}
+
+	err := os.Mkdir(baseDir+"/domains", 0777)
+
 	if err != nil {
 		return "", "", err
 	}
 
-	nginx_domains := []string{}
-	alb_domains := []string{}
-
-	err = os.Mkdir(baseDir+"/domains", 0777)
-
-	for _, domain := range domains {
+	for _, domain := range m.Domains {
 		fmt.Println("domain:", domain)
 
 		domain_tokens := []*Token{

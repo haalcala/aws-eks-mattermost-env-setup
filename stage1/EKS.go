@@ -28,7 +28,7 @@ func (m *MMDeployContext) WaitIfClusterCreating() error {
 
 // bla bla bla
 func (m *MMDeployContext) GetEKSCluster() (*eks.Cluster, error) {
-	fmt.Println("------ func (m *MMDeployContext) GetCluster() error")
+	fmt.Println("------ func (m *MMDeployContext) GetEKSCluster() error")
 
 	cluster, err := m.EKS.DescribeCluster(&eks.DescribeClusterInput{
 		Name: &m.DeployConfig.ClusterName,
