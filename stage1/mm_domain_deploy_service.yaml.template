@@ -93,14 +93,14 @@ spec:
             successThreshold: 1
             failureThreshold: 30
       volumes:
-        - name: aws-config
-          configMap:
-            name: mm-instance-conf
-            items:
-              - key: aws-credentials
-                path: credentials
-              - key: aws-config
-                path: config
+        # - name: aws-config
+        #   configMap:
+        #     name: mm-instance-conf
+        #     items:
+        #       - key: aws-credentials
+        #         path: credentials
+        #       - key: aws-config
+        #         path: config
         # - name: service-envoy
         #   configMap:
         #     name: service-envoy
