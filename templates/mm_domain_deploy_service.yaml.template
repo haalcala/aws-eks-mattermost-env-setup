@@ -34,11 +34,11 @@ spec:
           image: __MM_DOCKER_REPO__:__MM_DOCKER_REPO_TAG__
           resources:
             limits:
-              memory: 2000Mi
-              cpu: "0.5"
+              memory: __MM_CONTAINER_MEM__
+              cpu: "__MM_CONTAINER_CPU__"
             requests:
-              memory: 2000Mi
-              cpu: "0.5" 
+              memory: __MM_CONTAINER_MEM__
+              cpu: "__MM_CONTAINER_CPU__" 
           command :
             - bash
             - "-c"

@@ -173,6 +173,8 @@ type MattermostDomainDeployment struct {
 	DeployEnv      string `json:"deploy-env"`
 	ClientLocale   string `json:"client-locale"`
 	OverrideDBUser string `json:"OverrideDBUser"`
+	ContainerCPU string `json:"ContainerCPU"`
+	ContainerMemory string `json:"ContainerMemory"`
 }
 
 type Token struct {
@@ -303,6 +305,18 @@ type DeploymentEnvironment struct {
 	VCUBE_VID_OAUTH_DB_USERNAME string `json:"VCUBE_VID_OAUTH_DB_USERNAME"`
 	// VID OAuth Provider VMeeting service database details
 	VCUBE_VID_OAUTH_DB_PASSWORD string `json:"VCUBE_VID_OAUTH_DB_PASSWORD"`
+}
+
+func (d*MattermostDomainDeployment) ApplyDefaults() error {
+	if d.ContainerCPU==""{
+		d.ContainerCPU=".5"
+	}
+
+	if d.ContainerMemory==""{
+		d.ContainerMemory="2000Mi"
+	}
+
+	return nil
 }
 
 func DeploymentEnvironmentFromJson(_json string) (*DeploymentEnvironment, error) {
@@ -437,17 +451,19 @@ func (m *MMDeployContext) LoadDomains() error {
 }
 
 func (m *MMDeployContext) ProcessDomains(tokens []*Token, baseDir string) (string, string, error) {
-	nginx_domains := []string{}
-	alb_domains := []string{}
-
 	err := os.Mkdir(baseDir+"/domains", 0777)
 
 	if err != nil && !strings.Contains(err.Error(), "file exists") {
 		return "", "", err
 	}
 
+	nginx_domains := []string{}
+	alb_domains := []string{}
+
 	for _, domain := range m.Domains {
 		fmt.Println("domain:", domain)
+
+		domain.ApplyDefaults()
 
 		domain_tokens := []*Token{
 			&Token{Key: "__MM_INSTANCE_COMPANY_NAME__", Value: domain.CompanyName},
@@ -462,6 +478,8 @@ func (m *MMDeployContext) ProcessDomains(tokens []*Token, baseDir string) (strin
 			&Token{Key: "__MM_DB_PASS__", Value: "mm_" + domain.Key + "-mostest"},
 			&Token{Key: "__MM_DOCKER_REPO_TAG__", Value: domain.DockerRepoTag},
 			&Token{Key: "__MM_DEPLOY_ENV__", Value: domain.DeployEnv, Default: "dev"},
+			&Token{Key: "__MM_CONTAINER_CPU__", Value: domain.ContainerCPU, Default: "0.5"},
+			&Token{Key: "__MM_CONTAINER_MEM__", Value: domain.ContainerMemory, Default: "2000mi"},
 		}
 
 		dbUserToken := &Token{Key: "__MM_DB_USER__", Value: "mm_" + domain.Key}
@@ -490,7 +508,7 @@ func (m *MMDeployContext) ProcessDomains(tokens []*Token, baseDir string) (strin
 		domainBaseDir := baseDir + "/domains/" + domain.Key
 
 		err = os.Mkdir(domainBaseDir, 0777)
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "file exists") {
 			return "", "", err
 		}
 
