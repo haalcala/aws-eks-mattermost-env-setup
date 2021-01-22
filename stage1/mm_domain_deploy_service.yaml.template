@@ -47,8 +47,6 @@ spec:
 
               [[ `hostname` =~ -([0-9]+)$ ]]
 
-              apt-get install -y wget
-
               service metricbeat restart
 
               ordinal=${BASH_REMATCH[1]}
