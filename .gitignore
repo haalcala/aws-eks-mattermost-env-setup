@@ -5,3 +5,5 @@ node_modules
 *.log
 generated_deployments
 env.json
+bin
+pkg

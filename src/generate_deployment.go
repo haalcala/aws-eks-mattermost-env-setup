@@ -2,6 +2,7 @@ package main
 
 import (
 	"path"
+	"strings"
 )
 
 func (m *MMDeployContext) GenerateDeploymentFiles(baseDir string) error {
@@ -15,7 +16,7 @@ func (m *MMDeployContext) GenerateDeploymentFiles(baseDir string) error {
 	}
 
 	domain_conf, alb_domain_conf, err := m.ProcessDomains(tokens, baseDir)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "file exists") {
 		return err
 	}
 	// fmt.Println("domain_conf:", domain_conf)
