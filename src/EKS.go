@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	aws_util "../aws"
 	"github.com/aws/aws-sdk-go/service/eks"
 )
 
@@ -11,7 +10,7 @@ import (
 func (m *MMDeployContext) WaitIfClusterCreating() error {
 	fmt.Println("------ func (m *MMDeployContext) WaitIfClusterCreating() error")
 
-	aws_util.WaitUntilTrue(func() bool {
+	WaitUntilTrue(func() bool {
 		cluster, err := m.GetEKSCluster()
 
 		if err != nil {
@@ -20,7 +19,7 @@ func (m *MMDeployContext) WaitIfClusterCreating() error {
 
 		m.EKSCluster = cluster
 
-		return *m.EKSCluster.Status == aws_util.EKS_STATUS_CREATING
+		return *m.EKSCluster.Status == EKS_STATUS_CREATING
 	})
 
 	return nil

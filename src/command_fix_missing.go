@@ -7,7 +7,6 @@ import (
 	"path"
 	"strings"
 
-	aws_util "../aws"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -38,7 +37,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 		},
 	})
 	if err != nil && !strings.Contains(err.Error(), "already exists") {
-		aws_util.ExitErrorf("Unable to create cluster, %v", err)
+		ExitErrorf("Unable to create cluster, %v", err)
 	}
 
 	fmt.Println("sg:", sg, sg != nil)
@@ -63,7 +62,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 			},
 		})
 		if err != nil && !strings.Contains(err.Error(), "already exists") {
-			aws_util.ExitErrorf("Unable to authorize security group ingress, %v", err)
+			ExitErrorf("Unable to authorize security group ingress, %v", err)
 		}
 
 		fmt.Println("authorise_sg_output:", authorise_sg_output)
@@ -72,7 +71,7 @@ func (m *MMDeployContext) GetOrCreateDBVPCSecurityGroup() (*ec2.SecurityGroup, e
 	sg2, err := m.EC2.DescribeSecurityGroups(nil)
 
 	if err != nil && !strings.Contains(err.Error(), "already exists") {
-		aws_util.ExitErrorf("Unable to create cluster, %v", err)
+		ExitErrorf("Unable to create cluster, %v", err)
 	}
 
 	fmt.Println("sg2:", sg2)
@@ -97,7 +96,7 @@ func (m *MMDeployContext) GetOrCreateDBSubnetGroup() (*rds.DBSubnetGroup, error)
 	})
 
 	if err != nil && !strings.Contains(err.Error(), "already exists") {
-		aws_util.ExitErrorf("Unable to create cluster, %v", err)
+		ExitErrorf("Unable to create cluster, %v", err)
 	}
 
 	fmt.Println("create_subnetgroup_output:", create_subnetgroup_output)
@@ -134,7 +133,7 @@ func (m *MMDeployContext) GetDBInstance() (*rds.DBInstance, error) {
 	dbs, err := m.RDS.DescribeDBInstances(nil)
 
 	if err != nil {
-		aws_util.ExitErrorf("Unable to DescribeDBInstances, %v", err)
+		ExitErrorf("Unable to DescribeDBInstances, %v", err)
 	}
 
 	fmt.Println("dbs:", dbs)
@@ -169,7 +168,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 		})
 
 		if err != nil {
-			aws_util.ExitErrorf("Unable to create cluster, %v", err)
+			ExitErrorf("Unable to create cluster, %v", err)
 		}
 
 		fmt.Println("subnets:", subnets)
@@ -177,14 +176,14 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 		sg, err := m.GetOrCreateDBVPCSecurityGroup()
 
 		if err != nil && !strings.Contains(err.Error(), "already exists") {
-			aws_util.ExitErrorf("Unable to create cluster, %v", err)
+			ExitErrorf("Unable to create cluster, %v", err)
 		}
 
 		fmt.Println("sg:", sg)
 
 		db_subnet_group, err := m.GetOrCreateDBSubnetGroup()
 		if err != nil && !strings.Contains(err.Error(), "already exists") {
-			aws_util.ExitErrorf("Unable to create cluster, %v", err)
+			ExitErrorf("Unable to create cluster, %v", err)
 		}
 
 		fmt.Println("db_subnet_group:", db_subnet_group)
@@ -225,7 +224,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 		})
 
 		if err != nil {
-			aws_util.ExitErrorf("Unable to create cluster, %v", err)
+			ExitErrorf("Unable to create cluster, %v", err)
 		}
 
 		fmt.Println("create_instance_output:", create_instance_output)
@@ -237,7 +236,7 @@ func (m *MMDeployContext) GetOrCreateDB() (*rds.DBInstance, error) {
 
 	db, err = m.GetDBInstance()
 
-	if *db.DBInstanceStatus == aws_util.RDS_DB_INSTANCE_STATUS_CREATING {
+	if *db.DBInstanceStatus == RDS_DB_INSTANCE_STATUS_CREATING {
 		m.RDS.WaitUntilDBInstanceAvailable(&rds.DescribeDBInstancesInput{
 			DBInstanceIdentifier: aws.String(m.DeployConfig.RDS.DBInstanceName),
 		})
@@ -275,14 +274,14 @@ func (m *MMDeployContext) GetOrCreateALBIAMPolicy() (*iam.Policy, error) {
 		return nil, err
 	}
 
-	err, out1, out2 := aws_util.Execute(fmt.Sprintf("eksctl utils associate-iam-oidc-provider --region %v --cluster %v --approve", m.DeployConfig.Region, m.DeployConfig.ClusterName), true, true)
+	err, out1, out2 := Execute(fmt.Sprintf("eksctl utils associate-iam-oidc-provider --region %v --cluster %v --approve", m.DeployConfig.Region, m.DeployConfig.ClusterName), true, true)
 
 	fmt.Println("err:", err)
 	fmt.Println("out1:", out1)
 	fmt.Println("out2:", out2)
 
 	if iam_policy == nil {
-		err, out1, out2 = aws_util.Execute("curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.1.0/docs/install/iam_policy.json", true, true)
+		err, out1, out2 = Execute("curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.1.0/docs/install/iam_policy.json", true, true)
 
 		fmt.Println("err:", err)
 		fmt.Println("out1:", out1)
@@ -313,7 +312,7 @@ func (m *MMDeployContext) GetOrCreateALBIAMPolicy() (*iam.Policy, error) {
 func (m *MMDeployContext) GetOrCreateEKSServiceAccount() error {
 	fmt.Println("------ func (m *MMDeployContext) GetOrCreateEKSServiceAccount() error")
 
-	err, out1, out2 := aws_util.Execute(
+	err, out1, out2 := Execute(
 		fmt.Sprintf("eksctl --region=%v create iamserviceaccount --cluster=%v --namespace=kube-system --name=aws-load-balancer-controller --attach-policy-arn=%v --approve",
 			m.DeployConfig.Region, m.DeployConfig.ClusterName, m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN), true, true)
 
@@ -350,13 +349,13 @@ func (m *MMDeployContext) FixMissing() error {
 
 	defer os.Chdir("..")
 
-	// err, out1, out2 := aws_util.Execute("cd ../mattermost-env-setup-stage-2 ; source .staging_env ; go run generate_deployment.go common.go", true, true)
+	// err, out1, out2 := Execute("cd ../mattermost-env-setup-stage-2 ; source .staging_env ; go run generate_deployment.go common.go", true, true)
 
 	// fmt.Println("err:", err)
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	// err, out1, out2 := aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f rbac-role.yaml",
+	// err, out1, out2 := Execute(fmt.Sprintf("kubectl --context %v apply -f rbac-role.yaml",
 	// 	m.DeployConfig.KubernetesContext),
 	// 	true, true)
 	// if err != nil {
@@ -366,7 +365,7 @@ func (m *MMDeployContext) FixMissing() error {
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("eksctl --region %v utils associate-iam-oidc-provider --cluster %v --approve",
+	// err, out1, out2 = Execute(fmt.Sprintf("eksctl --region %v utils associate-iam-oidc-provider --cluster %v --approve",
 	// 	m.DeployConfig.Region,
 	// 	m.DeployConfig.ClusterName),
 	// 	true, true)
@@ -377,7 +376,7 @@ func (m *MMDeployContext) FixMissing() error {
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("eksctl --region %v create iamserviceaccount --cluster %v --name %v --namespace kube-system --attach-policy-arn %v --approve --override-existing-serviceaccounts",
+	// err, out1, out2 = Execute(fmt.Sprintf("eksctl --region %v create iamserviceaccount --cluster %v --name %v --namespace kube-system --attach-policy-arn %v --approve --override-existing-serviceaccounts",
 	// 	m.DeployConfig.Region,
 	// 	m.DeployConfig.ClusterName,
 	// 	m.DeployConfig.AWSLoadBalancerControllerName,
@@ -390,7 +389,7 @@ func (m *MMDeployContext) FixMissing() error {
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-nginx-router.yaml",
+	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-nginx-router.yaml",
 	// 	m.DeployConfig.KubernetesContext),
 	// 	true, true)
 	// if err != nil {
@@ -400,7 +399,7 @@ func (m *MMDeployContext) FixMissing() error {
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-aws-alb.yaml",
+	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-aws-alb.yaml",
 	// 	m.DeployConfig.KubernetesContext),
 	// 	true, true)
 	// if err != nil {
@@ -410,7 +409,7 @@ func (m *MMDeployContext) FixMissing() error {
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-push-proxy.yaml",
+	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-push-proxy.yaml",
 	// 	m.DeployConfig.KubernetesContext),
 	// 	true, true)
 	// if err != nil {
@@ -420,7 +419,7 @@ func (m *MMDeployContext) FixMissing() error {
 	// fmt.Println("out1:", out1)
 	// fmt.Println("out2:", out2)
 
-	// err, out1, out2 = aws_util.Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-redis.yaml",
+	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-redis.yaml",
 	// 	m.DeployConfig.KubernetesContext),
 	// 	true, true)
 	// if err != nil {
@@ -544,7 +543,7 @@ func (m *MMDeployContext) FixMissing() error {
 		}
 	}
 
-	err, out1, out2 := aws_util.Execute(fmt.Sprintf("kubectl --context %v get pods -o json",
+	err, out1, out2 := Execute(fmt.Sprintf("kubectl --context %v get pods -o json",
 		m.DeployConfig.KubernetesContext),
 		true, true)
 	if err != nil {

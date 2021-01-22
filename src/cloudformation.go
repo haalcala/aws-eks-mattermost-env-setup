@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	aws_util "../aws"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 )
@@ -17,7 +16,7 @@ func (m *MMDeployContext) GetCloudFormationMainStack() (*cloudformation.Stack, e
 	})
 
 	if err != nil {
-		aws_util.ExitErrorf("Unable to create session, %v", err)
+		ExitErrorf("Unable to create session, %v", err)
 	}
 
 	for _, _stack := range stacks.StackSummaries {
@@ -27,7 +26,7 @@ func (m *MMDeployContext) GetCloudFormationMainStack() (*cloudformation.Stack, e
 			})
 
 			if err != nil {
-				aws_util.ExitErrorf("Unable to create session, %v", err)
+				ExitErrorf("Unable to create session, %v", err)
 			}
 
 			return stack.Stacks[0], nil

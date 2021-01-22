@@ -7,7 +7,158 @@ import (
 	"os"
 	"reflect"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/aws/aws-sdk-go/service/elbv2"
+	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go/service/route53"
 )
+
+const (
+	GENERATED_DEPLOYMENT_BASE = "generated_deployments"
+)
+
+type MMDeployEnvironment struct {
+	// The EKS cluster name
+	ClusterName string `json:"ClusterName"`
+
+	// The availability zone to which the cluster is going to be available when it is created.
+	AvailabilityZones []string `json:"AvailabilityZones"`
+
+	// The subnets to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
+	Subnets []string `json:"Subnets"`
+
+	// This is for convenience access only.  This is probed from existing cluster if existing.
+	PrivateSubnets []string `json:"PrivateSubnets"`
+	// This is for convenience access only.  This is probed from existing cluster if existing.
+	PublicSubnets []string `json:"PublicSubnets"`
+
+	// The VPC to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
+	VpcId string `json:"VpcId"`
+
+	// The AWS region to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
+	Region string `json:"Region"`
+
+	// The Kubernetes version to be used when it is created.  This is probed from existing cluster if existing.
+	KubernetesVersion string `json:"KubernetesVersion"`
+
+	AWSLoadBalancerControllerName          string `json:"AWSLoadBalancerControllerName"`
+	AWSLoadBalancerControllerIAMPolicyName string `json:"AWSLoadBalancerControllerIAMPolicyName"`
+	AWSLoadBalancerControllerIAMPolicyARN  string `json:"AWSLoadBalancerControllerIAMPolicyARN"`
+
+	Route53ZoneId string `json:"Route53ZoneId"`
+
+	// the certificate that is going to be used for SSL (https)
+	AWSCertificateARN     string                                 `json:"AWSCertificateARN"`
+	RDS                   MMDeployEnvironment_RDS                `json:"RDS"`
+	MattermostInstance    MMDeployEnvironment_MattermostInstance `json:"MattermostInstance"`
+	InfraComponents       MMDeployEnvironment_InfraComponents    `json:"InfraComponents"`
+	OutputDir             string                                 `json:"OutputDir"`
+	AWSCredentialProfile  string                                 `json:"AWSCredentialProfile"`
+	DeployBucket          string                                 `json:"DeployBucket"`
+	Containers            MMDeployEnvironment_Containers         `json:"Containers"`
+	VcubeOauth            MMDeployEnvironment_VcubeOauth         `json:"VcubeOauth"`
+	ImportBucketRegion    string                                 `json:"ImportBucketRegion"`
+	ImportBucket          string                                 `json:"ImportBucket"`
+	KubernetesContext     string                                 `json:"KubernetesContext"`
+	KubernetesEnvironment string                                 `json:"KubernetesEnvironment"`
+}
+
+type MMDeployEnvironment_VcubeOauth struct {
+	InitialAdminUser  string `json:"InitialAdminUser"`
+	InitialAdminPass  string `json:"InitialAdminPass"`
+	SessionSecret     string `json:"SessionSecret"`
+	VMeetingUrl       string `json:"VMeetingUrl"`
+	VIDConsumerKey    string `json:"VIDConsumerKey"`
+	VIDRestPwd        string `json:"VIDRestPwd"`
+	VIDRestUrl        string `json:"VIDRestUrl"`
+	VIDSecretAuthCode string `json:"VIDSecretAuthCode"`
+	DBName            string `json:"DBName"`
+	DBPort            string `json:"DBPort"`
+	DBUser            string `json:"DBUser"`
+	DBPass            string `json:"DBPass"`
+}
+
+type MMDeployEnvironment_Containers struct {
+	Mattermost     MMDeployEnvironment_Container `json:"Mattermost"`
+	PushProxy      MMDeployEnvironment_Container `json:"PushProxy"`
+	Nginx          MMDeployEnvironment_Container `json:"Nginx"`
+	JaegerQuery    MMDeployEnvironment_Container `json:"JaegerQuery"`
+	JaegeCollector MMDeployEnvironment_Container `json:"JaegeCollector"`
+	Redis          MMDeployEnvironment_Container `json:"Redis"`
+	VcubeOauth     MMDeployEnvironment_Container `json:"VcubeOauth"`
+}
+
+type MMDeployEnvironment_Container struct {
+	ImageName string `json:"ImageName"`
+	Repo      string `json:"Repo"`
+	Version   string `json:"Version"`
+}
+
+type MMDeployEnvironment_InfraComponents struct {
+	PushProxy struct {
+		URL string `json:"URL"`
+	} `json:"PushProxy"`
+}
+
+type MMDeployEnvironment_RDS struct {
+	RDSDeployAZ         string `json:"RDSDeployAZ"`
+	DBSecurityGroupName string `json:"DBSecurityGroupName"`
+	DBInstanceName      string `json:"DBInstanceName"`
+}
+
+type MMDeployEnvironment_MattermostInstance struct {
+	Cluster       MMDeployEnvironment_MattermostInstance_Cluster `json:"Cluster"`
+	PushServerUrl string                                         `json:"PushServerUrl"`
+	DBHost        string                                         `json:"DBHost"`
+	DBPort        string                                         `json:"DBPort"`
+	DBUser        string                                         `json:"DBUser"`
+	DBPass        string                                         `json:"DBPass"`
+	AWSKey        string                                         `json:"AWSKey"`
+	AWSSecret     string                                         `json:"AWSSecret"`
+	SMTP          MMDeployEnvironment_MattermostInstance_SMTP    `json:"SMTP"`
+	ListenPort    string                                         `json:"ListenPort"`
+}
+
+type MMDeployEnvironment_MattermostInstance_Cluster struct {
+	Driver                 string `json:"Driver"`
+	CustomClusterRedisHost string `json:"CustomClusterRedisHost"`
+	CustomClusterRedisPort string `json:"CustomClusterRedisPort"`
+	CustomClusterRedisUser string `json:"CustomClusterRedisUser"`
+	CustomClusterRedisPass string `json:"CustomClusterRedisPass"`
+}
+
+type MMDeployEnvironment_MattermostInstance_SMTP struct {
+	Host string `json:"Host"`
+	Port string `json:"Port"`
+	User string `json:"User"`
+	Pass string `json:"Pass"`
+	From string `json:"From"`
+}
+
+// MMDeployContext bla bla bla
+type MMDeployContext struct {
+	DeployConfig   MMDeployEnvironment
+	Session        *session.Session
+	EKSCluster     *eks.Cluster
+	EC2            *ec2.EC2
+	EKS            *eks.EKS
+	ELB            *elbv2.ELBV2
+	CF             *cloudformation.CloudFormation
+	IAM            *iam.IAM
+	RDS            *rds.RDS
+	R53            *route53.Route53
+	ConfigFile     string
+	DomainsFile    string
+	Subnets        []*ec2.Subnet
+	PrivateSubnets []*ec2.Subnet
+	PublicSubnets  []*ec2.Subnet
+	Domains        []*MattermostDomainDeployment
+}
 
 type MattermostDomainDeployment struct {
 	Key            string `json:"key"`
@@ -239,7 +390,7 @@ func ProcessTemplate(templateFile, destinationFile string, tokens []*Token, mode
 }
 
 func (m *MMDeployContext) LoadDomains() error {
-	dat, err := ioutil.ReadFile("domains.json")
+	dat, err := ioutil.ReadFile(m.DomainsFile)
 
 	if err != nil {
 		return err
@@ -261,7 +412,7 @@ func (m *MMDeployContext) LoadDomains() error {
 
 	for _, domain := range domains {
 		if domain.DockerRepoTag == "" {
-			domain.DockerRepoTag = "change-in-domains.json"
+			domain.DockerRepoTag = "change-in-" + m.DomainsFile
 		}
 		if domain.DeployEnv == "" {
 			domain.DeployEnv = "env"
@@ -275,7 +426,7 @@ func (m *MMDeployContext) LoadDomains() error {
 		return err
 	}
 
-	err = ioutil.WriteFile("domains.json", b, 0666)
+	err = ioutil.WriteFile(m.DomainsFile, b, 0666)
 	if err != nil {
 		return err
 	}
@@ -291,7 +442,7 @@ func (m *MMDeployContext) ProcessDomains(tokens []*Token, baseDir string) (strin
 
 	err := os.Mkdir(baseDir+"/domains", 0777)
 
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "file exists") {
 		return "", "", err
 	}
 
@@ -324,13 +475,13 @@ func (m *MMDeployContext) ProcessDomains(tokens []*Token, baseDir string) (strin
 			fmt.Println("domain_token:", *domain_token)
 		}
 
-		nginx_domains_dat, err := ProcessTemplate("configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666)
+		nginx_domains_dat, err := ProcessTemplate("templates/configmap_domain.yaml.template", "", append(tokens, domain_tokens...), 0666)
 		if err != nil {
 			return "", "", err
 		}
 		nginx_domains = append(nginx_domains, nginx_domains_dat)
 
-		alb_domains_dat, err := ProcessTemplate("alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666)
+		alb_domains_dat, err := ProcessTemplate("templates/alb-domain-host.yaml.template", "", append(tokens, domain_tokens...), 0666)
 		if err != nil {
 			return "", "", err
 		}
@@ -338,14 +489,17 @@ func (m *MMDeployContext) ProcessDomains(tokens []*Token, baseDir string) (strin
 
 		domainBaseDir := baseDir + "/domains/" + domain.Key
 
-		os.Mkdir(domainBaseDir, 0777)
-
-		_, err = ProcessTemplate("mm_domain_deploy_service.yaml.template", fmt.Sprintf(domainBaseDir+"/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
+		err = os.Mkdir(domainBaseDir, 0777)
 		if err != nil {
 			return "", "", err
 		}
 
-		_, err = ProcessTemplate("mm_domain_docker_starter.template", fmt.Sprintf(domainBaseDir+"/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
+		_, err = ProcessTemplate("templates/mm_domain_deploy_service.yaml.template", fmt.Sprintf(domainBaseDir+"/mm_domain_deploy_service-%s.yaml", domain.Key), append(tokens, domain_tokens...), 0666)
+		if err != nil {
+			return "", "", err
+		}
+
+		_, err = ProcessTemplate("templates/mm_domain_docker_starter.template", fmt.Sprintf(domainBaseDir+"/mm_domain_docker_starter-%s.sh", domain.Key), append(tokens, domain_tokens...), 0755)
 		if err != nil {
 			return "", "", err
 		}

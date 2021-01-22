@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	aws_util "../aws"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -22,147 +20,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/route53"
 )
-
-const (
-	GENERATED_DEPLOYMENT_BASE = "generated_deployments"
-)
-
-type MMDeployEnvironment struct {
-	// The EKS cluster name
-	ClusterName string `json:"ClusterName"`
-
-	// The availability zone to which the cluster is going to be available when it is created.
-	AvailabilityZones []string `json:"AvailabilityZones"`
-
-	// The subnets to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
-	Subnets []string `json:"Subnets"`
-
-	// This is for convenience access only.  This is probed from existing cluster if existing.
-	PrivateSubnets []string `json:"PrivateSubnets"`
-	// This is for convenience access only.  This is probed from existing cluster if existing.
-	PublicSubnets []string `json:"PublicSubnets"`
-
-	// The VPC to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
-	VpcId string `json:"VpcId"`
-
-	// The AWS region to which the cluster is going to be available when it is created.  This is probed from existing cluster if existing.
-	Region string `json:"Region"`
-
-	// The Kubernetes version to be used when it is created.  This is probed from existing cluster if existing.
-	KubernetesVersion string `json:"KubernetesVersion"`
-
-	AWSLoadBalancerControllerName          string `json:"AWSLoadBalancerControllerName"`
-	AWSLoadBalancerControllerIAMPolicyName string `json:"AWSLoadBalancerControllerIAMPolicyName"`
-	AWSLoadBalancerControllerIAMPolicyARN  string `json:"AWSLoadBalancerControllerIAMPolicyARN"`
-
-	Route53ZoneId string `json:"Route53ZoneId"`
-
-	// the certificate that is going to be used for SSL (https)
-	AWSCertificateARN     string                                 `json:"AWSCertificateARN"`
-	RDS                   MMDeployEnvironment_RDS                `json:"RDS"`
-	MattermostInstance    MMDeployEnvironment_MattermostInstance `json:"MattermostInstance"`
-	InfraComponents       MMDeployEnvironment_InfraComponents    `json:"InfraComponents"`
-	OutputDir             string                                 `json:"OutputDir"`
-	AWSCredentialProfile  string                                 `json:"AWSCredentialProfile"`
-	DeployBucket          string                                 `json:"DeployBucket"`
-	Containers            MMDeployEnvironment_Containers         `json:"Containers"`
-	VcubeOauth            MMDeployEnvironment_VcubeOauth         `json:"VcubeOauth"`
-	ImportBucketRegion    string                                 `json:"ImportBucketRegion"`
-	ImportBucket          string                                 `json:"ImportBucket"`
-	KubernetesContext     string                                 `json:"KubernetesContext"`
-	KubernetesEnvironment string                                 `json:"KubernetesEnvironment"`
-}
-
-type MMDeployEnvironment_VcubeOauth struct {
-	InitialAdminUser  string `json:"InitialAdminUser"`
-	InitialAdminPass  string `json:"InitialAdminPass"`
-	SessionSecret     string `json:"SessionSecret"`
-	VMeetingUrl       string `json:"VMeetingUrl"`
-	VIDConsumerKey    string `json:"VIDConsumerKey"`
-	VIDRestPwd        string `json:"VIDRestPwd"`
-	VIDRestUrl        string `json:"VIDRestUrl"`
-	VIDSecretAuthCode string `json:"VIDSecretAuthCode"`
-	DBName            string `json:"DBName"`
-	DBPort            string `json:"DBPort"`
-	DBUser            string `json:"DBUser"`
-	DBPass            string `json:"DBPass"`
-}
-
-type MMDeployEnvironment_Containers struct {
-	Mattermost     MMDeployEnvironment_Container `json:"Mattermost"`
-	PushProxy      MMDeployEnvironment_Container `json:"PushProxy"`
-	Nginx          MMDeployEnvironment_Container `json:"Nginx"`
-	JaegerQuery    MMDeployEnvironment_Container `json:"JaegerQuery"`
-	JaegeCollector MMDeployEnvironment_Container `json:"JaegeCollector"`
-	Redis          MMDeployEnvironment_Container `json:"Redis"`
-	VcubeOauth     MMDeployEnvironment_Container `json:"VcubeOauth"`
-}
-
-type MMDeployEnvironment_Container struct {
-	ImageName string `json:"ImageName"`
-	Repo      string `json:"Repo"`
-	Version   string `json:"Version"`
-}
-
-type MMDeployEnvironment_InfraComponents struct {
-	PushProxy struct {
-		URL string `json:"URL"`
-	} `json:"PushProxy"`
-}
-
-type MMDeployEnvironment_RDS struct {
-	RDSDeployAZ         string `json:"RDSDeployAZ"`
-	DBSecurityGroupName string `json:"DBSecurityGroupName"`
-	DBInstanceName      string `json:"DBInstanceName"`
-}
-
-type MMDeployEnvironment_MattermostInstance struct {
-	Cluster       MMDeployEnvironment_MattermostInstance_Cluster `json:"Cluster"`
-	PushServerUrl string                                         `json:"PushServerUrl"`
-	DBHost        string                                         `json:"DBHost"`
-	DBPort        string                                         `json:"DBPort"`
-	DBUser        string                                         `json:"DBUser"`
-	DBPass        string                                         `json:"DBPass"`
-	AWSKey        string                                         `json:"AWSKey"`
-	AWSSecret     string                                         `json:"AWSSecret"`
-	SMTP          MMDeployEnvironment_MattermostInstance_SMTP    `json:"SMTP"`
-	ListenPort    string                                         `json:"ListenPort"`
-}
-
-type MMDeployEnvironment_MattermostInstance_Cluster struct {
-	Driver                 string `json:"Driver"`
-	CustomClusterRedisHost string `json:"CustomClusterRedisHost"`
-	CustomClusterRedisPort string `json:"CustomClusterRedisPort"`
-	CustomClusterRedisUser string `json:"CustomClusterRedisUser"`
-	CustomClusterRedisPass string `json:"CustomClusterRedisPass"`
-}
-
-type MMDeployEnvironment_MattermostInstance_SMTP struct {
-	Host string `json:"Host"`
-	Port string `json:"Port"`
-	User string `json:"User"`
-	Pass string `json:"Pass"`
-	From string `json:"From"`
-}
-
-// MMDeployContext bla bla bla
-type MMDeployContext struct {
-	DeployConfig   MMDeployEnvironment
-	Session        *session.Session
-	EKSCluster     *eks.Cluster
-	EC2            *ec2.EC2
-	EKS            *eks.EKS
-	ELB            *elbv2.ELBV2
-	CF             *cloudformation.CloudFormation
-	IAM            *iam.IAM
-	RDS            *rds.RDS
-	R53            *route53.Route53
-	ConfigFile     string
-	Subnets        []*ec2.Subnet
-	PrivateSubnets []*ec2.Subnet
-	PublicSubnets  []*ec2.Subnet
-	Domains        []*MattermostDomainDeployment
-}
 
 func (c *MMDeployEnvironment) MMDeployConfigToJsonString() (string, error) {
 	b, err := json.MarshalIndent(c, "", "\t")
@@ -341,13 +198,13 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 
 	// d.Decode(&config)
 
-	err, AWS_ACCESS_KEY_ID, _ := aws_util.Execute("aws configure get aws_access_key_id", true, false)
+	err, AWS_ACCESS_KEY_ID, _ := Execute("aws configure get aws_access_key_id", true, false)
 
 	if err != nil {
 		return err
 	}
 
-	err, AWS_ACCESS_SECRET, _ := aws_util.Execute("aws configure get aws_secret_access_key", true, false)
+	err, AWS_ACCESS_SECRET, _ := Execute("aws configure get aws_secret_access_key", true, false)
 
 	if err != nil {
 		return err
@@ -398,7 +255,7 @@ func (m *MMDeployContext) ProbeResources() error {
 	m.DeployConfig.ApplyDefaults()
 
 	if m.DeployConfig.KubernetesContext == "" {
-		err, stdout, stderr := aws_util.Execute("kubectl config current-context", true, true)
+		err, stdout, stderr := Execute("kubectl config current-context", true, true)
 
 		if err != nil {
 			return err
@@ -795,7 +652,7 @@ func (m *MMDeployContext) DeleteCluster() error {
 	delete_cluster_result := make(chan string, 1)
 	if stack != nil {
 		go func() {
-			aws_util.Execute(fmt.Sprintf("eksctl --region %v delete cluster --name %v -w", m.DeployConfig.Region, m.DeployConfig.ClusterName), true, true)
+			Execute(fmt.Sprintf("eksctl --region %v delete cluster --name %v -w", m.DeployConfig.Region, m.DeployConfig.ClusterName), true, true)
 			delete_cluster_result <- "done"
 		}()
 	} else {
@@ -963,7 +820,7 @@ func (m *MMDeployContext) EKSCreateCluster() error {
 	stack, err := m.GetCloudFormationMainStack()
 
 	if err != nil {
-		aws_util.ExitErrorf("Error getting stack, %v", err)
+		ExitErrorf("Error getting stack, %v", err)
 	}
 
 	if stack != nil {
@@ -984,9 +841,9 @@ func (m *MMDeployContext) EKSCreateCluster() error {
 		cmd = append(cmd, fmt.Sprintf("--zones %v", strings.Join(m.DeployConfig.AvailabilityZones, ",")))
 	}
 
-	aws_util.Execute(strings.Join(cmd, " "), true, true)
+	Execute(strings.Join(cmd, " "), true, true)
 
-	err, out1, out2 := aws_util.Execute("kubectl config current-context", true, true)
+	err, out1, out2 := Execute("kubectl config current-context", true, true)
 
 	fmt.Println("err:", err)
 	fmt.Println("out1:", out1)
@@ -994,7 +851,7 @@ func (m *MMDeployContext) EKSCreateCluster() error {
 
 	os.Setenv("THIS_ENV_SET_BY_GO", "The quick brown fox jumps over the lazy dog")
 
-	err, out1, out2 = aws_util.Execute("go run check_env.go", true, true)
+	err, out1, out2 = Execute("go run check_env.go", true, true)
 
 	fmt.Println("err:", err)
 	fmt.Println("out1:", out1)
@@ -1252,22 +1109,24 @@ func (m *MMDeployContext) DeleteFargateProfiles(result chan string) error {
 }
 
 func main() {
-	var operation, config_file string
+	var operation, cluster_name string
 
 	if len(os.Args) > 1 {
-		config_file = os.Args[1]
+		cluster_name = os.Args[1]
 	}
 
 	if len(os.Args) > 2 {
 		operation = os.Args[2]
 	}
 
-	if config_file == "" {
+	if cluster_name == "" {
 		fmt.Println("Missing required parameter configuration file.")
 		os.Exit(1)
 	}
 
-	deploy_context := &MMDeployContext{ConfigFile: config_file}
+	config_file := cluster_name + "-conf.json"
+
+	deploy_context := &MMDeployContext{ConfigFile: config_file, DomainsFile: cluster_name + "-conf-domains.json"}
 
 	var baseDir string
 
@@ -1315,6 +1174,8 @@ func main() {
 
 	if handler == nil {
 		fmt.Println("Unrecognised operation:", operation, "\n")
+
+		fmt.Println("eksmmctl <cluster name> <operation>\n")
 		fmt.Println("Available operations are:\n")
 		fmt.Println("\tcreate_cluster")
 		fmt.Println("\tdelete_cluster")
@@ -1324,12 +1185,12 @@ func main() {
 	} else {
 		err := deploy_context.LoadDeployConfig(config_file)
 		if err != nil {
-			aws_util.ExitErrorf("Invalid configration, %v", err)
+			ExitErrorf("Invalid configration, %v", err)
 		}
 
 		err = deploy_context.ValidateManualParameters()
 		if err != nil {
-			aws_util.ExitErrorf("Invalid configration, %v", err)
+			ExitErrorf("Invalid configration, %v", err)
 		}
 
 		baseDir = "generated_deployments/" + deploy_context.DeployConfig.OutputDir
@@ -1338,7 +1199,7 @@ func main() {
 			err := os.MkdirAll(baseDir, 0777)
 
 			if err != nil && !strings.Contains(err.Error(), "file exists") {
-				aws_util.ExitErrorf("Unable to create folder, %v", err)
+				ExitErrorf("Unable to create folder, %v", err)
 			}
 		}
 
@@ -1351,7 +1212,7 @@ func main() {
 		err = handler()
 
 		if err != nil {
-			aws_util.ExitErrorf("Unable to create cluster, %v", err)
+			ExitErrorf("Unable to create cluster, %v", err)
 		}
 	}
 }
