@@ -1,3 +1,9 @@
 ## Go Generate
 
-cd aws; go generate ./gen/AWS-gen.go ; gofmt -w gen-\*.go; cd ..
+### Run the from the source folder
+
+go run ./src <cluster name> <operation>
+
+### Build the binary
+
+go build -o ./bin/eksmmctl ./src
