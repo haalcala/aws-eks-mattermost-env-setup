@@ -3,3 +3,5 @@ mm_docker_starter
 domains.json
 node_modules
 *.log
+generated_deployments
+env.json
