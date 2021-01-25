@@ -70,6 +70,9 @@ spec:
             - name: metricbeat-conf
               mountPath: /etc/metricbeat/metricbeat.yml
               subPath: metricbeat.yml
+            - name: metricbeats-module-system
+              mountPath: /etc/metricbeat/modules.d/system.yml
+              subPath: system.yml
           #readinessProbe:
           #  exec:
           #    # Check we can execute queries over TCP (skip-networking is off).
@@ -113,4 +116,10 @@ spec:
             items:
               - key: metricbeat.yml
                 path: metricbeat.yml
+        - name: metricbeats-module-system
+          configMap:
+            name: metricbeat-conf
+            items:
+              - key: metricbeat-module-system.yml
+                path: system.yml
 
