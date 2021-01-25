@@ -47,6 +47,8 @@ spec:
 
               [[ `hostname` =~ -([0-9]+)$ ]]
 
+              apt-get install -y bc
+
               service metricbeat restart
 
               ordinal=${BASH_REMATCH[1]}
@@ -59,7 +61,18 @@ spec:
 
               #envoy -c /etc/service-envoy.yaml --service-cluster __MM_INSTANCE_KEY__ &                                                  
 
-              ./bin/mattermost --config=$CONFIG
+              rs_count=0
+
+              while [ $rs_count -lt 5 ]; do
+                 ./bin/mattermost --config=$CONFIG
+                 mv logs/mattermost.log /logs/mattermost-$(ls -l | wc -l).log
+                 # sleep 10
+                 rs_count=`echo $rs_count + 1 | bc`
+                 echo "rs_count: $rs_count"
+              done
+
+              echo "Exiting"
+              sleep 1
           ports:
             - name: liveness-port
               containerPort: 8065
