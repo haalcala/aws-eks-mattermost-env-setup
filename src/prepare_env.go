@@ -387,15 +387,7 @@ func (m *MMDeployContext) EKSCreateCluster() error {
 	fmt.Println("out1:", out1)
 	fmt.Println("out2:", out2)
 
-	os.Setenv("THIS_ENV_SET_BY_GO", "The quick brown fox jumps over the lazy dog")
-
-	err, out1, out2 = Execute("go run check_env.go", true, true)
-
-	fmt.Println("err:", err)
-	fmt.Println("out1:", out1)
-	fmt.Println("out2:", out2)
-
-	return nil
+	return err
 }
 
 // this is just a comment
