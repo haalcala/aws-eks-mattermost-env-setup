@@ -106,11 +106,10 @@ func MMDeployConfigFromJson(_json string) (*MMDeployEnvironment, error) {
 func NewMMDeployEnvironment() *MMDeployEnvironment {
 	env := &MMDeployEnvironment{
 		KubernetesVersion:                      "1.17",
-		OutputDir:                              "generated",
 		RDS:                                    MMDeployEnvironment_RDS{},
 		AWSLoadBalancerControllerIAMPolicyName: "",
 		MattermostInstance: MMDeployEnvironment_MattermostInstance{
-			PushServerUrl: "http://mattermost-push-proxy-svc:8066",
+			PushServerUrl: "http://mattermost-push-proxy-svc.default.svc.cluster.local:8066",
 			ListenPort:    "8065",
 		},
 	}
@@ -743,7 +742,7 @@ func main() {
 			ExitErrorf("Invalid configration, %v", err)
 		}
 
-		baseDir = "generated_deployments/" + deploy_context.DeployConfig.OutputDir
+		baseDir = "generated_deployments/" + deploy_context.DeployConfig.ClusterName
 
 		if baseDir != "" {
 			err := os.MkdirAll(baseDir, 0777)
