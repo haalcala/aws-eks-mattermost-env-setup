@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -327,107 +328,127 @@ func (m *MMDeployContext) GetOrCreateEKSServiceAccount() error {
 func (m *MMDeployContext) FixMissing() error {
 	fmt.Println("------ func (m *MMDeployContext) FixMissing() error")
 
-	// db, err := m.GetOrCreateDB()
+	db, err := m.GetOrCreateDB()
 
-	// if err != nil {
-	// 	return err
-	// }
+	if err != nil {
+		return err
+	}
 
-	// fmt.Println("db:", db)
+	fmt.Println("db:", db)
 
-	// iam_policy, err := m.GetOrCreateALBIAMPolicy()
+	iam_policy, err := m.GetOrCreateALBIAMPolicy()
 
-	// if err != nil {
-	// 	return err
-	// }
+	if err != nil {
+		return err
+	}
 
-	// fmt.Println("iam_policy:", iam_policy)
+	fmt.Println("iam_policy:", iam_policy)
 
-	// m.GetOrCreateEKSServiceAccount()
+	m.GetOrCreateEKSServiceAccount()
 
 	os.Chdir(path.Join(GENERATED_DEPLOYMENT_BASE, m.DeployConfig.ClusterName))
 
 	defer os.Chdir("..")
 
-	// err, out1, out2 := Execute("cd ../mattermost-env-setup-stage-2 ; source .staging_env ; go run generate_deployment.go common.go", true, true)
+	err, out1, out2 := Execute("cd ../mattermost-env-setup-stage-2 ; source .staging_env ; go run generate_deployment.go common.go", true, true)
 
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
-	// err, out1, out2 := Execute(fmt.Sprintf("kubectl --context %v apply -f rbac-role.yaml",
-	// 	m.DeployConfig.KubernetesContext),
-	// 	true, true)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f rbac-role.yaml",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
-	// err, out1, out2 = Execute(fmt.Sprintf("eksctl --region %v utils associate-iam-oidc-provider --cluster %v --approve",
-	// 	m.DeployConfig.Region,
-	// 	m.DeployConfig.ClusterName),
-	// 	true, true)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	err, out1, out2 = Execute(fmt.Sprintf("eksctl --region %v utils associate-iam-oidc-provider --cluster %v --approve",
+		m.DeployConfig.Region,
+		m.DeployConfig.ClusterName),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
-	// err, out1, out2 = Execute(fmt.Sprintf("eksctl --region %v create iamserviceaccount --cluster %v --name %v --namespace kube-system --attach-policy-arn %v --approve --override-existing-serviceaccounts",
-	// 	m.DeployConfig.Region,
-	// 	m.DeployConfig.ClusterName,
-	// 	m.DeployConfig.AWSLoadBalancerControllerName,
-	// 	m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN),
-	// 	true, true)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	err, out1, out2 = Execute(fmt.Sprintf("eksctl --region %v create iamserviceaccount --cluster %v --name %v --namespace kube-system --attach-policy-arn %v --approve --override-existing-serviceaccounts",
+		m.DeployConfig.Region,
+		m.DeployConfig.ClusterName,
+		m.DeployConfig.AWSLoadBalancerControllerName,
+		m.DeployConfig.AWSLoadBalancerControllerIAMPolicyARN),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
-	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-nginx-router.yaml",
-	// 	m.DeployConfig.KubernetesContext),
-	// 	true, true)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f configmap-aws-config.yaml",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
-	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-aws-alb.yaml",
-	// 	m.DeployConfig.KubernetesContext),
-	// 	true, true)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f configmap-metricbeat.yaml",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
-	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-push-proxy.yaml",
-	// 	m.DeployConfig.KubernetesContext),
-	// 	true, true)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-nginx-router.yaml",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
-	// err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-redis.yaml",
-	// 	m.DeployConfig.KubernetesContext),
-	// 	true, true)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("err:", err)
-	// fmt.Println("out1:", out1)
-	// fmt.Println("out2:", out2)
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-aws-alb.yaml",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
+
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-push-proxy.yaml",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
+
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v apply -f deploy-redis.yaml",
+		m.DeployConfig.KubernetesContext),
+		true, true)
+	if err != nil {
+		return err
+	}
+	fmt.Println("err:", err)
+	fmt.Println("out1:", out1)
+	fmt.Println("out2:", out2)
 
 	elbs, err := m.ELB.DescribeLoadBalancers(nil)
 
@@ -439,37 +460,44 @@ func (m *MMDeployContext) FixMissing() error {
 
 	var cluster_elb *elbv2.LoadBalancer
 
-	for _, _elb := range elbs.LoadBalancers {
-		tags, err := m.ELB.DescribeTags(&elbv2.DescribeTagsInput{
-			ResourceArns: []*string{_elb.LoadBalancerArn},
-		})
-		if err != nil {
-			return err
-		}
-		fmt.Println("tags:", tags)
-
-		is_in_cluster := false
-		ingress_name := ""
-
-		for _, _tag := range tags.TagDescriptions[0].Tags {
-			fmt.Println("Key:", *_tag.Key, "Value:", *_tag.Value)
-			if *_tag.Key == "ingress.k8s.aws/cluster" && *_tag.Value == m.DeployConfig.ClusterName {
-				is_in_cluster = true
+	for cluster_elb == nil {
+		for _, _elb := range elbs.LoadBalancers {
+			tags, err := m.ELB.DescribeTags(&elbv2.DescribeTagsInput{
+				ResourceArns: []*string{_elb.LoadBalancerArn},
+			})
+			if err != nil {
+				return err
 			}
-			if *_tag.Key == "kubernetes.io/ingress-name" {
-				ingress_name = *_tag.Value
+			fmt.Println("tags:", tags)
+
+			is_in_cluster := false
+			ingress_name := ""
+
+			for _, _tag := range tags.TagDescriptions[0].Tags {
+				fmt.Println("Key:", *_tag.Key, "Value:", *_tag.Value)
+				if *_tag.Key == "ingress.k8s.aws/cluster" && *_tag.Value == m.DeployConfig.ClusterName {
+					is_in_cluster = true
+				}
+				if *_tag.Key == "kubernetes.io/ingress-name" {
+					ingress_name = *_tag.Value
+				}
+				fmt.Println("is_in_cluster:", is_in_cluster, "ingress_name:", ingress_name)
 			}
-			fmt.Println("is_in_cluster:", is_in_cluster, "ingress_name:", ingress_name)
+
+			fmt.Println("--->>> is_in_cluster:", is_in_cluster, "ingress_name:", ingress_name, m.DeployConfig.ClusterName+"-alb-ingress", ingress_name == m.DeployConfig.ClusterName+"-alb-ingress")
+
+			if is_in_cluster && (ingress_name == m.DeployConfig.ClusterName+"-alb-ingress") {
+				cluster_elb = _elb
+			}
 		}
 
-		fmt.Println("--->>> is_in_cluster:", is_in_cluster, "ingress_name:", ingress_name, m.DeployConfig.ClusterName+"-alb-ingress", ingress_name == m.DeployConfig.ClusterName+"-alb-ingress")
+		fmt.Println("cluster_elb:", cluster_elb)
 
-		if is_in_cluster && (ingress_name == m.DeployConfig.ClusterName+"-alb-ingress") {
-			cluster_elb = _elb
+		if cluster_elb == nil {
+			fmt.Println("Waiting for cluster elb to become availble ....")
+			time.Sleep(30 * time.Second)
 		}
 	}
-
-	fmt.Println("cluster_elb:", cluster_elb)
 
 	hosted_zones, err := m.R53.ListHostedZones(nil)
 	if err != nil {
@@ -543,7 +571,7 @@ func (m *MMDeployContext) FixMissing() error {
 		}
 	}
 
-	err, out1, out2 := Execute(fmt.Sprintf("kubectl --context %v get pods -o json",
+	err, out1, out2 = Execute(fmt.Sprintf("kubectl --context %v get pods -o json",
 		m.DeployConfig.KubernetesContext),
 		true, true)
 	if err != nil {
