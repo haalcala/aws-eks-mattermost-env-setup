@@ -57,7 +57,6 @@ type MMDeployEnvironment struct {
 	RDS                   MMDeployEnvironment_RDS                `json:"RDS"`
 	MattermostInstance    MMDeployEnvironment_MattermostInstance `json:"MattermostInstance"`
 	InfraComponents       MMDeployEnvironment_InfraComponents    `json:"InfraComponents"`
-	OutputDir             string                                 `json:"OutputDir"`
 	AWSCredentialProfile  string                                 `json:"AWSCredentialProfile"`
 	DeployBucket          string                                 `json:"DeployBucket"`
 	Containers            MMDeployEnvironment_Containers         `json:"Containers"`
@@ -308,13 +307,13 @@ type DeploymentEnvironment struct {
 	VCUBE_VID_OAUTH_DB_PASSWORD string `json:"VCUBE_VID_OAUTH_DB_PASSWORD"`
 }
 
-func (d*MattermostDomainDeployment) ApplyDefaults() error {
-	if d.ContainerCPU==""{
-		d.ContainerCPU=".5"
+func (d *MattermostDomainDeployment) ApplyDefaults() error {
+	if d.ContainerCPU == "" {
+		d.ContainerCPU = ".5"
 	}
 
-	if d.ContainerMemory==""{
-		d.ContainerMemory="2000Mi"
+	if d.ContainerMemory == "" {
+		d.ContainerMemory = "2000Mi"
 	}
 
 	return nil
