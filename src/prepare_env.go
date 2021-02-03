@@ -48,7 +48,7 @@ func (c *MMDeployEnvironment) ApplyDefaults() {
 		c.MattermostInstance.Cluster.Driver = "redis"
 	}
 	if c.MattermostInstance.Cluster.CustomClusterRedisHost == "" {
-		c.MattermostInstance.Cluster.CustomClusterRedisHost = "svc-redis"
+		c.MattermostInstance.Cluster.CustomClusterRedisHost = "redis-svc.default.svc.cluster.local"
 	}
 	if c.MattermostInstance.Cluster.CustomClusterRedisPort == "" {
 		c.MattermostInstance.Cluster.CustomClusterRedisPort = "6357"
