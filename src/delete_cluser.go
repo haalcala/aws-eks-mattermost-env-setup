@@ -161,60 +161,61 @@ func (m *MMDeployContext) DeleteCluster() error {
 			// stack.Stacks[0].Outputs
 		}
 
-		roles, err := _iam.ListRoles(nil)
+		// roles, err := _iam.ListRoles(nil)
 
-		if err != nil {
-			return err
-		}
+		// if err != nil {
+		// 	return err
+		// }
 
-		// fmt.Println("roles:", roles)
+		// // fmt.Println("roles:", roles)
 
-		for _, role := range roles.Roles {
-			in_this_cluster := false
-			is_service_account := false
+		// for _, role := range roles.Roles {
+		// 	in_this_cluster := false
+		// 	is_service_account := false
 
-			role, err := _iam.GetRole(&iam.GetRoleInput{
-				RoleName: role.RoleName,
-			})
+		// 	role, err := _iam.GetRole(&iam.GetRoleInput{
+		// 		RoleName: role.RoleName,
+		// 	})
 
-			// fmt.Println("role:", role)
+		// 	// fmt.Println("role:", role)
 
-			if err != nil {
-				return err
-			}
+		// 	if err != nil {
+		// 		return err
+		// 	}
 
-			for _, _tag := range role.Role.Tags {
-				if *_tag.Key == "alpha.eksctl.io/cluster-name" && *_tag.Value == m.DeployConfig.ClusterName {
-					in_this_cluster = true
-				} else if *_tag.Key == "alpha.eksctl.io/iamserviceaccount-name" && *_tag.Value == "kube-system/aws-load-balancer-controller" {
-					is_service_account = true
-				}
-			}
+		// 	for _, _tag := range role.Role.Tags {
+		// 		if *_tag.Key == "alpha.eksctl.io/cluster-name" && *_tag.Value == m.DeployConfig.ClusterName {
+		// 			in_this_cluster = true
+		// 		} else if *_tag.Key == "alpha.eksctl.io/iamserviceaccount-name" && *_tag.Value == "kube-system/aws-load-balancer-controller" {
+		// 			is_service_account = true
+		// 		}
+		// 	}
 
-			if in_this_cluster && is_service_account {
-				fmt.Println("Deleting role:", role)
+		// 	if in_this_cluster && is_service_account {
+		// 		fmt.Println("Deleting role:", role)
 
-				detach_output, err := _iam.DetachRolePolicy(&iam.DetachRolePolicyInput{
-					PolicyArn: role.Role.Arn,
-				})
+		// 		detach_output, err := _iam.DetachRolePolicy(&iam.DetachRolePolicyInput{
+		// 			PolicyArn: role.Role.Arn,
+		// 			RoleName:  role.Role.RoleName,
+		// 		})
 
-				if err != nil {
-					return err
-				}
+		// 		if err != nil {
+		// 			return err
+		// 		}
 
-				fmt.Println("detach_output:", detach_output)
+		// 		fmt.Println("detach_output:", detach_output)
 
-				delete_output, err := _iam.DeleteRole(&iam.DeleteRoleInput{
-					RoleName: role.Role.RoleName,
-				})
+		// 		delete_output, err := _iam.DeleteRole(&iam.DeleteRoleInput{
+		// 			RoleName: role.Role.RoleName,
+		// 		})
 
-				if err != nil {
-					return err
-				}
+		// 		if err != nil {
+		// 			return err
+		// 		}
 
-				fmt.Println("delete_output:", delete_output)
-			}
-		}
+		// 		fmt.Println("delete_output:", delete_output)
+		// 	}
+		// }
 	}
 
 	delete_cluster_result := make(chan string, 1)
