@@ -64,6 +64,10 @@ func (m *MMDeployContext) GenerateDeploymentFiles(baseDir string) error {
 	if err != nil {
 		return err
 	}
+	_, err = ProcessTemplate("templates/configmap-aws-config.yaml.template", baseDir+"/configmap-aws-config.yaml", _tokens, 0666)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
