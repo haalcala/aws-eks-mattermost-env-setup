@@ -20,6 +20,15 @@ func (m *MMDeployContext) DeleteCluster() error {
 
 	fmt.Println("Deleting cluster:", m.DeployConfig.ClusterName)
 
+	err, stdout, stderr := Execute("kubectl delete -f deploy-aws-alb.yaml", true, true)
+
+	fmt.Println("stdout:", stdout)
+	fmt.Println("stderr:", stderr)
+
+	if err != nil {
+		return err
+	}
+
 	clusters, err := m.EKS.ListClusters(nil)
 
 	if err != nil {
