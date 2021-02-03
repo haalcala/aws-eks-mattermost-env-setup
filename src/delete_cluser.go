@@ -39,6 +39,8 @@ func (m *MMDeployContext) DeleteCluster() error {
 
 	var cluster *eks.Cluster
 
+	defer m.DeleteTargetGroups()
+
 	for _, _cluster := range clusters.Clusters {
 		if *_cluster == m.DeployConfig.ClusterName {
 			__cluster, err := m.EKS.DescribeCluster(&eks.DescribeClusterInput{
@@ -301,6 +303,50 @@ func (m *MMDeployContext) DeleteOtherStacks() error {
 
 		if found_cluster_stack {
 			time.Sleep(time.Second * 10)
+		}
+	}
+
+	return nil
+}
+
+// this is just a comment
+func (m *MMDeployContext) DeleteTargetGroups() error {
+	fmt.Println("------ func (m *MMDeployContext) DeleteTargetGroups() error")
+
+	tgs, err := m.ELB.DescribeTargetGroups(nil)
+	if err != nil {
+		return err
+	}
+	for _, tg := range tgs.TargetGroups {
+		tags, err := m.ELB.DescribeTags(&elbv2.DescribeTagsInput{
+			ResourceArns: []*string{tg.TargetGroupArn},
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Println("tags:", tags)
+
+		is_in_cluster := false
+
+		for _, _tag := range tags.TagDescriptions[0].Tags {
+			fmt.Println("Key:", *_tag.Key, "Value:", *_tag.Value)
+			if *_tag.Key == "kubernetes.io/cluster/"+m.DeployConfig.ClusterName && *_tag.Value == "owned" {
+				is_in_cluster = true
+			}
+			fmt.Println("is_in_cluster:", is_in_cluster)
+		}
+
+		fmt.Println("--->>> is_in_cluster:", is_in_cluster, m.DeployConfig.ClusterName+"-alb-ingress")
+
+		if is_in_cluster {
+			delete_tg_resp, err := m.ELB.DeleteTargetGroup(&elbv2.DeleteTargetGroupInput{
+				TargetGroupArn: tg.TargetGroupArn,
+			})
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("delete_tg_resp:", delete_tg_resp)
 		}
 	}
 
