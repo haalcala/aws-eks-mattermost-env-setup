@@ -161,20 +161,21 @@ type MMDeployContext struct {
 }
 
 type MattermostDomainDeployment struct {
-	Key            string `json:"key"`
-	Domain         string `json:"domain"`
-	Replicas       string `json:"replicas"`
-	CompanyId      string `json:"companyId"`
-	SiteName       string `json:"site-name"`
-	AdminEmail     string `json:"admin-email"`
-	AdminEmailName string `json:"admin-email-name"`
-	CompanyName    string `json:"company-name"`
-	DockerRepoTag  string `json:"docker-repo-tag"`
-	DeployEnv      string `json:"deploy-env"`
-	ClientLocale   string `json:"client-locale"`
-	OverrideDBUser string `json:"OverrideDBUser"`
-	ContainerCPU string `json:"ContainerCPU"`
+	Key             string `json:"key"`
+	Domain          string `json:"domain"`
+	Replicas        string `json:"replicas"`
+	CompanyId       string `json:"companyId"`
+	SiteName        string `json:"site-name"`
+	AdminEmail      string `json:"admin-email"`
+	AdminEmailName  string `json:"admin-email-name"`
+	CompanyName     string `json:"company-name"`
+	DockerRepoTag   string `json:"docker-repo-tag"`
+	DeployEnv       string `json:"deploy-env"`
+	ClientLocale    string `json:"client-locale"`
+	OverrideDBUser  string `json:"OverrideDBUser"`
+	ContainerCPU    string `json:"ContainerCPU"`
 	ContainerMemory string `json:"ContainerMemory"`
+	K8sNamespace    string `json:"K8sNamespace"`
 }
 
 type Token struct {
