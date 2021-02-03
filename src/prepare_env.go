@@ -41,7 +41,7 @@ func (c *MMDeployEnvironment) ApplyDefaults() {
 	}
 
 	if c.MattermostInstance.PushServerUrl == "" {
-		c.MattermostInstance.PushServerUrl = "http://mattermost-push-proxy-svc:8066"
+		c.MattermostInstance.PushServerUrl = "http://mattermost-push-proxy-svc.default.svc.cluster.local:8066"
 	}
 
 	if c.MattermostInstance.Cluster.Driver == "" {
