@@ -1,0 +1,172 @@
+# See the following link the steps
+# SSL Terminated ALB :  https://medium.com/faun/aws-eks-and-tls-terminated-load-balancer-18c152536f33
+# Enable ALB on EKS : https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html#w243aac23b7c19b2b3b3
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: __MM_INSTANCE_K8SNAMESPACE__
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "__AWS_EKS_CLUSTER_NAME__-alb-ingress"
+  namespace: __MM_INSTANCE_K8SNAMESPACE__
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "HTTPS"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/group: nginx-svc
+    alb.ingress.kubernetes.io/certificate-arn: __AWS_ACM_CERTIFICATE_ARN__
+    alb.ingress.kubernetes.io/subnets: __EKS_PUBLIC_SUBNETS__
+  labels:
+    app: nginx-svc
+spec:
+  rules:
+__ALB_DOMAIN_RULES__
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: __MM_INSTANCE_KEY__-svc
+  namespace: __MM_INSTANCE_K8SNAMESPACE__
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8065
+  selector:
+    app: __MM_INSTANCE_KEY__
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: __MM_INSTANCE_KEY__
+  namespace: __MM_INSTANCE_K8SNAMESPACE__  
+spec:
+  replicas: __MM_INSTANCE_REPLICAS__ 
+  selector:
+    matchLabels:
+      app: __MM_INSTANCE_KEY__
+  #serviceName: __MM_INSTANCE_KEY__
+  template:
+    metadata:
+      labels:
+        app: __MM_INSTANCE_KEY__
+        mattermost_deploy_version: "__MM_DEPLOY_VERSION__"
+        deploy_env: "__MM_DEPLOY_ENV__"
+    spec:
+      containers:
+        - name: __MM_INSTANCE_KEY__
+          image: __MM_DOCKER_REPO__:__MM_DOCKER_REPO_TAG__
+          resources:
+            limits:
+              memory: __MM_CONTAINER_MEM__
+              cpu: "__MM_CONTAINER_CPU__"
+            requests:
+              memory: __MM_CONTAINER_MEM__
+              cpu: "__MM_CONTAINER_CPU__" 
+          command :
+            - bash
+            - "-c"
+            - |
+              set -x
+
+              [[ `hostname` =~ -([0-9]+)$ ]]
+
+              apt-get install -y bc
+
+              service metricbeat restart
+
+              ordinal=${BASH_REMATCH[1]}
+
+              if [[ $ordinal -eq 0 ]]; then
+                export MM_REDIS_CLUSTER_ROLE=master
+              fi
+
+              CONFIG="mysql://__MM_DB_USER__:__MM_DB_PASS__@tcp(__MM_DB_HOST__:__MM_DB_PORT__)/__MM_DB_NAME__?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
+
+              #envoy -c /etc/service-envoy.yaml --service-cluster __MM_INSTANCE_KEY__ &                                                  
+
+              rs_count=0
+
+              while [ $rs_count -lt 5 ]; do
+                 ./bin/mattermost --config=$CONFIG
+                 mv logs/mattermost.log /logs/mattermost-$(ls -l | wc -l).log
+                 # sleep 10
+                 rs_count=`echo $rs_count + 1 | bc`
+                 echo "rs_count: $rs_count"
+              done
+
+              echo "Exiting"
+              sleep 1
+          ports:
+            - name: liveness-port
+              containerPort: 8065
+          volumeMounts:
+            # - name: service-envoy
+            #   mountPath: /etc/service-envoy.yaml
+            #   subPath: service-envoy.yaml
+            - name: metricbeat-conf
+              mountPath: /etc/metricbeat/metricbeat.yml
+              subPath: metricbeat.yml
+            - name: metricbeats-module-system
+              mountPath: /etc/metricbeat/modules.d/system.yml
+              subPath: system.yml
+          #readinessProbe:
+          #  exec:
+          #    # Check we can execute queries over TCP (skip-networking is off).
+          #    command: ["mysql", "-h", "127.0.0.1", "-e", "SELECT 1"]
+          #  initialDelaySeconds: 5
+          #  periodSeconds: 2
+          #  timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: liveness-port
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: liveness-port
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+      volumes:
+        # - name: aws-config
+        #   configMap:
+        #     name: mm-instance-conf
+        #     items:
+        #       - key: aws-credentials
+        #         path: credentials
+        #       - key: aws-config
+        #         path: config
+        # - name: service-envoy
+        #   configMap:
+        #     name: service-envoy
+        #     items:
+        #       - key: service-envoy.yaml
+        #         path: service-envoy.yaml
+        - name: metricbeat-conf
+          configMap:
+            name: metricbeat-conf
+            items:
+              - key: metricbeat.yml
+                path: metricbeat.yml
+        - name: metricbeats-module-system
+          configMap:
+            name: metricbeat-conf
+            items:
+              - key: metricbeat-module-system.yml
+                path: system.yml
+
