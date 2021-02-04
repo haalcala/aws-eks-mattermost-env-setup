@@ -450,17 +450,17 @@ func (m *MMDeployContext) FixMissing() error {
 	fmt.Println("out1:", out1)
 	fmt.Println("out2:", out2)
 
-	elbs, err := m.ELB.DescribeLoadBalancers(nil)
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("elbs:", elbs)
-
 	var cluster_elb *elbv2.LoadBalancer
 
 	for cluster_elb == nil {
+		elbs, err := m.ELB.DescribeLoadBalancers(nil)
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("elbs:", elbs)
+
 		for _, _elb := range elbs.LoadBalancers {
 			tags, err := m.ELB.DescribeTags(&elbv2.DescribeTagsInput{
 				ResourceArns: []*string{_elb.LoadBalancerArn},

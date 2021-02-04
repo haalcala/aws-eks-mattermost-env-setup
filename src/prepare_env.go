@@ -53,9 +53,6 @@ func (c *MMDeployEnvironment) ApplyDefaults() {
 	if c.MattermostInstance.Cluster.CustomClusterRedisPort == "" {
 		c.MattermostInstance.Cluster.CustomClusterRedisPort = "6357"
 	}
-	if c.OutputDir == "" {
-		c.OutputDir = "generated_config"
-	}
 
 	if c.AWSLoadBalancerControllerName == "" {
 		c.AWSLoadBalancerControllerName = "alb-ingress-controller"
@@ -65,7 +62,7 @@ func (c *MMDeployEnvironment) ApplyDefaults() {
 		c.AWSLoadBalancerControllerIAMPolicyName = "ALBIngressControllerIAMPolicy"
 	}
 
-	if c.RDS.DBSecurityGroupName == "" {
+	if c.ClusterName != "" && c.RDS.DBSecurityGroupName == "" {
 		c.RDS.DBSecurityGroupName = c.ClusterName + "-dbaccess"
 	}
 
@@ -136,6 +133,10 @@ func (m *MMDeployContext) SaveDeployConfig() error {
 func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 	fmt.Println("------ func (m *MMDeployContext) LoadDeployConfig(conf string) error")
 
+	if !strings.HasSuffix(conf, "-conf.json") {
+		return errors.New("Configuration file must have a suffix of -conf.json")
+	}
+
 	dat, err := ioutil.ReadFile(conf)
 
 	if err != nil {
@@ -159,6 +160,10 @@ func (m *MMDeployContext) LoadDeployConfig(conf string) error {
 	config, err := MMDeployConfigFromJson(string(dat))
 
 	m.DeployConfig = *config
+
+	if m.DeployConfig.ClusterName == "" {
+		m.DeployConfig.ClusterName = strings.TrimSuffix(conf, "-conf.json")
+	}
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(m.DeployConfig.Region),

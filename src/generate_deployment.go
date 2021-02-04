@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path"
 	"strings"
 )
@@ -13,6 +14,10 @@ func (m *MMDeployContext) GenerateDeploymentFiles(baseDir string) error {
 	tokens, err := LoadTokenFromJson(path.Join(baseDir, "env.json"))
 	if err != nil {
 		return err
+	}
+
+	for _, token := range tokens {
+		fmt.Println("token:", token)
 	}
 
 	domain_conf, alb_domain_conf, err := m.ProcessDomains(tokens, baseDir)
